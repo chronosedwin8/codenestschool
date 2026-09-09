@@ -15,17 +15,18 @@
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import type { ActivityConfigV3 } from '@codenest/shared';
+import {
+  ErrorSintaxisPython,
+  transpilarPython,
+  type ActivityConfigV3,
+} from '@codenest/shared';
 
-import BarraPrograma from '@/components/BarraPrograma.vue';
 import BotonEscuchar from '@/components/BotonEscuchar.vue';
 import BotonJuguete from '@/components/BotonJuguete.vue';
+import PanelEditor, { type ProgramaListo } from '@/components/PanelEditor.vue';
 import PanelEstrellas from '@/components/PanelEstrellas.vue';
-import type { ClaseFicha } from '@/components/FichaComando.vue';
 import { useEjecutor } from '@/composables/useEjecutor';
-import { compilarFichas } from '@/game/compilarFichas';
 import { IsoRenderer } from '@/game/IsoRenderer';
-import type { PasoPrograma } from '@/game/tipos';
 import { api } from '@/api/cliente';
 import { useAudioStore } from '@/stores/audio';
 
@@ -35,7 +36,13 @@ interface Actividad {
   readonly instruccionTexto: string;
   readonly exitoTexto: string;
   readonly config: ActivityConfigV3;
-  readonly mundo: { readonly numero: number; readonly nombre: string; readonly bioma: string };
+  readonly mundo: {
+    readonly numero: number;
+    readonly nombre: string;
+    readonly bioma: string;
+    readonly grupoEdad: 'exploradores' | 'creadores' | 'hackers';
+    readonly editor: 'comandos' | 'bloques' | 'texto';
+  };
   readonly audio: { readonly instruccion: string | null; readonly exito: string | null };
   readonly pistas: readonly { readonly orden: number; readonly texto: string }[];
 }
@@ -49,8 +56,10 @@ const actividad = shallowRef<Actividad | null>(null);
 const cargando = ref(true);
 const errorCarga = ref<string | null>(null);
 
-const programa = ref<PasoPrograma[]>([]);
+const programa = ref<ProgramaListo>({ codigo: '', tamano: 0, estructuras: [], programa: null });
 const sesionId = ref<number | null>(null);
+const errorSintaxis = ref<{ linea: number; mensaje: string } | null>(null);
+const panel = ref<InstanceType<typeof PanelEditor> | null>(null);
 const estrellas = ref(0);
 const completada = ref(false);
 const monedasGanadas = ref(0);
@@ -58,9 +67,22 @@ const pistaVisible = ref<number | null>(null);
 
 const lienzo = ref<HTMLElement | null>(null);
 
-/** Fichas que esta actividad ha desbloqueado. */
-const fichasDisponibles = computed<ClaseFicha[]>(
-  () => (actividad.value?.config.comandosPermitidos ?? []) as ClaseFicha[],
+/** Comandos y estructuras que esta actividad ha desbloqueado. */
+const disponibles = computed<readonly string[]>(() => {
+  const config = actividad.value?.config;
+  if (!config) return [];
+  // Las fichas se sacan de los comandos; los bloques tienen su propia lista.
+  return config.editor === 'comandos'
+    ? config.comandosPermitidos
+    : [...config.comandosPermitidos, ...config.bloquesDisponibles];
+});
+
+/** Lenguaje con el que se juega ahora mismo. */
+const lenguaje = computed(() => actividad.value?.config.lenguajes[0] ?? 'javascript');
+
+/** Codigo de partida que ve el Hacker al abrir la actividad. */
+const codigoInicial = computed(
+  () => actividad.value?.config.codigoInicial?.[lenguaje.value] ?? '',
 );
 
 /** Huecos de la barra: alguno más de los que exige la solución óptima. */
@@ -70,7 +92,7 @@ const capacidad = computed(() => {
 });
 
 const puedeJugar = computed(
-  () => programa.value.length > 0 && !ejecutor.ejecutando.value && !cargando.value,
+  () => programa.value.tamano > 0 && !ejecutor.ejecutando.value && !cargando.value,
 );
 
 async function cargar(): Promise<void> {
@@ -83,8 +105,8 @@ async function cargar(): Promise<void> {
 
     const sesion = await api.post<{ sesion: { id: number } }>('/sesiones', {
       actividadId: id,
-      editor: 'comandos',
-      lenguaje: 'comandos',
+      editor: actividad.value.config.editor,
+      lenguaje: actividad.value.config.lenguajes[0] ?? 'javascript',
     });
     sesionId.value = sesion.sesion.id;
 
@@ -118,13 +140,40 @@ async function montarLienzo(): Promise<void> {
   ejecutor.renderizador.value = renderizador;
 }
 
-/** Ejecuta el programa y envía el resultado al servidor. */
+function alCambiarPrograma(listo: ProgramaListo): void {
+  programa.value = listo;
+  // Al editar desaparece la marca del error anterior.
+  errorSintaxis.value = null;
+}
+
+/**
+ * Ejecuta el programa y envía el resultado al servidor.
+ *
+ * Si el niño escribió Python, se traduce a JavaScript antes de ejecutarlo: los
+ * dos lenguajes acaban en el mismo sandbox y en el mismo verificador.
+ */
 async function jugar(): Promise<void> {
   const act = actividad.value;
   if (!act || !sesionId.value || !puedeJugar.value) return;
 
-  const compilado = compilarFichas(programa.value);
-  const tirada = await ejecutor.jugar(compilado.codigo, 'comandos', act.config);
+  const original = programa.value;
+  let codigoEjecutable = original.codigo;
+
+  if (lenguaje.value === 'python') {
+    try {
+      codigoEjecutable = transpilarPython(original.codigo).codigo;
+    } catch (error) {
+      // Un error de sintaxis se marca en su línea, no se ejecuta nada.
+      if (error instanceof ErrorSintaxisPython) {
+        errorSintaxis.value = { linea: error.linea, mensaje: error.message };
+        void audio.narrar('ui_intentalo-otra-vez', error.message);
+        return;
+      }
+      throw error;
+    }
+  }
+
+  const tirada = await ejecutor.jugar(codigoEjecutable, lenguaje.value, act.config);
 
   // Se envía siempre, acierte o falle: los intentos fallidos son el dato más
   // valioso para el panel del docente.
@@ -133,12 +182,12 @@ async function jugar(): Promise<void> {
     monedasGanadas: number;
     verificado: boolean;
   }>(`/sesiones/${sesionId.value}/envio`, {
-    codigo: compilado.codigo,
-    programa: programa.value,
+    codigo: original.codigo,
+    programa: original.programa,
     acciones: tirada.acciones,
-    tamanoPrograma: compilado.tamano,
+    tamanoPrograma: original.tamano,
     tiempoSegundos: 0,
-    estructurasUsadas: compilado.estructuras,
+    estructurasUsadas: original.estructuras,
     pistasUsadas: pistaVisible.value === null ? 0 : pistaVisible.value + 1,
   });
 
@@ -155,6 +204,7 @@ function reintentar(): void {
   ejecutor.reiniciar();
   estrellas.value = 0;
   completada.value = false;
+  errorSintaxis.value = null;
 }
 
 function mostrarPista(): void {
@@ -222,14 +272,21 @@ onBeforeUnmount(() => {
       </p>
     </Transition>
 
-    <!-- Programa -->
-    <BarraPrograma
+    <!-- Programa: fichas, bloques o texto segun el grupo de edad -->
+    <PanelEditor
       v-if="actividad"
-      v-model="programa"
-      :disponibles="fichasDisponibles"
+      ref="panel"
+      :editor="actividad.config.editor"
+      :grupo="actividad.config.grupo"
+      :lenguaje="lenguaje"
+      :disponibles="disponibles"
       :capacidad="capacidad"
-      :ejecutando="ejecutor.pasoActual.value"
-      :bloqueada="ejecutor.ejecutando.value"
+      :codigo-inicial="codigoInicial"
+      :ejecutando="ejecutor.ejecutando.value"
+      :paso-actual="ejecutor.pasoActual.value"
+      :error-linea="errorSintaxis?.linea ?? ejecutor.ultimoError.value?.linea ?? null"
+      :error-mensaje="errorSintaxis?.mensaje ?? ejecutor.ultimoError.value?.mensaje ?? null"
+      @cambio="alCambiarPrograma"
     />
 
     <div class="actividad__controles">

@@ -5,10 +5,11 @@
  * Phaser (para animar) y el backend (para recalcular estrellas sin ejecutar
  * codigo del alumno).
  *
- * Pendiente de la fase 4: pylite/, el transpilador de un subconjunto de Python
- * a JavaScript para los mundos 21-30.
+ * pylite traduce un subconjunto de Python a JavaScript para los mundos 21-30,
+ * de modo que los dos lenguajes acaben en el mismo sandbox.
  */
 export * from './GridSimulator.js';
 export * from './stars.js';
+export * from './pylite/index.js';
 
-export const RUNTIME_VERSION = '0.2.0';
+export const RUNTIME_VERSION = '0.3.0';
