@@ -1,0 +1,35 @@
+{
+  "name": "@codenest/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Juego y portal del cliente de CodeNest School (Vue 3 + Phaser 3 + Blockly + Monaco)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@codenest/shared": "*",
+    "blockly": "^11.2.1",
+    "howler": "^2.2.4",
+    "monaco-editor": "^0.52.2",
+    "phaser": "^3.87.0",
+    "pinia": "^2.3.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/howler": "^2.2.12",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/test-utils": "^2.4.6",
+    "@vue/tsconfig": "^0.7.0",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8",
+    "vue-tsc": "^2.1.10"
+  }
+}

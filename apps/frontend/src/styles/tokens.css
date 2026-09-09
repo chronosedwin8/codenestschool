@@ -1,0 +1,254 @@
+/**
+ * Sistema de diseño de CodeNest School.
+ *
+ * Decisiones que vienen de la pedagogía, no del gusto:
+ *  - Colores muy saturados y de alto contraste, para que un niño de cuatro años
+ *    distinga al instante qué es interactivo y qué es decorado.
+ *  - Tipografía redonda y grande. Fredoka para títulos, Nunito para el resto.
+ *  - Objetivos táctiles de 72 píxeles como mínimo: la motricidad fina a los
+ *    cuatro años no da para botones de 44.
+ *  - Relieve simulado con sombras paralelas y bordes biselados, para que los
+ *    controles parezcan piezas de plástico o madera que se pueden presionar.
+ *  - Nunca se comunica algo solo con color (hay niños que no lo distinguen):
+ *    siempre acompaña un icono, una forma o un sonido.
+ */
+
+:root {
+  /* ── Paleta principal, saturada y brillante ── */
+  --azul-neon: #1fa2ff;
+  --azul-neon-oscuro: #0d7fd4;
+  --verde-cesped: #5ad35a;
+  --verde-cesped-oscuro: #3daf3d;
+  --magenta: #ff3cac;
+  --magenta-oscuro: #d81b8c;
+  --amarillo: #ffd93d;
+  --amarillo-oscuro: #e0b81c;
+  --naranja: #ff8a3d;
+  --naranja-oscuro: #e06a1c;
+  --morado: #7b61ff;
+  --morado-oscuro: #5a3fe0;
+  --cyan: #06b6d4;
+  --rojo: #ef4444;
+
+  /* ── Neutros ── */
+  --blanco: #ffffff;
+  --crema: #fffdf7;
+  --gris-claro: #f1f5f9;
+  --gris-medio: #94a3b8;
+  --gris-oscuro: #475569;
+  --tinta: #1e293b;
+  --tinta-suave: #334155;
+
+  /* ── Fondos por grupo de edad ── */
+  /* Exploradores: espacio en tonos pastel, acogedor y sin amenaza. */
+  --fondo-exploradores: linear-gradient(165deg, #dff3ff 0%, #f5e6ff 55%, #ffeef7 100%);
+  /* Creadores: fantasía, con más profundidad y contraste. */
+  --fondo-creadores: linear-gradient(165deg, #e8f7ff 0%, #dcf4e4 60%, #fff6dc 100%);
+  /* Hackers: consola nocturna, ya son casi adolescentes. */
+  --fondo-hackers: linear-gradient(165deg, #101a2e 0%, #1a2440 60%, #241a3d 100%);
+
+  /* ── Tipografía ── */
+  --fuente-titulo: 'Fredoka', 'Fredoka One', 'Nunito', system-ui, sans-serif;
+  --fuente-texto: 'Nunito', system-ui, -apple-system, sans-serif;
+
+  /* Escala amplia: los prelectores necesitan cuerpos grandes. */
+  --texto-xs: 0.875rem;
+  --texto-sm: 1rem;
+  --texto-base: 1.125rem;
+  --texto-lg: 1.375rem;
+  --texto-xl: 1.75rem;
+  --texto-2xl: 2.25rem;
+  --texto-3xl: 3rem;
+
+  /* ── Curvas y espacios ── */
+  --radio-sm: 12px;
+  --radio-md: 18px;
+  --radio-lg: 24px;
+  --radio-xl: 32px;
+  --radio-total: 999px;
+
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 0.75rem;
+  --espacio-4: 1rem;
+  --espacio-5: 1.5rem;
+  --espacio-6: 2rem;
+  --espacio-8: 3rem;
+
+  /* ── Objetivos táctiles ── */
+  --toque-min: 72px;
+  --toque-comodo: 88px;
+  --ficha-tamano: 84px;
+  --dropzone-alto: 104px;
+
+  /* ── Relieve de juguete ── */
+  /* Dos sombras: una dura debajo (el "canto" de la pieza) y una difusa (apoyo). */
+  --relieve: 0 6px 0 rgb(0 0 0 / 0.18), 0 8px 16px rgb(0 0 0 / 0.14);
+  --relieve-alto: 0 10px 0 rgb(0 0 0 / 0.2), 0 14px 24px rgb(0 0 0 / 0.16);
+  --relieve-hundido: inset 0 4px 8px rgb(0 0 0 / 0.22);
+  --brillo-superior: inset 0 2px 0 rgb(255 255 255 / 0.45);
+
+  --sombra-panel: 0 4px 20px rgb(30 41 59 / 0.1);
+  --halo-foco: 0 0 0 5px rgb(31 162 255 / 0.4);
+
+  /* ── Movimiento ── */
+  --rapido: 120ms;
+  --normal: 220ms;
+  --lento: 420ms;
+  --rebote: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Los Hackers usan tema oscuro: mismo sistema, otros neutros. */
+[data-grupo='hackers'] {
+  --crema: #1a2440;
+  --gris-claro: #24304d;
+  --tinta: #e8eeff;
+  --tinta-suave: #b8c4e0;
+  --gris-oscuro: #8fa0c4;
+}
+
+/* ── Base ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Nada de zoom accidental con dos dedos en una tableta. */
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--fuente-texto);
+  font-size: var(--texto-base);
+  font-weight: 600;
+  color: var(--tinta);
+  background: var(--fondo-exploradores);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+body[data-grupo='creadores'] {
+  background: var(--fondo-creadores);
+}
+body[data-grupo='hackers'] {
+  background: var(--fondo-hackers);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--fuente-titulo);
+  font-weight: 400;
+  line-height: 1.15;
+  margin: 0 0 var(--espacio-3);
+}
+
+h1 {
+  font-size: var(--texto-3xl);
+}
+h2 {
+  font-size: var(--texto-2xl);
+}
+h3 {
+  font-size: var(--texto-xl);
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+/* Foco visible siempre: hay niños que navegan con teclado o conmutador. */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--halo-foco);
+}
+
+/* Un niño con sensibilidad al movimiento no debería marearse jugando. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Animaciones compartidas ── */
+@keyframes rebote-suave {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulso {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes aparecer-estrella {
+  0% {
+    transform: scale(0) rotate(-45deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.3) rotate(8deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes temblor {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px) rotate(-3deg);
+  }
+  75% {
+    transform: translateX(6px) rotate(3deg);
+  }
+}
+
+@keyframes flotar {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+/* Utilidad: oculto visualmente pero legible por lectores de pantalla. */
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
