@@ -10,7 +10,12 @@
  *   npx tsx scripts/smoke-play.ts
  *   npx tsx scripts/smoke-play.ts 1 4 6 7 9 10
  */
-import { GridSimulator, estructurasDelCodigo, interpretarFichas } from '@codenest/shared';
+import {
+  GridSimulator,
+  estructurasDelCodigo,
+  interpretarFichas,
+  lineasDeCodigo,
+} from '@codenest/shared';
 
 const BASE = process.env.SMOKE_BASE ?? 'http://127.0.0.1:3001';
 const MUNDOS = process.argv.slice(2).map(Number).filter((n) => n >= 1 && n <= 30);
@@ -80,8 +85,10 @@ function ejecutarJavaScript(
   new Function('fuzz', 'repetir', codigo)(fuzz, repetir);
 
   return {
-    tamano:
-      solucion.bloques ?? codigo.split(/\r?\n/).filter((l) => l.trim().length > 0).length,
+    // La misma cuenta que hace el editor del nino. Si aqui se contara de otra
+    // forma, esta prueba no estaria comprobando lo que va a pasar de verdad, y de
+    // hecho fue asi como se encontro que no coincidian.
+    tamano: solucion.bloques ?? lineasDeCodigo(codigo),
     estructuras: estructurasDelCodigo(codigo),
   };
 }

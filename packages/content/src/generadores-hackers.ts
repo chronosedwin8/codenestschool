@@ -24,6 +24,7 @@
 import {
   claveInstruccion,
   clavePista,
+  lineasDeCodigo,
   numeroGlobal,
   type ActivityDefinition,
   type Direccion,
@@ -43,23 +44,6 @@ export interface ContextoHacker {
   readonly textos: TextosActividad;
 }
 
-/**
- * Líneas con contenido real de un programa.
- *
- * Es la medida que usa el editor del niño y por tanto la que compara la tercera
- * estrella. Se descartan los comentarios de los dos lenguajes y las llaves solas,
- * que en JavaScript son puntuación y no programa: si contaran, cerrar una función
- * en su línea saldría más caro que dejarla abierta.
- */
-export function lineasDeCodigo(codigo: string): number {
-  return codigo
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(
-      (l) => l.length > 0 && !l.startsWith('//') && !l.startsWith('#') && l !== '}' && l !== '{',
-    ).length;
-}
-
 export interface OpcionesHacker {
   readonly camino: readonly PasoCamino[];
   readonly dirInicial?: Direccion;
@@ -73,6 +57,14 @@ export interface OpcionesHacker {
   readonly arranque?: Readonly<Partial<Record<LenguajeCodigo, string>>>;
   /** Líneas máximas para la tercera estrella. Por defecto, las de la solución. */
   readonly maxLineas?: number;
+  /**
+   * Acciones máximas que el programa puede ejecutar.
+   *
+   * Es la otra medida de un programa y la usa el mundo 29: un programa puede ser
+   * corto de escribir y hacer el doble de trabajo del necesario. Un límite de
+   * líneas premia escribir menos; este premia hacer menos.
+   */
+  readonly maxInstrucciones?: number;
   /** Estructuras que exige la tercera estrella. */
   readonly exigeEstructuras?: readonly string[];
   readonly objetivosExtra?: readonly Objetivo[];
@@ -155,6 +147,7 @@ export function actividadHacker(
         '3': {
           objetivos: conEstrellas,
           maxFichas: opciones.maxLineas ?? lineas,
+          ...(opciones.maxInstrucciones ? { maxInstrucciones: opciones.maxInstrucciones } : {}),
           ...(opciones.exigeEstructuras ? { requiereEstructuras: opciones.exigeEstructuras } : {}),
         },
       },

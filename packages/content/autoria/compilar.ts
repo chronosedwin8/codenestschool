@@ -39,9 +39,14 @@ import { mundo22 } from './m22.js';
 import { mundo23 } from './m23.js';
 import { mundo24 } from './m24.js';
 import { mundo25 } from './m25.js';
+import { mundo26 } from './m26.js';
+import { mundo27 } from './m27.js';
+import { mundo28 } from './m28.js';
+import { mundo29 } from './m29.js';
+import { mundo30 } from './m30.js';
 
 /** Mundos ya escritos. Se van añadiendo a medida que se redactan. */
-const MUNDOS: readonly WorldContentFile[] = [mundo1, mundo2, mundo3, mundo4, mundo5, mundo6, mundo7, mundo8, mundo9, mundo10, mundo11, mundo12, mundo13, mundo14, mundo15, mundo16, mundo17, mundo18, mundo19, mundo20, mundo21, mundo22, mundo23, mundo24, mundo25];
+const MUNDOS: readonly WorldContentFile[] = [mundo1, mundo2, mundo3, mundo4, mundo5, mundo6, mundo7, mundo8, mundo9, mundo10, mundo11, mundo12, mundo13, mundo14, mundo15, mundo16, mundo17, mundo18, mundo19, mundo20, mundo21, mundo22, mundo23, mundo24, mundo25, mundo26, mundo27, mundo28, mundo29, mundo30];
 
 const DESTINO = resolve(import.meta.dirname, '..', 'worlds');
 

@@ -25,6 +25,7 @@ import {
   evaluarObjetivos,
   estructurasDelCodigo,
   interpretarFichas,
+  lineasDeCodigo,
   transpilarPython,
   type ActivityDefinition,
 } from '@codenest/shared';
@@ -431,21 +432,6 @@ function ejecutarJavaScript(
   new Function('fuzz', 'repetir', codigo)(fuzz, repetir);
 
   return lineasDeCodigo(codigo);
-}
-
-/**
- * Lineas con contenido real: es lo que cuenta el editor de texto del nino.
- *
- * Se descartan los comentarios de los dos lenguajes y las llaves solas, que en
- * JavaScript son puntuacion y no programa.
- */
-function lineasDeCodigo(codigo: string): number {
-  return codigo
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(
-      (l) => l.length > 0 && !l.startsWith('//') && !l.startsWith('#') && l !== '}' && l !== '{',
-    ).length;
 }
 
 async function main(): Promise<void> {

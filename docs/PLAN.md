@@ -2,7 +2,34 @@
 
 Plataforma de programación para niños (4–12+), 30 mundos / 600 actividades, inspirada en Kodable (UI/UX) y CodeCombat (progresión), construida sobre la experiencia técnica de **BeSmart / Codexia** (`C:\Users\eortiz\Desktop\BeSmart`, mismo repo que `chronosedwin8/codexialab`).
 
-Repositorio destino: `C:\Users\eortiz\Desktop\codenestschool` (vacío) → `https://github.com/chronosedwin8/codenestschool.git`.
+Repositorio destino: `C:\Users\eortiz\Desktop\codenestschool` → `https://github.com/chronosedwin8/codenestschool.git`.
+
+---
+
+## 0. Estado (2026-09-09)
+
+El currículo está completo: **600 actividades en 30 mundos**, y las 600 se validan cada vez que se compila el contenido. La comprobación que importa es que cada solución de referencia se simula y tiene que otorgar las tres estrellas, en cada lenguaje que la actividad declare; una actividad cuya solución óptima no llega a tres estrellas es imposible de terminar y un niño que lo intente veinte veces no va a entender por qué.
+
+| Grupo | Mundos | Editor | Estado |
+|---|---|---|---|
+| Exploradores 4–6 | 1–10 | fichas | 200 actividades, narradas |
+| Creadores 7–9 | 11–20 | Blockly | 200 actividades, narradas |
+| Hackers 10–12+ | 21–30 | Monaco (JS y Python) | 200 actividades, narradas |
+
+- **Narración:** 1.917 clips de ElevenLabs, ninguno pendiente. **No hay Web Speech** (§2): un clip que falta es un error de contenido y `validate-content` lo rechaza.
+- **Verificación:** `npx tsx scripts/validate-content.ts` valida las 600; `npx tsx scripts/smoke-play.ts <mundos>` las juega contra el servidor de verdad, con alta de tutor, PIN del niño, sesión y estrellas recalculadas por el servidor. Las dos cosas hacen falta: el validador simula en memoria y el smoke test es el que encontró que el editor y el generador contaban las líneas de un programa de forma distinta, lo que hacía imposible la tercera estrella de los mundos 21 al 30.
+- **Herramientas de autoría:** `scripts/inspect-activity.ts` dibuja un tablero y ejecuta su solución paso a paso.
+
+Cambios de alcance decididos durante la construcción, cada uno con su motivo en el código:
+
+| Qué | Por qué |
+|---|---|
+| Sin Web Speech (§2) | La voz del navegador no es un respaldo para quien no lee: es otra experiencia, y peor. |
+| Mundo 25 pasa de `async/await` a eventos y funciones como valores | La API del juego es síncrona: no hay nada que esperar, y un `await` decorativo enseñaría a escribir una palabra que no hace nada. |
+| Mundo 28 hace seguimiento de pared y no camino más corto | Un algoritmo de ruta óptima necesita ver el mapa entero, y el Fuzz solo ve la casilla de delante. Seguir la pared es el algoritmo que de verdad se usa sin mapa. |
+| Casilla `puente` y `fuzz.repararPuente()` | El editor de bloques ya ofrecía la pieza y el simulador no conocía el comando: el mundo 13 habría fallado en cuanto un niño la arrastrara. |
+| `bloquesIniciales` en la configuración | El mundo 19 entrega el programa montado en el área de trabajo; sin eso, "arregla la pieza que está mal" no se puede plantear. |
+| El número del bucle de bloques pasa a un hueco de valor | Con el número escrito dentro del bloque, ninguna variable puede gobernar un bucle, y el mundo 12 no tendría nada que enseñar. |
 
 ---
 

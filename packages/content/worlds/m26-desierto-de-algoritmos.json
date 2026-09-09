@@ -1,0 +1,6500 @@
+{
+  "mundo": 26,
+  "slug": "desierto-de-algoritmos",
+  "nombre": "El Desierto de Algoritmos",
+  "introTexto": "El Desierto de Algoritmos no tiene caminos: tiene datos, y hay que trabajarlos para saber por donde ir. Aqui los tableros estan dibujados con la ruta ya ordenada y la lista que te dan esta revuelta, asi que si no la ordenas no llegas. El resultado del algoritmo es la unica forma de recorrer el camino, y se ve en la pantalla en cuanto le das a jugar.",
+  "actividades": [
+    {
+      "numeroEnMundo": 1,
+      "slug": "m26-a01-el-mayor-de-la-lista",
+      "nombre": "El mayor de la lista",
+      "tipo": "recorrido",
+      "dificultad": 1,
+      "instruccionTexto": "El Desierto de Algoritmos no tiene caminos: tiene datos, y hay que trabajarlos para saber por donde ir. Este pasillo mide lo que mide el numero mas grande de la lista. Recorre la lista quedandote con el mayor que hayas visto.",
+      "exitoTexto": "Buscar el mayor es el algoritmo mas simple que existe: una variable con lo mejor visto hasta ahora, y un bucle que la va mejorando.",
+      "pistas": [
+        "Empieza con el primer elemento como mayor.",
+        "Y si encuentras uno mas grande, cambialo."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 11,
+          "rows": 3,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "codigoInicial": {
+          "javascript": "const datos = [3, 8, 5, 2, 7];\nlet mayor = datos[0];\n// Recorre la lista y quedate con el mayor.\n",
+          "python": "datos = [3, 8, 5, 2, 7]\nmayor = datos[0]\n# Recorre la lista y quedate con el mayor.\n"
+        },
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 9,
+            "y": 1,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 7
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl1",
+          "exito": "celebration_6",
+          "pistas": [
+            "hint_world26_lvl1_1",
+            "hint_world26_lvl1_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 16
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const datos = [3, 8, 5, 2, 7];\nlet mayor = datos[0];\nfor (const dato of datos) {\n  if (dato > mayor) {\n    mayor = dato;\n  }\n}\nfor (let p = 0; p < mayor; p++) {\n  fuzz.avanzar();\n}",
+        "python": "datos = [3, 8, 5, 2, 7]\nmayor = datos[0]\nfor dato in datos:\n    if dato > mayor:\n        mayor = dato\nfor p in range(mayor):\n    fuzz.avanzar()"
+      }
+    },
+    {
+      "numeroEnMundo": 2,
+      "slug": "m26-a02-el-menor",
+      "nombre": "El menor",
+      "tipo": "recorrido",
+      "dificultad": 1,
+      "instruccionTexto": "Y ahora el pasillo mide el numero mas pequeno. Es el mismo algoritmo con la comparacion al reves.",
+      "exitoTexto": "El mismo algoritmo con el signo cambiado. Los dos son el mismo patron: recorrer y quedarse con el mejor segun un criterio.",
+      "pistas": [
+        "Empieza con el primero como menor.",
+        "Y compara con menor que, no con mayor que."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 5,
+          "rows": 3,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 3,
+            "y": 1,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 7
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl2",
+          "exito": "celebration_7",
+          "pistas": [
+            "hint_world26_lvl2_1",
+            "hint_world26_lvl2_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 17
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const datos = [6, 4, 2, 9, 5];\nlet menor = datos[0];\nfor (const dato of datos) {\n  if (dato < menor) {\n    menor = dato;\n  }\n}\nfor (let p = 0; p < menor; p++) {\n  fuzz.avanzar();\n}",
+        "python": "datos = [6, 4, 2, 9, 5]\nmenor = datos[0]\nfor dato in datos:\n    if dato < menor:\n        menor = dato\nfor p in range(menor):\n    fuzz.avanzar()"
+      }
+    },
+    {
+      "numeroEnMundo": 3,
+      "slug": "m26-a03-la-diferencia",
+      "nombre": "La diferencia",
+      "tipo": "recorrido",
+      "dificultad": 1,
+      "instruccionTexto": "El pasillo mide la diferencia entre el mayor y el menor. Dos algoritmos y una resta.",
+      "exitoTexto": "Dos recorridos y una resta. Se podia hacer en un solo bucle: pruebalo si quieres.",
+      "pistas": [
+        "Busca el mayor y el menor por separado.",
+        "Y anda la diferencia."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 10,
+          "rows": 3,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 8,
+            "y": 1,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 10
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl3",
+          "exito": "celebration_8",
+          "pistas": [
+            "hint_world26_lvl3_1",
+            "hint_world26_lvl3_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 18
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const datos = [3, 9, 5, 2, 6];\nlet mayor = datos[0];\nlet menor = datos[0];\nfor (const dato of datos) {\n  if (dato > mayor) {\n    mayor = dato;\n  }\n  if (dato < menor) {\n    menor = dato;\n  }\n}\nfor (let p = 0; p < mayor - menor; p++) {\n  fuzz.avanzar();\n}",
+        "python": "datos = [3, 9, 5, 2, 6]\nmayor = datos[0]\nmenor = datos[0]\nfor dato in datos:\n    if dato > mayor:\n        mayor = dato\n    if dato < menor:\n        menor = dato\nfor p in range(mayor - menor):\n    fuzz.avanzar()"
+      }
+    },
+    {
+      "numeroEnMundo": 4,
+      "slug": "m26-a04-marcas-del-desierto",
+      "nombre": "Marcas del desierto",
+      "tipo": "recoleccion",
+      "dificultad": 1,
+      "instruccionTexto": "Hay marcas por el camino. Pasa por encima de todas. El camino es la lista ordenada.",
+      "exitoTexto": "Las marcas. En el desierto las dejan para no perderse, y aun asi todo el mundo se pierde.",
+      "pistas": [
+        "Ordena la lista de menor a mayor.",
+        "Y recorrela."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 9,
+          "rows": 6,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 2,
+            "y": 1
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 4,
+            "y": 2
+          },
+          {
+            "id": "estrella3",
+            "tipo": "estrella",
+            "x": 7,
+            "y": 3
+          }
+        ],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 4,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 7
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl4",
+          "exito": "celebration_9",
+          "pistas": [
+            "hint_world26_lvl4_1",
+            "hint_world26_lvl4_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 19
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const ruta = [1, 2, 3];\nfor (const paso of ruta) {\n  for (let p = 0; p < paso; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n}",
+        "python": "ruta = [1, 2, 3]\nfor paso in ruta:\n    for p in range(paso):\n        fuzz.avanzar()\n    fuzz.girarDerecha()\n    fuzz.avanzar()\n    fuzz.girarIzquierda()"
+      }
+    },
+    {
+      "numeroEnMundo": 5,
+      "slug": "m26-a05-buscar-una-posicion",
+      "nombre": "Buscar una posicion",
+      "tipo": "recorrido",
+      "dificultad": 2,
+      "instruccionTexto": "El pasillo mide la posicion donde esta el numero siete en la lista. Recorre la lista comparando, y cuando lo encuentres, guarda la posicion.",
+      "exitoTexto": "La busqueda lineal: mirar uno por uno hasta encontrarlo. Es el algoritmo mas usado del mundo y el mas facil de escribir.",
+      "pistas": [
+        "Hace falta el indice para saber la posicion.",
+        "Cuando el elemento sea siete, guarda la i."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 6,
+          "rows": 3,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 4,
+            "y": 1,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 7
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl5",
+          "exito": "celebration_10",
+          "pistas": [
+            "hint_world26_lvl5_1",
+            "hint_world26_lvl5_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 20
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const datos = [4, 2, 9, 7, 1];\nlet donde = 0;\nfor (let i = 0; i < datos.length; i++) {\n  if (datos[i] === 7) {\n    donde = i;\n  }\n}\nfor (let p = 0; p < donde; p++) {\n  fuzz.avanzar();\n}",
+        "python": "datos = [4, 2, 9, 7, 1]\ndonde = 0\nfor i in range(len(datos)):\n    if datos[i] == 7:\n        donde = i\nfor p in range(donde):\n    fuzz.avanzar()"
+      }
+    },
+    {
+      "numeroEnMundo": 6,
+      "slug": "m26-a06-parar-al-encontrarlo",
+      "nombre": "Parar al encontrarlo",
+      "tipo": "recorrido",
+      "dificultad": 2,
+      "instruccionTexto": "El programa anterior sigue mirando la lista entera aunque ya lo haya encontrado. Con break sale en cuanto lo tiene, y en una lista de mil datos eso es la diferencia entre mil comparaciones y cuatro.",
+      "exitoTexto": "Salir al encontrarlo. El resultado es el mismo y el trabajo no: eso es lo que se mide cuando se habla de que un algoritmo es rapido.",
+      "pistas": [
+        "El break va justo despues de guardar la posicion.",
+        "Y hay que quedarse con la primera aparicion, no con la ultima."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 5,
+          "rows": 3,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 3,
+            "y": 1,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 8
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl6",
+          "exito": "celebration_11",
+          "pistas": [
+            "hint_world26_lvl6_1",
+            "hint_world26_lvl6_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 21
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const datos = [4, 2, 7, 1, 7];\nlet donde = 0;\nfor (let i = 0; i < datos.length; i++) {\n  if (datos[i] === 7) {\n    donde = i;\n    break;\n  }\n}\nfor (let p = 0; p < donde; p++) {\n  fuzz.avanzar();\n}",
+        "python": "datos = [4, 2, 7, 1, 7]\ndonde = 0\nfor i in range(len(datos)):\n    if datos[i] == 7:\n        donde = i\n        break\nfor p in range(donde):\n    fuzz.avanzar()"
+      }
+    },
+    {
+      "numeroEnMundo": 7,
+      "slug": "m26-a07-cuantos-pasan-de-cinco",
+      "nombre": "Cuantos pasan de cinco",
+      "tipo": "recorrido",
+      "dificultad": 2,
+      "instruccionTexto": "El pasillo mide cuantos numeros de la lista pasan de cinco.",
+      "exitoTexto": "Contar los que cumplen algo. Tercer patron del mundo y el mas corto de los tres.",
+      "pistas": [
+        "Una variable que empieza en cero.",
+        "Y una condicion dentro del bucle."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 7,
+          "rows": 3,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 1,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 7
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl7",
+          "exito": "celebration_12",
+          "pistas": [
+            "hint_world26_lvl7_1",
+            "hint_world26_lvl7_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 22
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const datos = [2, 8, 5, 9, 1, 6, 7, 3];\nlet cuantos = 0;\nfor (const dato of datos) {\n  if (dato > 5) {\n    cuantos = cuantos + 1;\n  }\n}\nfor (let p = 0; p < cuantos; p++) {\n  fuzz.avanzar();\n}",
+        "python": "datos = [2, 8, 5, 9, 1, 6, 7, 3]\ncuantos = 0\nfor dato in datos:\n    if dato > 5:\n        cuantos = cuantos + 1\nfor p in range(cuantos):\n    fuzz.avanzar()"
+      }
+    },
+    {
+      "numeroEnMundo": 8,
+      "slug": "m26-a08-la-suma-de-los-pares",
+      "nombre": "La suma de los pares",
+      "tipo": "recorrido",
+      "dificultad": 2,
+      "instruccionTexto": "El pasillo mide la suma de los numeros pares de la lista. Un numero es par si al dividirlo entre dos no sobra nada, y eso se pregunta con el resto.",
+      "exitoTexto": "El resto de dividir es el operador que casi nadie recuerda y que aparece en todos los algoritmos. Se escribe con el signo de porcentaje.",
+      "pistas": [
+        "Un numero es par si el resto de dividirlo entre dos es cero.",
+        "Suma solo esos."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 15,
+          "rows": 3,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 13,
+            "y": 1,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 7
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl8",
+          "exito": "celebration_13",
+          "pistas": [
+            "hint_world26_lvl8_1",
+            "hint_world26_lvl8_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 23
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const datos = [3, 4, 7, 2, 6, 5];\nlet total = 0;\nfor (const dato of datos) {\n  if (dato % 2 === 0) {\n    total = total + dato;\n  }\n}\nfor (let p = 0; p < total; p++) {\n  fuzz.avanzar();\n}",
+        "python": "datos = [3, 4, 7, 2, 6, 5]\ntotal = 0\nfor dato in datos:\n    if dato % 2 == 0:\n        total = total + dato\nfor p in range(total):\n    fuzz.avanzar()"
+      }
+    },
+    {
+      "numeroEnMundo": 9,
+      "slug": "m26-a09-intercambiar-dos-elementos",
+      "nombre": "Intercambiar dos elementos",
+      "tipo": "recorrido",
+      "dificultad": 3,
+      "instruccionTexto": "Para ordenar hay que aprender antes a cambiar dos elementos de sitio, y eso tiene un truco: hace falta una variable de mas para no perder uno de los dos. Cambia el primero por el segundo y recorre.",
+      "exitoTexto": "Cambiar dos cosas de sitio necesita un sitio de mas. Si asignas directamente, el primero se pierde y acabas con el segundo dos veces.",
+      "pistas": [
+        "Guarda el primero en una variable auxiliar.",
+        "Luego pon el segundo en el primero, y el auxiliar en el segundo."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 9,
+          "rows": 6,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 4,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 10
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl9",
+          "exito": "celebration_14",
+          "pistas": [
+            "hint_world26_lvl9_1",
+            "hint_world26_lvl9_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 24
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const ruta = [2, 1, 3];\nconst auxiliar = ruta[0];\nruta[0] = ruta[1];\nruta[1] = auxiliar;\nfor (const paso of ruta) {\n  for (let p = 0; p < paso; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n}",
+        "python": "ruta = [2, 1, 3]\nauxiliar = ruta[0]\nruta[0] = ruta[1]\nruta[1] = auxiliar\nfor paso in ruta:\n    for p in range(paso):\n        fuzz.avanzar()\n    fuzz.girarDerecha()\n    fuzz.avanzar()\n    fuzz.girarIzquierda()"
+      }
+    },
+    {
+      "numeroEnMundo": 10,
+      "slug": "m26-a10-la-primera-burbuja",
+      "nombre": "La primera burbuja",
+      "tipo": "recorrido",
+      "dificultad": 3,
+      "instruccionTexto": "Ahora el tablero esta dibujado con la ruta ORDENADA de menor a mayor, y la lista que tienes esta desordenada. Si no la ordenas, no llegas. Empieza con una sola pasada: recorre la lista comparando cada elemento con el siguiente y cambialos si estan al reves.",
+      "exitoTexto": "Una pasada de la burbuja. Con una sola pasada el mayor ya ha subido al final, y por eso el algoritmo se llama asi: los grandes flotan.",
+      "pistas": [
+        "El bucle llega hasta la longitud menos uno para poder mirar el siguiente.",
+        "Si el elemento es mayor que el siguiente, cambialos de sitio."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 9,
+          "rows": 6,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "codigoInicial": {
+          "javascript": "const ruta = [2, 1, 3];\n// Una pasada: compara cada elemento con el siguiente.\n",
+          "python": "ruta = [2, 1, 3]\n# Una pasada: compara cada elemento con el siguiente.\n"
+        },
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 4,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 12
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl10",
+          "exito": "celebration_15",
+          "pistas": [
+            "hint_world26_lvl10_1",
+            "hint_world26_lvl10_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 25
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const ruta = [2, 1, 3];\nfor (let i = 0; i < ruta.length - 1; i++) {\n  if (ruta[i] > ruta[i + 1]) {\n    const auxiliar = ruta[i];\n    ruta[i] = ruta[i + 1];\n    ruta[i + 1] = auxiliar;\n  }\n}\nfor (const paso of ruta) {\n  for (let p = 0; p < paso; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n}",
+        "python": "ruta = [2, 1, 3]\nfor i in range(len(ruta) - 1):\n    if ruta[i] > ruta[i + 1]:\n        auxiliar = ruta[i]\n        ruta[i] = ruta[i + 1]\n        ruta[i + 1] = auxiliar\nfor paso in ruta:\n    for p in range(paso):\n        fuzz.avanzar()\n    fuzz.girarDerecha()\n    fuzz.avanzar()\n    fuzz.girarIzquierda()"
+      }
+    },
+    {
+      "numeroEnMundo": 11,
+      "slug": "m26-a11-una-pasada-no-basta",
+      "nombre": "Una pasada no basta",
+      "tipo": "recorrido",
+      "dificultad": 3,
+      "instruccionTexto": "Prueba el programa anterior con esta lista y veras que no queda ordenada: una pasada sube el mayor al final, pero los demas siguen revueltos. Hacen falta tantas pasadas como elementos.",
+      "exitoTexto": "La burbuja entera son dos bucles: uno que cuenta pasadas y otro que compara vecinos. Con eso queda ordenada seguro.",
+      "pistas": [
+        "Mete la pasada dentro de otro bucle.",
+        "Con tantas pasadas como elementos tiene la lista, sobra."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 13,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 11,
+            "y": 5,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 13
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl11",
+          "exito": "celebration_1",
+          "pistas": [
+            "hint_world26_lvl11_1",
+            "hint_world26_lvl11_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 26
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const ruta = [3, 1, 4, 2];\nfor (let vuelta = 0; vuelta < ruta.length; vuelta++) {\n  for (let i = 0; i < ruta.length - 1; i++) {\n    if (ruta[i] > ruta[i + 1]) {\n      const auxiliar = ruta[i];\n      ruta[i] = ruta[i + 1];\n      ruta[i + 1] = auxiliar;\n    }\n  }\n}\nfor (const paso of ruta) {\n  for (let p = 0; p < paso; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n}",
+        "python": "ruta = [3, 1, 4, 2]\nfor vuelta in range(len(ruta)):\n    for i in range(len(ruta) - 1):\n        if ruta[i] > ruta[i + 1]:\n            auxiliar = ruta[i]\n            ruta[i] = ruta[i + 1]\n            ruta[i + 1] = auxiliar\nfor paso in ruta:\n    for p in range(paso):\n        fuzz.avanzar()\n    fuzz.girarDerecha()\n    fuzz.avanzar()\n    fuzz.girarIzquierda()"
+      }
+    },
+    {
+      "numeroEnMundo": 12,
+      "slug": "m26-a12-seis-desordenados",
+      "nombre": "Seis desordenados",
+      "tipo": "recorrido",
+      "dificultad": 3,
+      "instruccionTexto": "Seis numeros bien revueltos. El mismo algoritmo los ordena todos.",
+      "exitoTexto": "Seis ordenados. El algoritmo no sabe cuantos hay: lo dice la longitud.",
+      "pistas": [
+        "El programa es el mismo.",
+        "Solo cambia la lista."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 20,
+          "rows": 9,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 18,
+            "y": 7,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 13
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl12",
+          "exito": "celebration_2",
+          "pistas": [
+            "hint_world26_lvl12_1",
+            "hint_world26_lvl12_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 27
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const ruta = [3, 1, 4, 2, 5, 2];\nfor (let vuelta = 0; vuelta < ruta.length; vuelta++) {\n  for (let i = 0; i < ruta.length - 1; i++) {\n    if (ruta[i] > ruta[i + 1]) {\n      const auxiliar = ruta[i];\n      ruta[i] = ruta[i + 1];\n      ruta[i + 1] = auxiliar;\n    }\n  }\n}\nfor (const paso of ruta) {\n  for (let p = 0; p < paso; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n}",
+        "python": "ruta = [3, 1, 4, 2, 5, 2]\nfor vuelta in range(len(ruta)):\n    for i in range(len(ruta) - 1):\n        if ruta[i] > ruta[i + 1]:\n            auxiliar = ruta[i]\n            ruta[i] = ruta[i + 1]\n            ruta[i + 1] = auxiliar\nfor paso in ruta:\n    for p in range(paso):\n        fuzz.avanzar()\n    fuzz.girarDerecha()\n    fuzz.avanzar()\n    fuzz.girarIzquierda()"
+      }
+    },
+    {
+      "numeroEnMundo": 13,
+      "slug": "m26-a13-la-burbuja-en-una-funcion",
+      "nombre": "La burbuja en una funcion",
+      "tipo": "recorrido",
+      "dificultad": 4,
+      "instruccionTexto": "Mete la ordenacion en una funcion que reciba la lista. El programa de fuera queda en tres lineas y se lee como lo que hace.",
+      "exitoTexto": "Una funcion que ordena. Fijate en algo importante: la funcion cambia la lista que le pasas, no una copia. Eso se llama modificar en el sitio.",
+      "pistas": [
+        "La funcion recibe la lista y la ordena.",
+        "No hace falta devolver nada."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 18,
+          "rows": 8,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 16,
+            "y": 6,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 15
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl13",
+          "exito": "celebration_3",
+          "pistas": [
+            "hint_world26_lvl13_1",
+            "hint_world26_lvl13_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 28
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "function ordenar(lista) {\n  for (let vuelta = 0; vuelta < lista.length; vuelta++) {\n    for (let i = 0; i < lista.length - 1; i++) {\n      if (lista[i] > lista[i + 1]) {\n        const auxiliar = lista[i];\n        lista[i] = lista[i + 1];\n        lista[i + 1] = auxiliar;\n      }\n    }\n  }\n}\n\nconst ruta = [4, 1, 3, 2, 5];\nordenar(ruta);\nfor (const paso of ruta) {\n  for (let p = 0; p < paso; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n}",
+        "python": "def ordenar(lista):\n    for vuelta in range(len(lista)):\n        for i in range(len(lista) - 1):\n            if lista[i] > lista[i + 1]:\n                auxiliar = lista[i]\n                lista[i] = lista[i + 1]\n                lista[i + 1] = auxiliar\n\nruta = [4, 1, 3, 2, 5]\nordenar(ruta)\nfor paso in ruta:\n    for p in range(paso):\n        fuzz.avanzar()\n    fuzz.girarDerecha()\n    fuzz.avanzar()\n    fuzz.girarIzquierda()"
+      }
+    },
+    {
+      "numeroEnMundo": 14,
+      "slug": "m26-a14-ocho-desordenados",
+      "nombre": "Ocho desordenados",
+      "tipo": "recorrido",
+      "dificultad": 4,
+      "instruccionTexto": "Ocho numeros y la funcion de ordenar. Es la ruta mas larga del desierto.",
+      "exitoTexto": "Ocho ordenados con una funcion de siete lineas. El desierto ya tiene camino.",
+      "pistas": [
+        "La funcion no cambia.",
+        "Lee los ocho numeros del arranque."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 16,
+          "rows": 11,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 14,
+            "y": 9,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 15
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl14",
+          "exito": "celebration_4",
+          "pistas": [
+            "hint_world26_lvl14_1",
+            "hint_world26_lvl14_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 29
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "function ordenar(lista) {\n  for (let vuelta = 0; vuelta < lista.length; vuelta++) {\n    for (let i = 0; i < lista.length - 1; i++) {\n      if (lista[i] > lista[i + 1]) {\n        const auxiliar = lista[i];\n        lista[i] = lista[i + 1];\n        lista[i + 1] = auxiliar;\n      }\n    }\n  }\n}\n\nconst ruta = [2, 1, 3, 1, 2, 1, 2, 1];\nordenar(ruta);\nfor (const paso of ruta) {\n  for (let p = 0; p < paso; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n}",
+        "python": "def ordenar(lista):\n    for vuelta in range(len(lista)):\n        for i in range(len(lista) - 1):\n            if lista[i] > lista[i + 1]:\n                auxiliar = lista[i]\n                lista[i] = lista[i + 1]\n                lista[i + 1] = auxiliar\n\nruta = [2, 1, 3, 1, 2, 1, 2, 1]\nordenar(ruta)\nfor paso in ruta:\n    for p in range(paso):\n        fuzz.avanzar()\n    fuzz.girarDerecha()\n    fuzz.avanzar()\n    fuzz.girarIzquierda()"
+      }
+    },
+    {
+      "numeroEnMundo": 15,
+      "slug": "m26-a15-de-mayor-a-menor",
+      "nombre": "De mayor a menor",
+      "tipo": "recorrido",
+      "dificultad": 4,
+      "instruccionTexto": "El tablero esta dibujado con la ruta ordenada de MAYOR a menor. Cambia una sola cosa del algoritmo.",
+      "exitoTexto": "El signo de la comparacion. Un algoritmo de ordenacion no sabe que es estar ordenado: se lo dice la comparacion que le pongas.",
+      "pistas": [
+        "Solo hay que cambiar el mayor que por un menor que.",
+        "Todo lo demas se queda igual."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 13,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 11,
+            "y": 5,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 15
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl15",
+          "exito": "celebration_5",
+          "pistas": [
+            "hint_world26_lvl15_1",
+            "hint_world26_lvl15_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 30
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "function ordenar(lista) {\n  for (let vuelta = 0; vuelta < lista.length; vuelta++) {\n    for (let i = 0; i < lista.length - 1; i++) {\n      if (lista[i] < lista[i + 1]) {\n        const auxiliar = lista[i];\n        lista[i] = lista[i + 1];\n        lista[i + 1] = auxiliar;\n      }\n    }\n  }\n}\n\nconst ruta = [2, 4, 1, 3];\nordenar(ruta);\nfor (const paso of ruta) {\n  for (let p = 0; p < paso; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n}",
+        "python": "def ordenar(lista):\n    for vuelta in range(len(lista)):\n        for i in range(len(lista) - 1):\n            if lista[i] < lista[i + 1]:\n                auxiliar = lista[i]\n                lista[i] = lista[i + 1]\n                lista[i + 1] = auxiliar\n\nruta = [2, 4, 1, 3]\nordenar(ruta)\nfor paso in ruta:\n    for p in range(paso):\n        fuzz.avanzar()\n    fuzz.girarDerecha()\n    fuzz.avanzar()\n    fuzz.girarIzquierda()"
+      }
+    },
+    {
+      "numeroEnMundo": 16,
+      "slug": "m26-a16-la-comparacion-como-parametro",
+      "nombre": "La comparacion como parametro",
+      "tipo": "recorrido",
+      "dificultad": 4,
+      "instruccionTexto": "Y ahora las dos ordenaciones en una: pasale a la funcion la comparacion que tiene que usar. Es la idea del mundo 25 aplicada a un algoritmo.",
+      "exitoTexto": "Un algoritmo al que se le dice como comparar. Asi funcionan todas las funciones de ordenar que vas a usar en tu vida.",
+      "pistas": [
+        "El segundo parametro es una funcion que recibe dos numeros.",
+        "Y devuelve si el primero va antes que el segundo."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 13,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 11,
+            "y": 5,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 16
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl16",
+          "exito": "celebration_6",
+          "pistas": [
+            "hint_world26_lvl16_1",
+            "hint_world26_lvl16_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 31
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "function ordenar(lista, vaAntes) {\n  for (let vuelta = 0; vuelta < lista.length; vuelta++) {\n    for (let i = 0; i < lista.length - 1; i++) {\n      if (vaAntes(lista[i + 1], lista[i])) {\n        const auxiliar = lista[i];\n        lista[i] = lista[i + 1];\n        lista[i + 1] = auxiliar;\n      }\n    }\n  }\n}\n\nconst ruta = [3, 1, 4, 2];\nordenar(ruta, function (a, b) {\n  return a < b;\n});\nfor (const paso of ruta) {\n  for (let p = 0; p < paso; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 17,
+      "slug": "m26-a17-ordenar-objetos",
+      "nombre": "Ordenar objetos",
+      "tipo": "recorrido",
+      "dificultad": 5,
+      "instruccionTexto": "La ruta viene en objetos con nombre y largo, y hay que ordenarlos por el largo. El algoritmo es el mismo: lo unico que cambia es lo que se compara.",
+      "exitoTexto": "Ordenar objetos por una de sus claves. El algoritmo no sabe que son objetos: solo sabe comparar lo que le digas.",
+      "pistas": [
+        "La comparacion mira la clave largo de los dos.",
+        "El intercambio cambia los objetos enteros."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 9,
+          "rows": 6,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 4,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 17
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl17",
+          "exito": "celebration_7",
+          "pistas": [
+            "hint_world26_lvl17_1",
+            "hint_world26_lvl17_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 32
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const ruta = [\n  { nombre: \"duna\", largo: 3 },\n  { nombre: \"oasis\", largo: 1 },\n  { nombre: \"roca\", largo: 2 },\n];\nfor (let vuelta = 0; vuelta < ruta.length; vuelta++) {\n  for (let i = 0; i < ruta.length - 1; i++) {\n    if (ruta[i].largo > ruta[i + 1].largo) {\n      const auxiliar = ruta[i];\n      ruta[i] = ruta[i + 1];\n      ruta[i + 1] = auxiliar;\n    }\n  }\n}\nfor (const nodo of ruta) {\n  for (let p = 0; p < nodo.largo; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n}",
+        "python": "ruta = [\n    { \"nombre\": \"duna\", \"largo\": 3 },\n    { \"nombre\": \"oasis\", \"largo\": 1 },\n    { \"nombre\": \"roca\", \"largo\": 2 },\n]\nfor vuelta in range(len(ruta)):\n    for i in range(len(ruta) - 1):\n        if ruta[i][\"largo\"] > ruta[i + 1][\"largo\"]:\n            auxiliar = ruta[i]\n            ruta[i] = ruta[i + 1]\n            ruta[i + 1] = auxiliar\nfor nodo in ruta:\n    for p in range(nodo[\"largo\"]):\n        fuzz.avanzar()\n    fuzz.girarDerecha()\n    fuzz.avanzar()\n    fuzz.girarIzquierda()"
+      }
+    },
+    {
+      "numeroEnMundo": 18,
+      "slug": "m26-a18-buscar-en-la-lista-ordenada",
+      "nombre": "Buscar en la lista ordenada",
+      "tipo": "recorrido",
+      "dificultad": 5,
+      "instruccionTexto": "En una lista ordenada se puede buscar mucho mas rapido: se mira el del medio, y si el que buscas es menor, la mitad de arriba ya no hace falta mirarla. Eso es la busqueda binaria. El pasillo mide la posicion donde esta el seis.",
+      "exitoTexto": "La busqueda binaria parte el problema por la mitad cada vez. En una lista de mil, la lineal mira mil y esta mira diez.",
+      "pistas": [
+        "Dos variables, una para el principio y otra para el final del trozo que queda.",
+        "El del medio es la suma de las dos partido por dos, redondeado hacia abajo."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 7,
+          "rows": 3,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 1,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 15
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl18",
+          "exito": "celebration_8",
+          "pistas": [
+            "hint_world26_lvl18_1",
+            "hint_world26_lvl18_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 33
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const datos = [1, 2, 4, 5, 6, 8, 9];\nlet inicio = 0;\nlet fin = datos.length - 1;\nlet donde = 0;\nwhile (inicio <= fin) {\n  const medio = Math.floor((inicio + fin) / 2);\n  if (datos[medio] === 6) {\n    donde = medio;\n    break;\n  }\n  if (datos[medio] < 6) {\n    inicio = medio + 1;\n  } else {\n    fin = medio - 1;\n  }\n}\nfor (let p = 0; p < donde; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 19,
+      "slug": "m26-a19-el-mapa-que-estaba-desordenado",
+      "nombre": "El mapa que estaba desordenado",
+      "tipo": "recorrido",
+      "dificultad": 5,
+      "instruccionTexto": "Duna guarda el mapa del desierto y dice que la noche de la tormenta se le desordeno solo: que las marcas cambiaron de sitio. Ordenalo y ve a verla.",
+      "exitoTexto": "El mapa ordenado tiene una marca que sobra al final, la mas grande de todas, y Duna dice que esa marca no es una duna. Es un crater. Y esta en el sitio donde no habia nada.",
+      "pistas": [
+        "La funcion de ordenar y el recorrido.",
+        "Siete numeros desordenados."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 15,
+          "rows": 10,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 13,
+            "y": 8,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 15
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl19",
+          "exito": "celebration_9",
+          "pistas": [
+            "hint_world26_lvl19_1",
+            "hint_world26_lvl19_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 34
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "function ordenar(lista) {\n  for (let vuelta = 0; vuelta < lista.length; vuelta++) {\n    for (let i = 0; i < lista.length - 1; i++) {\n      if (lista[i] > lista[i + 1]) {\n        const auxiliar = lista[i];\n        lista[i] = lista[i + 1];\n        lista[i + 1] = auxiliar;\n      }\n    }\n  }\n}\n\nconst ruta = [2, 1, 3, 1, 2, 1, 2];\nordenar(ruta);\nfor (const paso of ruta) {\n  for (let p = 0; p < paso; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n}",
+        "python": "def ordenar(lista):\n    for vuelta in range(len(lista)):\n        for i in range(len(lista) - 1):\n            if lista[i] > lista[i + 1]:\n                auxiliar = lista[i]\n                lista[i] = lista[i + 1]\n                lista[i + 1] = auxiliar\n\nruta = [2, 1, 3, 1, 2, 1, 2]\nordenar(ruta)\nfor paso in ruta:\n    for p in range(paso):\n        fuzz.avanzar()\n    fuzz.girarDerecha()\n    fuzz.avanzar()\n    fuzz.girarIzquierda()"
+      }
+    },
+    {
+      "numeroEnMundo": 20,
+      "slug": "m26-a20-donde-esta-duna",
+      "nombre": "Donde esta Duna",
+      "tipo": "integrador",
+      "dificultad": 5,
+      "instruccionTexto": "Ultimo del desierto. Duna esta en el borde del crater con el mapa ordenado en las manos, midiendolo. Ve a por ella. Ordena, busca el mayor, y recorre.",
+      "exitoTexto": "Duna esta en casa, y ha traido el mapa con el crater dibujado. Dice que el crater tiene la forma de algo que salio, no de algo que entro. La tierra esta levantada hacia arriba en los bordes.",
+      "pistas": [
+        "Primero ordena la lista, y luego recorrela.",
+        "Ocho numeros: comprueba con cuatro antes de poner los ocho."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript",
+          "python"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 15,
+          "rows": 11,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 13,
+            "y": 9,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 15
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world26_lvl20",
+          "exito": "celebration_10",
+          "pistas": [
+            "hint_world26_lvl20_1",
+            "hint_world26_lvl20_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 150
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "function ordenar(lista) {\n  for (let vuelta = 0; vuelta < lista.length; vuelta++) {\n    for (let i = 0; i < lista.length - 1; i++) {\n      if (lista[i] > lista[i + 1]) {\n        const auxiliar = lista[i];\n        lista[i] = lista[i + 1];\n        lista[i + 1] = auxiliar;\n      }\n    }\n  }\n}\n\nconst ruta = [2, 1, 2, 1, 2, 1, 2, 1];\nordenar(ruta);\nfor (const paso of ruta) {\n  for (let p = 0; p < paso; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n}",
+        "python": "def ordenar(lista):\n    for vuelta in range(len(lista)):\n        for i in range(len(lista) - 1):\n            if lista[i] > lista[i + 1]:\n                auxiliar = lista[i]\n                lista[i] = lista[i + 1]\n                lista[i + 1] = auxiliar\n\nruta = [2, 1, 2, 1, 2, 1, 2, 1]\nordenar(ruta)\nfor paso in ruta:\n    for p in range(paso):\n        fuzz.avanzar()\n    fuzz.girarDerecha()\n    fuzz.avanzar()\n    fuzz.girarIzquierda()"
+      }
+    }
+  ]
+}

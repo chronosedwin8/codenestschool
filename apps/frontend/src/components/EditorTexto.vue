@@ -18,6 +18,7 @@ import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 
+import { lineasDeCodigo } from '@codenest/shared';
 import type { LenguajeCodigo } from '@codenest/shared';
 
 const props = withDefaults(
@@ -236,10 +237,10 @@ onMounted(() => {
     const codigo = instancia.getValue();
     emit('cambio', {
       codigo,
-      lineas: codigo
-        .split('\n')
-        .map((l) => l.trim())
-        .filter((l) => l.length > 0 && !l.startsWith('//') && !l.startsWith('#')).length,
+      // La cuenta vive en el paquete compartido: el generador de contenido fija con
+      // ella el limite de la tercera estrella, y cuando no coincidian ningun
+      // programa de JavaScript cabia en el limite de su propia actividad.
+      lineas: lineasDeCodigo(codigo),
     });
   });
 });

@@ -299,7 +299,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 10,
+            "maxFichas": 9,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -547,7 +547,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 15,
+            "maxFichas": 13,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -736,7 +736,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 15,
+            "maxFichas": 13,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -1041,7 +1041,7 @@
               "salida",
               "todas"
             ],
-            "maxFichas": 10,
+            "maxFichas": 9,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -1292,7 +1292,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 15,
+            "maxFichas": 14,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -1586,7 +1586,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 18,
+            "maxFichas": 17,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -1928,7 +1928,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 27,
+            "maxFichas": 26,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -2239,7 +2239,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 28,
+            "maxFichas": 27,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -2510,7 +2510,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 34,
+            "maxFichas": 33,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -2800,7 +2800,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 17,
+            "maxFichas": 13,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -3094,7 +3094,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 17,
+            "maxFichas": 12,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -3548,7 +3548,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 17,
+            "maxFichas": 14,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -3922,7 +3922,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 27,
+            "maxFichas": 26,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -4212,7 +4212,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 17,
+            "maxFichas": 16,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -4734,7 +4734,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 26,
+            "maxFichas": 25,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -4906,7 +4906,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 22,
+            "maxFichas": 21,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -5312,7 +5312,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 20,
+            "maxFichas": 19,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -5631,7 +5631,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 34,
+            "maxFichas": 33,
             "requiereEstructuras": [
               "funcion"
             ]
@@ -5921,7 +5921,7 @@
             "objetivos": [
               "salida"
             ],
-            "maxFichas": 35,
+            "maxFichas": 34,
             "requiereEstructuras": [
               "funcion"
             ]
