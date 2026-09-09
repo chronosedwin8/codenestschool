@@ -171,6 +171,10 @@ export const activityConfigSchema = z.object({
   bloquesDisponibles: z.array(z.string()),
   codigoInicial: z.record(lenguajeSchema, z.string()).optional(),
   programaPrefijado: z.array(pasoProgramaSchema).optional(),
+  // El area de Blockly se guarda tal cual: la valida Blockly al cargarla, y
+  // describir aqui su formato seria copiar una especificacion ajena que cambia
+  // con cada version del editor.
+  bloquesIniciales: z.record(z.string(), z.unknown()).optional(),
   objetivos: z.array(objetivoSchema).min(1),
   criteriosEstrella: criteriosEstrellaSchema,
   audio: audioActividadSchema,

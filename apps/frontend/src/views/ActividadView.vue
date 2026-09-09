@@ -101,6 +101,11 @@ const codigoInicial = computed(
   () => actividad.value?.config.codigoInicial?.[lenguaje.value] ?? '',
 );
 
+/** Piezas con las que arranca la actividad: el mundo 19 entrega un programa roto. */
+const bloquesIniciales = computed(
+  () => (actividad.value?.config.bloquesIniciales as Record<string, unknown> | undefined) ?? null,
+);
+
 /** Huecos de la barra: alguno más de los que exige la solución óptima. */
 const capacidad = computed(() => {
   const maximo = actividad.value?.config.criteriosEstrella['3'].maxFichas ?? 6;
@@ -330,6 +335,7 @@ onBeforeUnmount(() => {
       :disponibles="disponibles"
       :capacidad="capacidad"
       :codigo-inicial="codigoInicial"
+      :bloques-iniciales="bloquesIniciales"
       :ejecutando="ejecutor.ejecutando.value"
       :paso-actual="ejecutor.pasoActual.value"
       :error-linea="errorSintaxis?.linea ?? ejecutor.ultimoError.value?.linea ?? null"

@@ -38,6 +38,8 @@ const props = withDefaults(
     disponibles: readonly string[];
     capacidad?: number;
     codigoInicial?: string;
+    /** Area de Blockly con la que arranca la actividad (mundo 19). */
+    bloquesIniciales?: Record<string, unknown> | null;
     ejecutando?: boolean;
     pasoActual?: number | null;
     errorLinea?: number | null;
@@ -46,6 +48,7 @@ const props = withDefaults(
   {
     capacidad: 8,
     codigoInicial: '',
+    bloquesIniciales: null,
     ejecutando: false,
     pasoActual: null,
     errorLinea: null,
@@ -150,7 +153,11 @@ defineExpose({ limpiar });
 
     <!-- Creadores: bloques y el código que generan -->
     <template v-else-if="editor === 'bloques'">
-      <EditorBloques :disponibles="disponibles" @cambio="alCambiarBloques" />
+      <EditorBloques
+        :disponibles="disponibles"
+        :estado-inicial="bloquesIniciales"
+        @cambio="alCambiarBloques"
+      />
 
       <aside class="codigo">
         <h3 class="codigo__titulo">Tu programa en codigo</h3>

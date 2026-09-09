@@ -35,6 +35,7 @@ import {
   type TipoActividad,
 } from '@codenest/shared';
 
+import { areaDeBloques } from './bloques-blockly.js';
 import { slug, type TextosActividad } from './generadores.js';
 
 const VACIO: Tile = { t: 'vacio' };
@@ -642,7 +643,14 @@ export function actividadCreador(
       comandosPermitidos: comandos,
       bloquesDisponibles: [...opciones.bloques],
       ...(opciones.programaPrefijado
-        ? { codigoInicial: { javascript: codigoDeBloques(opciones.programaPrefijado) } }
+        ? {
+            // Las piezas van montadas en el area de trabajo, no como codigo: la
+            // actividad pide arreglar una pieza, no reescribir el programa.
+            bloquesIniciales: areaDeBloques(opciones.programaPrefijado) as unknown as Record<
+              string,
+              unknown
+            >,
+          }
         : {}),
       objetivos,
       criteriosEstrella: {

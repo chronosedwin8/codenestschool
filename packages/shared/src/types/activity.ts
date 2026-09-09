@@ -75,6 +75,17 @@ export interface ActivityConfigV3 {
   readonly bloquesDisponibles: readonly string[];
   readonly codigoInicial?: Readonly<Partial<Record<LenguajeCodigo, string>>>;
   readonly programaPrefijado?: readonly PasoPrograma[];
+  /**
+   * Area de trabajo de Blockly con la que empieza la actividad.
+   *
+   * Es el equivalente de `programaPrefijado` para los mundos de bloques. Hace
+   * falta para el mundo 19, que entrega un programa con un fallo y pide
+   * arreglarlo: sin esto, "arregla la pieza que esta mal" no se puede plantear,
+   * porque el nino abriria un area vacia.
+   *
+   * Se guarda tal cual lo produce y lo consume Blockly, sin interpretarlo.
+   */
+  readonly bloquesIniciales?: Readonly<Record<string, unknown>>;
   readonly objetivos: readonly Objetivo[];
   readonly criteriosEstrella: CriteriosEstrella;
   readonly audio: AudioActividad;
