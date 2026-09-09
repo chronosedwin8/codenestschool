@@ -167,6 +167,7 @@ self.onmessage = (evento: MessageEvent<WorkerRequest>): void => {
     girarIzquierda: comando(() => simulador.girarIzquierda()),
     saltar: comando(() => simulador.saltar()),
     recoger: comando(() => simulador.recoger()),
+    repararPuente: comando(() => simulador.repararPuente()),
     puedeAvanzar: comando(() => simulador.puedeAvanzar()),
     colorCasilla: comando(() => simulador.colorCasilla()),
     hayObstaculo: comando(() => simulador.hayObstaculo()),

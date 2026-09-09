@@ -54,7 +54,7 @@ export const colorCasillaSchema = z.enum([
 ]);
 
 export const tileSchema = z.object({
-  t: z.enum(['camino', 'vacio', 'pared', 'agujero', 'charco', 'hielo', 'viento', 'meta']),
+  t: z.enum(['camino', 'vacio', 'pared', 'agujero', 'charco', 'hielo', 'viento', 'puente', 'meta']),
   color: colorCasillaSchema.optional(),
   dir: direccionSchema.optional(),
 });

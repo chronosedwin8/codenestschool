@@ -34,6 +34,12 @@ export type TipoTile =
   | 'charco'
   | 'hielo'
   | 'viento'
+  /**
+   * Puente roto (mundo 13). No se puede pisar hasta repararlo, y repararlo son
+   * varios pasos siempre iguales: por eso es el sitio natural para aprender a
+   * hacerse una funcion propia.
+   */
+  | 'puente'
   | 'meta';
 
 export interface Tile {

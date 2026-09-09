@@ -88,6 +88,8 @@ export class IsoScene extends Phaser.Scene {
   private cuerpoFuzz!: Phaser.GameObjects.Arc;
 
   private itemsVivos = new Map<string, Phaser.GameObjects.Container>();
+  /** Grafico de cada puente roto, para poder repararlo en pantalla. */
+  private graficosPuente = new Map<string, Phaser.GameObjects.Graphics>();
   private origen = { x: 0, y: 0 };
 
   constructor() {
@@ -189,6 +191,35 @@ export class IsoScene extends Phaser.Scene {
     grafico.fillPath();
     grafico.strokePath();
 
+    // Un puente roto: tablones sueltos sobre el hueco. Tiene que leerse como
+    // "aqui falta algo y se puede arreglar", distinto del agujero, que es "no
+    // pases". De ahi los tablones en vez de la mancha oscura.
+    if (tile.t === 'puente') {
+      grafico.fillStyle(0x1e293b, 0.6);
+      grafico.beginPath();
+      grafico.moveTo(px, py - MEDIO_ALTO + 4);
+      grafico.lineTo(px + MEDIO_ANCHO - 6, py);
+      grafico.lineTo(px, py + MEDIO_ALTO - 4);
+      grafico.lineTo(px - MEDIO_ANCHO + 6, py);
+      grafico.closePath();
+      grafico.fillPath();
+
+      grafico.fillStyle(0xb07a43, 1);
+      grafico.lineStyle(2, 0x6d4823, 1);
+      for (const desplazamiento of [-10, 6]) {
+        grafico.beginPath();
+        grafico.moveTo(px - MEDIO_ANCHO + 8, py + desplazamiento);
+        grafico.lineTo(px, py + desplazamiento - MEDIO_ALTO + 6);
+        grafico.lineTo(px + MEDIO_ANCHO - 8, py + desplazamiento);
+        grafico.lineTo(px, py + desplazamiento + MEDIO_ALTO - 6);
+        grafico.closePath();
+        grafico.fillPath();
+        grafico.strokePath();
+      }
+
+      this.graficosPuente.set(`${x},${y}`, grafico);
+    }
+
     // Un agujero se dibuja como un hueco oscuro, sin cara superior.
     if (tile.t === 'agujero') {
       grafico.fillStyle(0x1e293b, 0.75);
@@ -203,6 +234,47 @@ export class IsoScene extends Phaser.Scene {
 
     grafico.setDepth(this.profundidad(x, y));
     this.capaSuelo.add(grafico);
+  }
+
+  /**
+   * Repara un puente en pantalla: los tablones se juntan y queda camino firme.
+   *
+   * Se redibuja la cara superior encima del grafico roto en lugar de rehacer la
+   * casilla, porque el orden de dibujado del suelo ya esta resuelto y volver a
+   * insertarla lo desordenaria.
+   */
+  async repararPuenteEn(x: number, y: number): Promise<void> {
+    const roto = this.graficosPuente.get(`${x},${y}`);
+    if (!roto) return;
+
+    const { px, py } = this.aPantalla(x, y);
+    const arreglado = this.add.graphics();
+    arreglado.fillStyle(0xb07a43, 1);
+    arreglado.lineStyle(2, 0x6d4823, 1);
+    arreglado.beginPath();
+    arreglado.moveTo(px, py - MEDIO_ALTO);
+    arreglado.lineTo(px + MEDIO_ANCHO, py);
+    arreglado.lineTo(px, py + MEDIO_ALTO);
+    arreglado.lineTo(px - MEDIO_ANCHO, py);
+    arreglado.closePath();
+    arreglado.fillPath();
+    arreglado.strokePath();
+    arreglado.setDepth(this.profundidad(x, y) + 1);
+    arreglado.setAlpha(0);
+    this.capaSuelo.add(arreglado);
+
+    await new Promise<void>((resolver) => {
+      this.tweens.add({
+        targets: arreglado,
+        alpha: 1,
+        duration: 260,
+        onComplete: () => {
+          roto.destroy();
+          this.graficosPuente.delete(`${x},${y}`);
+          resolver();
+        },
+      });
+    });
   }
 
   /** Profundidad de dibujado: cuanto más al frente, mayor valor. */
@@ -502,6 +574,11 @@ export class IsoRenderer implements IRenderer {
 
       case 'recoger':
         if (accion.itemId) escena.recogerItem(accion.itemId);
+        break;
+
+      case 'repararPuente':
+        // El destino de la accion es la casilla del puente, no la del Fuzz.
+        if (destino) await escena.repararPuenteEn(destino.x, destino.y);
         break;
 
       case 'girarDerecha':

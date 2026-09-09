@@ -103,6 +103,15 @@ export class GridSimulator {
   private y: number;
   private dir: Direccion;
   private readonly recogidos: string[] = [];
+  /**
+   * Puentes ya reparados, como "x,y".
+   *
+   * El tablero llega de solo lectura y no se toca: reparar un puente no cambia
+   * la casilla, anade una excepcion. Asi el mismo tablero sirve para varios
+   * intentos y el servidor puede reproducir las acciones desde cero sin
+   * arrastrar el estado del intento anterior.
+   */
+  private readonly reparados = new Set<string>();
   private readonly acciones: Accion[] = [];
   private instrucciones = 0;
   private vivo = true;
@@ -135,7 +144,9 @@ export class GridSimulator {
   /** Indica si el Fuzz puede pisar esa casilla. */
   esTransitable(x: number, y: number): boolean {
     const tile = this.tileEn(x, y);
-    return tile !== undefined && TRANSITABLES.has(tile.t);
+    if (tile === undefined) return false;
+    if (tile.t === 'puente') return this.reparados.has(`${x},${y}`);
+    return TRANSITABLES.has(tile.t);
   }
 
   /** Color de la casilla actual, para los condicionales del Mundo 2. */
@@ -313,6 +324,45 @@ export class GridSimulator {
     return accion;
   }
 
+  /**
+   * Repara el puente que hay justo delante (mundo 13).
+   *
+   * Es un solo comando, pero la actividad lo rodea de pasos: acercarse, girar,
+   * repararlo y seguir. Ese grupo de pasos se repite en cada puente del tablero
+   * y es lo que empuja a hacerse una funcion propia.
+   */
+  repararPuente(): Accion {
+    this.contar();
+    this.exigirPermitido('repararPuente');
+
+    const { dx, dy } = DELTA[this.dir];
+    const destino = { x: this.x + dx, y: this.y + dy };
+    const tile = this.tileEn(destino.x, destino.y);
+
+    if (tile?.t !== 'puente') {
+      throw new ErrorJuego(
+        'Aqui delante no hay ningun puente roto. Acercate a uno primero.',
+        'comando_no_permitido',
+      );
+    }
+
+    const clave = `${destino.x},${destino.y}`;
+    if (this.reparados.has(clave)) {
+      throw new ErrorJuego('Ese puente ya esta arreglado. Sigue adelante.', 'comando_no_permitido');
+    }
+    this.reparados.add(clave);
+
+    const accion: Accion = {
+      cmd: 'repararPuente',
+      desde: { x: this.x, y: this.y },
+      hasta: destino,
+      dir: this.dir,
+      exito: true,
+    };
+    this.acciones.push(accion);
+    return accion;
+  }
+
   /** Recoge de forma explicita el item de la casilla actual. */
   recoger(): Accion {
     this.contar();
@@ -387,6 +437,9 @@ export function reproducirAcciones(
           break;
         case 'recoger':
           sim.recoger();
+          break;
+        case 'repararPuente':
+          sim.repararPuente();
           break;
         default:
           // Una accion desconocida invalida toda la reproduccion.

@@ -378,6 +378,7 @@ function ejecutarJavaScript(
     girarIzquierda: () => sim.girarIzquierda(),
     saltar: () => sim.saltar(),
     recoger: () => sim.recoger(),
+    repararPuente: () => sim.repararPuente(),
     puedeAvanzar: () => sim.puedeAvanzar(),
     colorCasilla: () => sim.colorCasilla(),
     hayObstaculo: () => sim.hayObstaculo(),

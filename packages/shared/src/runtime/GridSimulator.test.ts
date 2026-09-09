@@ -26,6 +26,8 @@ function rejilla(filas: readonly string[]): Grid {
           return { t: 'agujero' as const };
         case 'R':
           return { t: 'camino' as const, color: 'rojo' as const };
+        case 'P':
+          return { t: 'puente' as const };
         default:
           return { t: 'vacio' as const };
       }
@@ -259,5 +261,105 @@ describe('condicionales de color (mundo 2)', () => {
     sim.mover('derecha');
 
     expect(sim.colorCasilla()).toBe('rojo');
+  });
+});
+
+describe('puentes rotos (mundo 13)', () => {
+  /** Pasillo con dos puentes rotos que hay que reparar para pasar. */
+  const CIUDAD = rejilla([
+    '       ',
+    '.P..P.M',
+    '       ',
+  ]);
+
+  const COMANDOS = ['avanzar', 'girarDerecha', 'girarIzquierda', 'repararPuente'];
+
+  it('un puente roto no se puede pisar', () => {
+    const sim = crear({ grid: CIUDAD, modo: 'paso', comandos: COMANDOS });
+
+    expect(sim.puedeAvanzar()).toBe(false);
+    expect(() => sim.avanzar()).toThrow(ErrorJuego);
+  });
+
+  it('repararlo abre el paso', () => {
+    const sim = crear({ grid: CIUDAD, modo: 'paso', comandos: COMANDOS });
+
+    sim.repararPuente();
+
+    expect(sim.puedeAvanzar()).toBe(true);
+    sim.avanzar();
+    expect(sim.estado.x).toBe(1);
+  });
+
+  it('no se puede reparar donde no hay puente', () => {
+    const sim = crear({ grid: CIUDAD, modo: 'paso', comandos: COMANDOS });
+    sim.repararPuente();
+    sim.avanzar();
+
+    // Delante hay camino normal, no un puente.
+    expect(() => sim.repararPuente()).toThrow(ErrorJuego);
+  });
+
+  it('no se repara dos veces el mismo puente', () => {
+    const sim = crear({ grid: CIUDAD, modo: 'paso', comandos: COMANDOS });
+    sim.repararPuente();
+
+    expect(() => sim.repararPuente()).toThrow(ErrorJuego);
+  });
+
+  it('cada intento empieza con los puentes rotos otra vez', () => {
+    // El tablero llega de solo lectura, asi que reparar no puede dejar rastro
+    // entre intentos: si lo dejara, el segundo intento seria mas facil que el
+    // primero y el servidor daria estrellas por un programa incompleto.
+    const primero = crear({ grid: CIUDAD, modo: 'paso', comandos: COMANDOS });
+    primero.repararPuente();
+    primero.avanzar();
+
+    const segundo = crear({ grid: CIUDAD, modo: 'paso', comandos: COMANDOS });
+    expect(segundo.puedeAvanzar()).toBe(false);
+  });
+
+  it('el servidor reproduce la reparacion igual que el cliente', () => {
+    const opciones = {
+      grid: CIUDAD,
+      spawn: SPAWN,
+      items: [],
+      modo: 'paso' as const,
+      comandosPermitidos: COMANDOS,
+      topeEjecucion: 1000,
+    };
+
+    const sim = new GridSimulator(opciones);
+    sim.repararPuente();
+    sim.avanzar();
+    sim.avanzar();
+    sim.avanzar();
+    sim.repararPuente();
+    sim.avanzar();
+    sim.avanzar();
+    sim.avanzar();
+
+    const repetido = reproducirAcciones(opciones, sim.accionesEjecutadas);
+
+    expect(repetido.valida).toBe(true);
+    expect(repetido.estado.x).toBe(6);
+  });
+
+  it('una reparacion inventada no se reproduce', () => {
+    const opciones = {
+      grid: CIUDAD,
+      spawn: SPAWN,
+      items: [],
+      modo: 'paso' as const,
+      comandosPermitidos: COMANDOS,
+      topeEjecucion: 1000,
+    };
+
+    // El cliente dice haber avanzado sobre el puente sin arreglarlo.
+    const acciones: Accion[] = [
+      { cmd: 'avanzar', desde: { x: 0, y: 1 }, hasta: { x: 1, y: 1 }, dir: 'derecha' },
+    ];
+
+    expect(reproducirAcciones(opciones, acciones).valida).toBe(false);
   });
 });
