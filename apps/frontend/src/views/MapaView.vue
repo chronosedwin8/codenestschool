@@ -13,10 +13,13 @@ import { computed, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 
 import { GRUPO_EDAD_LABEL, type GrupoEdad } from '@codenest/shared';
+import { APERTURA, FUZZ_POR_MUNDO, HISTORIA_POR_MUNDO } from '@codenest/content';
 
 import BotonEscuchar from '@/components/BotonEscuchar.vue';
 import BotonJuguete from '@/components/BotonJuguete.vue';
+import Cinematica from '@/components/Cinematica.vue';
 import FuzzAvatar from '@/components/FuzzAvatar.vue';
+import { CLAVE_APERTURA, claveEntrada, yaSeVio } from '@/composables/cinematicas';
 import { api } from '@/api/cliente';
 import { useAudioStore } from '@/stores/audio';
 
@@ -54,6 +57,27 @@ const mundoAbierto = ref<number | null>(null);
 const actividades = ref<Actividad[]>([]);
 const cargandoActividades = ref(false);
 
+/**
+ * Cinematica en curso.
+ *
+ * La historia es lo que da sentido al mapa: cada mundo tiene un Fuzz perdido, y
+ * el Nido se llena a medida que se rescatan. Sin ella, el mapa es una lista de
+ * niveles; con ella, es un viaje.
+ */
+const cinematica = ref<{
+  beats: readonly typeof APERTURA.beats[number][];
+  clave: string;
+  colorFuzz: string;
+} | null>(null);
+
+/** Cuantos Fuzzes se han rescatado ya: es lo que se ve en el Nido. */
+const fuzzesRescatados = computed(
+  () =>
+    mundos.value.filter(
+      (m) => m.totalActividades > 0 && m.actividadesCompletadas === m.totalActividades,
+    ).length,
+);
+
 /** Mundos agrupados por edad, en el orden del catálogo. */
 const porGrupo = computed(() => {
   const grupos = new Map<GrupoEdad, Mundo[]>();
@@ -74,6 +98,17 @@ async function cargar(): Promise<void> {
   try {
     const datos = await api.get<{ mundos: Mundo[] }>('/curriculo/mundos');
     mundos.value = datos.mundos;
+
+    // La apertura solo la primera vez: explica por que el Nido esta vacio.
+    if (!yaSeVio(CLAVE_APERTURA)) {
+      cinematica.value = {
+        beats: APERTURA.beats,
+        clave: CLAVE_APERTURA,
+        colorFuzz: '#29A9E0',
+      };
+      return;
+    }
+
     void audio.narrar('ui_elige-mundo', 'Toca un mundo para empezar tu aventura.');
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'No se pudo cargar el mapa';
@@ -98,6 +133,18 @@ async function abrirMundo(mundo: Mundo): Promise<void> {
     return;
   }
 
+  // La cinematica de entrada presenta al Fuzz perdido de ese mundo y su
+  // mecanica, sin decir una sola instruccion tecnica.
+  const historia = HISTORIA_POR_MUNDO.get(mundo.numero);
+  const fuzz = FUZZ_POR_MUNDO.get(mundo.numero);
+  if (historia && fuzz && !yaSeVio(claveEntrada(mundo.numero))) {
+    cinematica.value = {
+      beats: historia.entrada,
+      clave: claveEntrada(mundo.numero),
+      colorFuzz: fuzz.color,
+    };
+  }
+
   mundoAbierto.value = mundo.numero;
   cargandoActividades.value = true;
   actividades.value = [];
@@ -112,11 +159,26 @@ async function abrirMundo(mundo: Mundo): Promise<void> {
   }
 }
 
+function alTerminarCinematica(): void {
+  cinematica.value = null;
+}
+
 onMounted(cargar);
 </script>
 
 <template>
   <main class="mapa">
+    <!-- La historia va por encima del mapa y se ve una sola vez. -->
+    <Cinematica
+      v-if="cinematica"
+      :key="cinematica.clave"
+      :beats="cinematica.beats"
+      :color-fuzz="cinematica.colorFuzz"
+      :rescatados="fuzzesRescatados"
+      :recordar-como="cinematica.clave"
+      @terminada="alTerminarCinematica"
+    />
+
     <header class="mapa__cabecera">
       <FuzzAvatar :tamano="80" expresion="feliz" :mirar="false" />
       <div>

@@ -9,7 +9,14 @@
  */
 import { ref } from 'vue';
 
+import { APERTURA, FUZZES, HISTORIA_MUNDO_1 } from '@codenest/content';
+
 import BarraPrograma from '@/components/BarraPrograma.vue';
+import Cinematica from '@/components/Cinematica.vue';
+import EscenaHistoria from '@/components/EscenaHistoria.vue';
+import FondoEscena from '@/components/FondoEscena.vue';
+import PiezaJuego from '@/components/PiezaJuego.vue';
+import { olvidarCinematicas } from '@/composables/cinematicas';
 import BotonEscuchar from '@/components/BotonEscuchar.vue';
 import BotonJuguete from '@/components/BotonJuguete.vue';
 import FichaComando, { type ClaseFicha } from '@/components/FichaComando.vue';
@@ -28,6 +35,22 @@ const sombrero = ref<string | null>(null);
 const ejecutando = ref<number | null>(null);
 
 const DISPONIBLES: ClaseFicha[] = ['derecha', 'izquierda', 'arriba', 'abajo', 'saltar', 'repetir', 'siColor'];
+
+/** Cinematica que se esta revisando ahora mismo. */
+const cinePrueba = ref<{ beats: readonly typeof APERTURA.beats[number][]; color: string } | null>(null);
+
+/** Todas las escenas ilustradas, para revisarlas de un vistazo. */
+const ESCENAS = [
+  'nido-lleno',
+  'tormenta',
+  'nido-vacio',
+  'mapa-mundos',
+  'caida-fuzz',
+  'pip-presentacion',
+  'flechas',
+  'fuzz-rescatado',
+  'nido-suma',
+];
 const COLORES = ['#1FA2FF', '#5AD35A', '#FF3CAC', '#FFD93D', '#FF8A3D', '#7B61FF'];
 const SOMBREROS = [null, 'sombrero_mago', 'corona', 'gorro'];
 
@@ -75,6 +98,14 @@ function probarInstruccion(): void {
 
 <template>
   <main class="muestra">
+    <Cinematica
+      v-if="cinePrueba"
+      :beats="cinePrueba.beats"
+      :color-fuzz="cinePrueba.color"
+      :rescatados="4"
+      @terminada="cinePrueba = null"
+    />
+
     <header class="muestra__cabecera">
       <h1>Sistema de diseño</h1>
       <div class="muestra__estado">
@@ -93,6 +124,71 @@ function probarInstruccion(): void {
         />
       </div>
     </header>
+
+    <!-- Historia y cinematicas -->
+    <section class="tarjeta">
+      <h2>Historia</h2>
+      <p class="nota">
+        El nombre del producto es la historia: CodeNest es El Nido. Una tormenta disperso a los
+        treinta Fuzzes por treinta mundos, y el nino los va rescatando de uno en uno. Nube, que
+        cuida el Nido, no puede ir a buscarlos y pide ayuda.
+      </p>
+      <div class="fila fila--centrada">
+        <BotonJuguete
+          etiqueta="Ver la apertura"
+          icono="🎬"
+          tono="morado"
+          tamano="lg"
+          @pulsar="cinePrueba = { beats: APERTURA.beats, color: '#29A9E0' }"
+        />
+        <BotonJuguete
+          etiqueta="Entrada al mundo 1"
+          icono="🌍"
+          tono="azul"
+          @pulsar="cinePrueba = { beats: HISTORIA_MUNDO_1.entrada, color: '#29A9E0' }"
+        />
+        <BotonJuguete
+          etiqueta="Rescate de Pip"
+          icono="⭐"
+          tono="verde"
+          @pulsar="cinePrueba = { beats: HISTORIA_MUNDO_1.rescate, color: '#29A9E0' }"
+        />
+        <BotonJuguete etiqueta="Olvidar las vistas" tono="neutro" tamano="sm" @pulsar="olvidarCinematicas()" />
+      </div>
+
+      <p class="etiqueta">Escenas ilustradas</p>
+      <div class="escenas">
+        <figure v-for="e in ESCENAS" :key="e" class="escenas__caja">
+          <div class="escenas__lienzo">
+            <FondoEscena :destellos="4" />
+            <EscenaHistoria :escena="e" color-fuzz="#29A9E0" :rescatados="5" class="escenas__svg" />
+          </div>
+          <figcaption>{{ e }}</figcaption>
+        </figure>
+      </div>
+
+      <p class="etiqueta">Los treinta Fuzzes</p>
+      <div class="fuzzes">
+        <div v-for="f in FUZZES" :key="f.mundo" class="fuzzes__uno" :title="f.caracter">
+          <FuzzAvatar :color="f.color" :tamano="52" :mirar="false" expresion="feliz" />
+          <span>{{ f.nombre }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Piezas del estilo -->
+    <section class="tarjeta">
+      <h2>Piezas del estilo</h2>
+      <p class="nota">
+        Contorno grueso en violeta oscuro, relleno plano y bisel inferior. Es lo que hace que una
+        forma parezca una pieza con grosor y no un rectangulo con sombra.
+      </p>
+      <div class="piezas">
+        <PiezaJuego v-for="t in (['azul','amarillo','verde','magenta','naranja','morado'] as const)" :key="t" :tono="t" :ancho="200" :alto="88">
+          <span class="texto-juego" style="font-size: 1.6rem">{{ t }}</span>
+        </PiezaJuego>
+      </div>
+    </section>
 
     <!-- El personaje -->
     <section class="tarjeta">
@@ -234,6 +330,52 @@ function probarInstruccion(): void {
 </template>
 
 <style scoped>
+.escenas {
+  display: grid;
+  gap: var(--espacio-3);
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+
+.escenas__caja {
+  margin: 0;
+  font-size: var(--texto-xs);
+  color: var(--gris-oscuro);
+  text-align: center;
+}
+
+.escenas__lienzo {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radio-md);
+  aspect-ratio: 428 / 300;
+}
+
+.escenas__svg {
+  position: relative;
+}
+
+.fuzzes {
+  display: grid;
+  gap: var(--espacio-2);
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+}
+
+.fuzzes__uno {
+  display: grid;
+  justify-items: center;
+  font-size: var(--texto-xs);
+  color: var(--gris-oscuro);
+}
+
+.piezas {
+  display: grid;
+  gap: var(--espacio-4);
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  padding: var(--espacio-4);
+  background: var(--escena-fondo);
+  border-radius: var(--radio-lg);
+}
+
 .muestra {
   max-width: 1000px;
   margin: 0 auto;

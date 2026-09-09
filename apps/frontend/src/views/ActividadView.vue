@@ -20,8 +20,11 @@ import {
   transpilarPython,
   type ActivityConfigV3,
 } from '@codenest/shared';
+import { FUZZ_POR_MUNDO, HISTORIA_POR_MUNDO } from '@codenest/content';
 
 import BotonEscuchar from '@/components/BotonEscuchar.vue';
+import Cinematica from '@/components/Cinematica.vue';
+import { claveRescate, yaSeVio } from '@/composables/cinematicas';
 import BotonJuguete from '@/components/BotonJuguete.vue';
 import PanelEditor, { type ProgramaListo } from '@/components/PanelEditor.vue';
 import PanelEstrellas from '@/components/PanelEstrellas.vue';
@@ -59,6 +62,19 @@ const errorCarga = ref<string | null>(null);
 const programa = ref<ProgramaListo>({ codigo: '', tamano: 0, estructuras: [], programa: null });
 const sesionId = ref<number | null>(null);
 const errorSintaxis = ref<{ linea: number; mensaje: string } | null>(null);
+
+/**
+ * Cinematica de rescate.
+ *
+ * Se dispara al completar la ULTIMA actividad del mundo, no cada vez que se gana
+ * una estrella: el rescate del Fuzz es el final del viaje por ese mundo, y si
+ * apareciera antes perderia todo su peso.
+ */
+const cinematicaRescate = ref<{
+  beats: readonly { escena: string; texto: string; audio: string; duracion: number }[];
+  clave: string;
+  colorFuzz: string;
+} | null>(null);
 const panel = ref<InstanceType<typeof PanelEditor> | null>(null);
 const estrellas = ref(0);
 const completada = ref(false);
@@ -197,7 +213,29 @@ async function jugar(): Promise<void> {
   if (resultado.estrellas > 0) {
     completada.value = true;
     await ejecutor.celebrar(resultado.estrellas, act.exitoTexto);
+    await comprobarRescate(act);
   }
+}
+
+/** Si esta era la ultima actividad del mundo, el Fuzz queda rescatado. */
+async function comprobarRescate(act: Actividad): Promise<void> {
+  const historia = HISTORIA_POR_MUNDO.get(act.mundo.numero);
+  const fuzz = FUZZ_POR_MUNDO.get(act.mundo.numero);
+  if (!historia || !fuzz) return;
+  if (yaSeVio(claveRescate(act.mundo.numero))) return;
+
+  // Se pregunta al servidor si ya estan todas: el cliente no lleva esa cuenta.
+  const datos = await api.get<{ actividades: { completada: boolean }[] }>(
+    `/curriculo/mundos/${act.mundo.numero}/actividades`,
+  );
+  const todas = datos.actividades.length > 0 && datos.actividades.every((a) => a.completada);
+  if (!todas) return;
+
+  cinematicaRescate.value = {
+    beats: historia.rescate,
+    clave: claveRescate(act.mundo.numero),
+    colorFuzz: fuzz.color,
+  };
 }
 
 function reintentar(): void {
@@ -236,6 +274,16 @@ onBeforeUnmount(() => {
 
 <template>
   <main class="actividad">
+    <!-- El rescate del Fuzz: solo al terminar el mundo entero. -->
+    <Cinematica
+      v-if="cinematicaRescate"
+      :beats="cinematicaRescate.beats"
+      :color-fuzz="cinematicaRescate.colorFuzz"
+      :rescatados="actividad ? actividad.mundo.numero : 1"
+      :recordar-como="cinematicaRescate.clave"
+      @terminada="volverAlMapa"
+    />
+
     <!-- Cabecera mínima: volver, oír otra vez, pedir pista -->
     <header class="actividad__cabecera">
       <BotonJuguete

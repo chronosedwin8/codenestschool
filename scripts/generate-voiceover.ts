@@ -56,10 +56,11 @@ import {
   CELEBRACIONES,
   FRASES_UI,
   VOZ_UI,
-  cargarMundos,
+  textosDeHistoria,
   vozPara,
   type PerfilVoz,
 } from '@codenest/content';
+import { cargarMundos } from '@codenest/content/loader';
 
 // La clave de ElevenLabs vive en el .env de la raiz.
 cargarEntorno();
@@ -206,6 +207,20 @@ async function construirTrabajos(opciones: Opciones): Promise<Trabajo[]> {
         texto: normalizar(frase.texto),
         voz: VOZ_UI,
         origen: 'packages/content/src/ui-phrases.ts',
+      });
+    }
+  }
+
+  // Narracion de las cinematicas. La cuenta Nube, con la misma voz calida que
+  // guia a los pequenos: es el mismo personaje.
+  if (quiere(TIPO_AUDIO.ui)) {
+    for (const { clave, texto } of textosDeHistoria()) {
+      trabajos.push({
+        clave,
+        tipo: TIPO_AUDIO.ui,
+        texto: normalizar(texto),
+        voz: VOZ_UI,
+        origen: 'packages/content/src/historia.ts',
       });
     }
   }

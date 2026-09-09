@@ -17,14 +17,14 @@
  */
 import { existsSync } from 'node:fs';
 
-import { DIR_MUNDOS, cargarMundos } from '@codenest/content';
+import { DIR_MUNDOS, cargarMundos } from '@codenest/content/loader';
 import {
   GridSimulator,
   calcularEstrellas,
   evaluarObjetivos,
+  interpretarFichas,
   transpilarPython,
   type ActivityDefinition,
-  type PasoPrograma,
 } from '@codenest/shared';
 
 import {
@@ -210,7 +210,12 @@ function comprobarSolucion(act: ActivityDefinition): string | null {
 
   try {
     if (act.solucionReferencia.comandos) {
-      tamano = ejecutarComandos(sim, act.solucionReferencia.comandos, estructuras);
+      // El interprete vive en el paquete compartido: la misma semantica que usa el
+      // juego, para que una actividad no pueda pasar la validacion y ser
+      // imposible de completar (o al contrario).
+      const resultado = interpretarFichas(sim, act.solucionReferencia.comandos);
+      tamano = resultado.tamano;
+      estructuras.push(...resultado.estructuras);
     } else if (act.solucionReferencia.javascript) {
       tamano = ejecutarJavaScript(sim, act.solucionReferencia.javascript, estructuras);
     } else if (act.solucionReferencia.python) {
@@ -249,61 +254,6 @@ function comprobarSolucion(act: ActivityDefinition): string | null {
   }
 
   return null;
-}
-
-/** Ejecuta una solucion escrita como fichas y devuelve su tamano. */
-function ejecutarComandos(
-  sim: GridSimulator,
-  pasos: readonly PasoPrograma[],
-  estructuras: string[],
-): number {
-  let tamano = 0;
-
-  for (const paso of pasos) {
-    tamano += 1;
-
-    switch (paso.cmd) {
-      case 'repetir': {
-        estructuras.push('repetir');
-        const veces = paso.veces ?? 1;
-        for (let i = 0; i < veces; i++) {
-          tamano += ejecutarComandos(sim, paso.hijos ?? [], estructuras);
-        }
-        // El cuerpo se cuenta una sola vez, aunque se ejecute varias.
-        tamano -= (veces - 1) * contarPasos(paso.hijos ?? []);
-        break;
-      }
-      case 'derecha':
-      case 'izquierda':
-      case 'arriba':
-      case 'abajo':
-        sim.mover(paso.cmd);
-        break;
-      case 'avanzar':
-        sim.avanzar();
-        break;
-      case 'girarDerecha':
-        sim.girarDerecha();
-        break;
-      case 'girarIzquierda':
-        sim.girarIzquierda();
-        break;
-      case 'saltar':
-        sim.saltar();
-        break;
-      case 'recoger':
-        sim.recoger();
-        break;
-      default:
-        throw new Error(`comando desconocido en la solucion: ${paso.cmd}`);
-    }
-  }
-
-  return tamano;
-}
-
-function contarPasos(pasos: readonly PasoPrograma[]): number {
-  return pasos.reduce((t, p) => t + 1 + contarPasos(p.hijos ?? []), 0);
 }
 
 /** Ejecuta una solucion escrita en JavaScript contra el simulador. */

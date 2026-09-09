@@ -25,9 +25,9 @@ import {
   FRASES_UI,
   VOCES,
   VOZ_UI,
-  cargarMundos,
   vozPara,
 } from '@codenest/content';
+import { cargarMundos } from '@codenest/content/loader';
 import {
   MUNDOS,
   PLANES,

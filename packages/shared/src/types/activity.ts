@@ -11,6 +11,7 @@ import type { GrupoEdad } from './age-group.js';
 import type { LenguajeCodigo, TipoEditor } from './editor.js';
 import type {
   ActorNivel,
+  ColorCasilla,
   CriteriosEstrella,
   Grid,
   ItemNivel,
@@ -53,6 +54,10 @@ export interface PasoPrograma {
   readonly hijos?: readonly PasoPrograma[];
   /** Rama alternativa de un condicional si / si no. */
   readonly sino?: readonly PasoPrograma[];
+  /** Color que dispara un condicional de casilla (mundo 2). */
+  readonly color?: ColorCasilla;
+  /** Nombre del grupo de fichas, para declararlo y luego llamarlo. */
+  readonly nombre?: string;
 }
 
 /** Contenido de `Activity.config` en la base de datos. */

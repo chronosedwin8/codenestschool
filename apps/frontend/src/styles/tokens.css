@@ -252,3 +252,101 @@ button {
   white-space: nowrap;
   border: 0;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Estilo de juego casual: contorno grueso y pieza con volumen.
+
+   Es el lenguaje visual de las cinemáticas y los paneles de recompensa. Se
+   apoya en tres rasgos que hacen que una forma plana parezca un juguete:
+
+     1. Un contorno oscuro y grueso, en violeta muy oscuro y nunca en negro:
+        el negro puro corta la imagen, el violeta la integra.
+     2. Un bisel inferior, que es el mismo color del relleno oscurecido y
+        desplazado hacia abajo. Es lo que da el grosor de pieza.
+     3. Relleno plano y saturado, sin degradados: el degradado ensucia la
+        silueta, y la silueta es lo que un niño reconoce de lejos.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Contorno: violeta muy oscuro, común a todas las piezas. */
+  --contorno: #2d1b5e;
+  --contorno-grosor: 7;
+
+  /* Fondo de escena y sus rayos. */
+  --escena-fondo: #7b3fd4;
+  --escena-fondo-oscuro: #5f2bb0;
+  --escena-rayo: #8b52e0;
+
+  /* Colores de pieza, cada uno con su sombra para el bisel. */
+  --pieza-azul: #29a9e0;
+  --pieza-azul-bisel: #1b7fad;
+  --pieza-amarillo: #ffc93c;
+  --pieza-amarillo-bisel: #d99e12;
+  --pieza-verde: #3fc55f;
+  --pieza-verde-bisel: #2a9642;
+  --pieza-magenta: #ff4d9d;
+  --pieza-magenta-bisel: #d02674;
+  --pieza-naranja: #ff8a3d;
+  --pieza-naranja-bisel: #d4661c;
+  --pieza-morado: #9b5de5;
+  --pieza-morado-bisel: #7239b8;
+  --pieza-blanco: #ffffff;
+  --pieza-blanco-bisel: #d5d8e8;
+}
+
+/* Texto del estilo: blanco con contorno grueso, legible sobre cualquier pieza. */
+.texto-juego {
+  font-family: var(--fuente-titulo);
+  color: white;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 6px var(--contorno);
+}
+
+/* ── Animaciones de las cinemáticas ── */
+
+@keyframes entrar-pieza {
+  0% {
+    transform: scale(0.4) translateY(30px);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.06) translateY(-4px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes girar-rayos {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes destello {
+  0%,
+  100% {
+    transform: scale(0.6) rotate(0deg);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.15) rotate(45deg);
+    opacity: 1;
+  }
+}
+
+@keyframes deslizar-entrada {
+  from {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

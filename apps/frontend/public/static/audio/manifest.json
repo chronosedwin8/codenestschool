@@ -1036,6 +1036,105 @@
       "tamanoBytes": 31390,
       "duracionMs": 3924,
       "generadoEn": "2026-09-09T15:55:58.274Z"
+    },
+    "cine_apertura_3": {
+      "clave": "cine_apertura_3",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "47ae8347715c5030340aa546b0c1405cb02ab32047e6bea6817d095c9d23d1b4",
+      "archivo": "cine_apertura_3.mp3",
+      "caracteres": 66,
+      "tamanoBytes": 34316,
+      "duracionMs": 4290,
+      "generadoEn": "2026-09-09T18:16:39.527Z"
+    },
+    "cine_apertura_1": {
+      "clave": "cine_apertura_1",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "e6fa664ed2ba97cf12adef70ba3a2082c97e735c99c7be5f611c513f1f9bfd04",
+      "archivo": "cine_apertura_1.mp3",
+      "caracteres": 104,
+      "tamanoBytes": 58140,
+      "duracionMs": 7268,
+      "generadoEn": "2026-09-09T18:16:39.741Z"
+    },
+    "cine_apertura_2": {
+      "clave": "cine_apertura_2",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "7ae65288c607dcb41ddfa4adbe83f0a24d2e4e3fb0e87b5de069756aa041363a",
+      "archivo": "cine_apertura_2.mp3",
+      "caracteres": 79,
+      "tamanoBytes": 37033,
+      "duracionMs": 4629,
+      "generadoEn": "2026-09-09T18:16:40.146Z"
+    },
+    "cine_apertura_4": {
+      "clave": "cine_apertura_4",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "44034d1d0aa179d8c14fedeaaa5026cf9061e30833ebcf405ff6ca10c2a0fbda",
+      "archivo": "cine_apertura_4.mp3",
+      "caracteres": 108,
+      "tamanoBytes": 63782,
+      "duracionMs": 7973,
+      "generadoEn": "2026-09-09T18:16:41.743Z"
+    },
+    "cine_m1_entrada_1": {
+      "clave": "cine_m1_entrada_1",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "c9d1e9bc7d6d1b8af833535931c4e8e52fe58f61e70d4bf777047f470da20624",
+      "archivo": "cine_m1_entrada_1.mp3",
+      "caracteres": 98,
+      "tamanoBytes": 59185,
+      "duracionMs": 7398,
+      "generadoEn": "2026-09-09T18:16:41.870Z"
+    },
+    "cine_m1_entrada_2": {
+      "clave": "cine_m1_entrada_2",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "770bc389a2614d1147905c94e6e482fb43f21c3fcf1b35724f6228a80da6adaf",
+      "archivo": "cine_m1_entrada_2.mp3",
+      "caracteres": 119,
+      "tamanoBytes": 61066,
+      "duracionMs": 7633,
+      "generadoEn": "2026-09-09T18:16:42.413Z"
+    },
+    "cine_m1_rescate_1": {
+      "clave": "cine_m1_rescate_1",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "a675bdb3c7fe97babed689af58864030b0468dd2112cc0594b9bbc0beec1bce5",
+      "archivo": "cine_m1_rescate_1.mp3",
+      "caracteres": 70,
+      "tamanoBytes": 37660,
+      "duracionMs": 4708,
+      "generadoEn": "2026-09-09T18:16:43.701Z"
+    },
+    "cine_m1_entrada_3": {
+      "clave": "cine_m1_entrada_3",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "737cc03d97c7af054bc2902e647bd455d1a605730492e7e108a81f180fecf68f",
+      "archivo": "cine_m1_entrada_3.mp3",
+      "caracteres": 107,
+      "tamanoBytes": 58976,
+      "duracionMs": 7372,
+      "generadoEn": "2026-09-09T18:16:43.873Z"
+    },
+    "cine_m1_rescate_2": {
+      "clave": "cine_m1_rescate_2",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "b85e6917e7e526d0e35bce6e1e294eabbea7b871d1cf6bf80135560adb193b1b",
+      "archivo": "cine_m1_rescate_2.mp3",
+      "caracteres": 135,
+      "tamanoBytes": 84053,
+      "duracionMs": 10507,
+      "generadoEn": "2026-09-09T18:16:44.965Z"
     }
   }
 }

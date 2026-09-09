@@ -146,6 +146,8 @@ export const pasoProgramaSchema: z.ZodType<PasoPrograma> = z.lazy(() =>
     veces: z.number().int().min(1).max(20).optional(),
     hijos: z.array(pasoProgramaSchema).optional(),
     sino: z.array(pasoProgramaSchema).optional(),
+    color: colorCasillaSchema.optional(),
+    nombre: z.string().max(40).optional(),
   }),
 );
 
