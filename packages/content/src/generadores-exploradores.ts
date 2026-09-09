@@ -505,65 +505,232 @@ export function caminoSaltosSeguidos(
   return { tramos, agujeros, firmes };
 }
 
-// ───────────── Pasillos con huecos irregulares (mundo 6: mirar antes) ───────
+// ───────────── Caminos de nubes con huecos irregulares (mundo 6) ───────────
 
-export interface PasilloIrregular extends CaminoConSaltos {
+/**
+ * Un tramo del castillo: una dirección, y la longitud de cada trozo de nube.
+ *
+ * Entre cada dos trozos hay exactamente un hueco. El primer trozo del segmento
+ * incluye la casilla donde el Fuzz ya está: la de salida en el primer segmento,
+ * la esquina en los demás.
+ */
+export interface SegmentoNubes {
+  readonly dir: Tramo['dir'];
+  readonly nubes: readonly number[];
+}
+
+export interface CaminoNubes extends CaminoConSaltos {
   /**
-   * Veces que hay que preguntar "hay camino?" para cruzarlo entero.
+   * Decisiones que cuesta cruzar cada segmento, contando la rodada inicial.
    *
-   * Se calcula aquí y no a mano porque es el número que va dentro del bucle, y
-   * equivocarse deja la actividad imposible sin que se note leyéndola.
+   * Es el número que va dentro del bucle, y se calcula aquí porque contarlo a
+   * mano deja la actividad imposible sin que se note leyendo el código.
    */
-  readonly decisiones: number;
+  readonly decisiones: number[];
 }
 
 /**
- * Un pasillo con huecos a distancias distintas.
+ * Un camino con los huecos a distancias distintas.
  *
  * Es la diferencia entre el mundo 3 y el mundo 6. Allí los huecos estaban cada
- * tres casillas, así que "rueda y salta" repetido funcionaba sin mirar. Aquí no
- * hay patrón: un tramo mide cuatro casillas y el siguiente una. La única forma
- * de cruzarlo con un solo programa es preguntar antes de cada paso.
+ * tres casillas, así que "rueda y salta" repetido cruzaba el tablero sin mirar.
+ * Aquí un trozo mide cuatro casillas y el siguiente una, y no hay ningún patrón
+ * que valga para los dos: la única forma de cruzarlo con un programa corto es
+ * preguntar antes de cada paso.
  *
- * `tramos` son las casillas firmes seguidas, contando el punto de partida en la
- * primera. Entre cada dos hay un hueco.
+ * Una decisión es una pregunta del bucle: o rueda hasta el borde, o salta el
+ * hueco. Rodar solo cuenta si por delante queda nube; un trozo de una sola
+ * casilla no se rueda, se salta y ya está.
  */
-export function pasilloIrregular(
-  dir: Tramo['dir'],
-  firmesPorTramo: readonly number[],
-): PasilloIrregular {
+export function caminoDeNubes(segmentos: readonly SegmentoNubes[]): CaminoNubes {
+  const tramos: Tramo[] = [];
   const agujeros: number[] = [];
   const firmes: number[] = [0];
+  const decisiones: number[] = [];
   let indice = 0;
-  let casillas = 0;
-  let decisiones = 0;
 
-  firmesPorTramo.forEach((largo, tramo) => {
-    // Una casilla del tramo ya esta puesta: la de partida en el primero, la de
-    // aterrizaje en los demas.
-    const nuevas = largo - 1;
+  for (const segmento of segmentos) {
+    let casillas = 0;
+    let cuenta = 0;
 
-    if (tramo > 0) {
-      // El hueco que separa este tramo del anterior.
-      indice += 1;
-      casillas += 1;
-      agujeros.push(indice);
-      // La casilla donde se aterriza.
-      indice += 1;
-      casillas += 1;
-      firmes.push(indice);
-      decisiones += 1; // el salto
+    segmento.nubes.forEach((largo, trozo) => {
+      if (trozo > 0) {
+        // El hueco que separa este trozo del anterior.
+        indice += 1;
+        casillas += 1;
+        agujeros.push(indice);
+        // La nube donde se aterriza.
+        indice += 1;
+        casillas += 1;
+        firmes.push(indice);
+        cuenta += 1;
+      }
+
+      for (let i = 0; i < largo - 1; i++) {
+        indice += 1;
+        casillas += 1;
+        firmes.push(indice);
+      }
+
+      if (largo > 1) cuenta += 1;
+    });
+
+    tramos.push({ dir: segmento.dir, casillas });
+    decisiones.push(cuenta);
+  }
+
+  return { tramos, agujeros, firmes, decisiones };
+}
+
+/** El bucle que pregunta: si hay nube rueda, y si no salta. */
+export function bucleQueMira(dir: Tramo['dir'], veces: number): PasoPrograma {
+  const decision = siSino([ir(dir)], [saltar()]);
+  return veces > 1 ? repetir(veces, decision) : decision;
+}
+
+/**
+ * El programa canónico de un camino de nubes: un bucle por segmento.
+ *
+ * En los segmentos que no son el primero hace falta una ficha de dirección antes
+ * del bucle, porque el Fuzz llega a la esquina mirando hacia donde venía y la
+ * ficha de saltar salta hacia donde mira. Sin girar primero, saltaría al vacío.
+ */
+export function programaDeNubes(
+  segmentos: readonly SegmentoNubes[],
+  decisiones: readonly number[],
+): PasoPrograma[] {
+  const pasos: PasoPrograma[] = [];
+
+  segmentos.forEach((segmento, i) => {
+    const cuenta = decisiones[i]!;
+    if (i === 0) {
+      pasos.push(bucleQueMira(segmento.dir, cuenta));
+      return;
     }
-
-    for (let i = 0; i < nuevas; i++) {
-      indice += 1;
-      casillas += 1;
-      firmes.push(indice);
-    }
-
-    // Rodar solo cuenta si queda camino firme por delante.
-    if (nuevas > 0) decisiones += 1;
+    // La ficha de dirección gasta la primera decisión del segmento.
+    pasos.push(ir(segmento.dir));
+    if (cuenta > 1) pasos.push(bucleQueMira(segmento.dir, cuenta - 1));
   });
 
-  return { tramos: [{ dir, casillas }], agujeros, firmes, decisiones };
+  return pasos;
+}
+
+// ─────────────── Tableros deducidos del programa (mundos 7 al 10) ──────────
+
+/**
+ * Un movimiento del Fuzz, en el nivel en que se piensa una actividad.
+ *
+ * No son fichas todavía: son lo que el Fuzz hace. De aquí salen dos cosas a la
+ * vez, el tablero y el programa, y esa es la razón de que exista este tipo.
+ *
+ * En los mundos avanzados el tablero es demasiado difícil de escribir a mano.
+ * Una actividad con cajas y bucles anidados tiene veinte huecos, y si uno cae
+ * una casilla más allá de donde el autor creía, la actividad es imposible y el
+ * validador solo dice "el Fuzz choco". Deducir el tablero del programa quita esa
+ * clase de error entera: el camino es, por construcción, el que recorre la
+ * solución.
+ */
+export type Movimiento =
+  | { readonly salta: true }
+  | { readonly rueda: Tramo['dir']; readonly casillas: number }
+  | { readonly repite: number; readonly cuerpo: readonly Movimiento[] }
+  | { readonly usa: string };
+
+/** Un salto: por encima del hueco que tiene delante, hacia donde mira. */
+export const salta = (): Movimiento => ({ salta: true });
+
+/** Una rodada: en modo rodar el Fuzz recorre el tramo entero de una vez. */
+export const rueda = (dir: Tramo['dir'], casillas = 1): Movimiento => ({
+  rueda: dir,
+  casillas,
+});
+
+/** Un bucle contado, que puede llevar otros bucles dentro. */
+export const repite = (veces: number, ...cuerpo: Movimiento[]): Movimiento => ({
+  repite: veces,
+  cuerpo,
+});
+
+/** Una llamada a una caja con nombre. */
+export const usa = (nombre = 'superSalto'): Movimiento => ({ usa: nombre });
+
+/** Cajas de una actividad: nombre y lo que hay dentro. */
+export type Cajas = Readonly<Record<string, readonly Movimiento[]>>;
+
+export interface PlanPrograma {
+  /** Hacia dónde mira el Fuzz al empezar. Importa porque el salto es relativo. */
+  readonly dirInicial?: Tramo['dir'];
+  readonly cajas?: Cajas;
+  readonly movimientos: readonly Movimiento[];
+}
+
+export interface TableroPrograma extends CaminoConSaltos {
+  /** El programa en fichas, listo para ser la solución de referencia. */
+  readonly fichas: PasoPrograma[];
+}
+
+/**
+ * Construye el tablero que recorre un programa, y el programa en fichas.
+ *
+ * Cada salto pone un hueco y la piedra donde se aterriza. Cada rodada pone
+ * camino firme. Al ir en el mismo orden que el programa, el camino resultante es
+ * exactamente el que la solución sabe recorrer.
+ */
+export function tableroDePrograma(plan: PlanPrograma): TableroPrograma {
+  const cajas = plan.cajas ?? {};
+  const segmentos: SegmentoSaltos[] = [];
+  let dir = plan.dirInicial ?? 'derecha';
+
+  const recorrer = (movimientos: readonly Movimiento[], profundidad: number): void => {
+    if (profundidad > 8) {
+      throw new Error('El programa de la actividad se anida demasiado.');
+    }
+
+    for (const movimiento of movimientos) {
+      if ('salta' in movimiento) {
+        // Dos casillas: el hueco y la piedra del otro lado.
+        segmentos.push({ dir, saltos: 1 });
+        continue;
+      }
+      if ('rueda' in movimiento) {
+        dir = movimiento.rueda;
+        segmentos.push({ dir, casillas: movimiento.casillas });
+        continue;
+      }
+      if ('repite' in movimiento) {
+        for (let i = 0; i < movimiento.repite; i++) {
+          recorrer(movimiento.cuerpo, profundidad + 1);
+        }
+        continue;
+      }
+      const cuerpo = cajas[movimiento.usa];
+      if (!cuerpo) throw new Error(`No hay ninguna caja llamada "${movimiento.usa}".`);
+      recorrer(cuerpo, profundidad + 1);
+    }
+  };
+
+  recorrer(plan.movimientos, 0);
+
+  const camino = caminoSaltosSeguidos(segmentos);
+  return { ...camino, fichas: fichasDePrograma(plan) };
+}
+
+/** Traduce un plan de movimientos a fichas, cajas incluidas. */
+export function fichasDePrograma(plan: PlanPrograma): PasoPrograma[] {
+  const enFicha = (movimiento: Movimiento): PasoPrograma => {
+    if ('salta' in movimiento) return saltar();
+    if ('rueda' in movimiento) return ir(movimiento.rueda);
+    if ('repite' in movimiento) {
+      return repetir(movimiento.repite, ...movimiento.cuerpo.map(enFicha));
+    }
+    return llamar(movimiento.usa);
+  };
+
+  const pasos: PasoPrograma[] = [];
+  // Declarar una caja no mueve al Fuzz, así que todas van al principio.
+  for (const [nombre, cuerpo] of Object.entries(plan.cajas ?? {})) {
+    pasos.push(definir(nombre, ...cuerpo.map(enFicha)));
+  }
+  for (const movimiento of plan.movimientos) pasos.push(enFicha(movimiento));
+  return pasos;
 }

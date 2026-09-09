@@ -182,6 +182,9 @@ function validarMundo(archivo: string, contenido: WorldContentFileInput): void {
     if (!soloEsquema) {
       const problema = comprobarSolucion(act);
       if (problema) error(archivo, `${etiqueta}: ${problema}`);
+
+      const roto = comprobarProgramaRoto(act);
+      if (roto) error(archivo, `${etiqueta}: ${roto}`);
     }
   }
 }
@@ -251,6 +254,57 @@ function comprobarSolucion(act: ActivityDefinition): string | null {
       (faltan.length > 0 ? ` (objetivos sin cumplir: ${faltan.join(', ')})` : '') +
       ` con ${tamano} instruccion(es) escritas y ${acciones.length} ejecutadas`
     );
+  }
+
+  return null;
+}
+
+/**
+ * En las actividades de depurar, comprueba que el programa que se le da al nino
+ * esta de verdad roto.
+ *
+ * Los mundos 9 y 19 entregan un programa con un fallo y piden arreglarlo. Si ese
+ * programa funcionara, la actividad no tendria nada que hacer: el nino le daria a
+ * jugar, le saldrian tres estrellas y no habria aprendido nada. Es un fallo
+ * silencioso, porque todo lo demas valida bien.
+ */
+function comprobarProgramaRoto(act: ActivityDefinition): string | null {
+  const cfg = act.config;
+  const prefijado = cfg.programaPrefijado;
+  if (!prefijado || prefijado.length === 0) return null;
+
+  const opciones = {
+    grid: cfg.grid,
+    spawn: cfg.spawn,
+    items: cfg.items,
+    modo: cfg.modoMovimiento,
+    comandosPermitidos: cfg.comandosPermitidos,
+    topeEjecucion: cfg.topeEjecucion,
+  };
+
+  const sim = new GridSimulator(opciones);
+  let tamano = 0;
+  const estructuras: string[] = [];
+
+  try {
+    const resultado = interpretarFichas(sim, prefijado);
+    tamano = resultado.tamano;
+    estructuras.push(...resultado.estructuras);
+  } catch {
+    // Choca o se sale del camino: es exactamente lo que se espera de el.
+    return null;
+  }
+
+  const acciones = [...sim.accionesEjecutadas];
+  const resultado = evaluarObjetivos(opciones, acciones, cfg.objetivos, cfg.items);
+  const estrellas = calcularEstrellas(cfg.criteriosEstrella, resultado.cumplidos, {
+    tamanoPrograma: tamano,
+    instruccionesEjecutadas: acciones.length,
+    estructurasUsadas: estructuras,
+  });
+
+  if (estrellas >= 3) {
+    return 'el programa prefijado ya consigue las 3 estrellas, asi que no hay nada que arreglar';
   }
 
   return null;
