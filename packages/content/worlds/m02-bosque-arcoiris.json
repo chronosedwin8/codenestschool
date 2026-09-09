@@ -1,0 +1,5379 @@
+{
+  "mundo": 2,
+  "slug": "bosque-arcoiris",
+  "nombre": "El Bosque Arcoiris",
+  "introTexto": "El Bosque Arcoiris lo pinto Iris ella sola, y le llevo cuatrocientos anos. Aqui cada color manda una cosa: en las casillas rojas se gira y en las verdes se sigue. Aprende a leer los colores y el bosque entero se abre.",
+  "actividades": [
+    {
+      "numeroEnMundo": 1,
+      "slug": "m02-a01-la-casilla-roja",
+      "nombre": "La casilla roja",
+      "tipo": "recorrido",
+      "dificultad": 1,
+      "instruccionTexto": "Iris pinto de rojo todas las casillas donde hay que girar. Esta es la primera. Llega hasta ella y despues baja.",
+      "exitoTexto": "Eso es. En el bosque de Iris, el rojo siempre significa gira.",
+      "pistas": [
+        "Primero ve a la derecha hasta la casilla roja.",
+        "Cuando estes en el rojo, baja."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 6,
+          "rows": 5,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 4,
+            "y": 3,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 2
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl1",
+          "exito": "celebration_6",
+          "pistas": [
+            "hint_world2_lvl1_1",
+            "hint_world2_lvl1_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 11
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "abajo"
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 2,
+      "slug": "m02-a02-verde-es-seguir",
+      "nombre": "Verde es seguir",
+      "tipo": "recorrido",
+      "dificultad": 1,
+      "instruccionTexto": "Las verdes son distintas: en verde se sigue recto, no se gira. Este camino tiene una verde en medio y no cambia nada.",
+      "exitoTexto": "Exacto. El verde no te pide nada, solo te deja pasar.",
+      "pistas": [
+        "Sigue recto, el verde no te hace girar.",
+        "Una sola flecha basta."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 7,
+          "rows": 3,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 1,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 1
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl2",
+          "exito": "celebration_7",
+          "pistas": [
+            "hint_world2_lvl2_1",
+            "hint_world2_lvl2_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 12
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 3,
+      "slug": "m02-a03-roja-arriba",
+      "nombre": "Roja arriba",
+      "tipo": "recorrido",
+      "dificultad": 1,
+      "instruccionTexto": "Otra roja, pero esta vez el camino sube. El color dice gira, tu decides hacia donde.",
+      "exitoTexto": "Muy bien. El rojo dice que gires; mirar el camino te dice hacia que lado.",
+      "pistas": [
+        "Ve a la derecha hasta el rojo.",
+        "Desde el rojo, el camino sube."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 6,
+          "rows": 6,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 4,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 4,
+            "y": 1,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 2
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl3",
+          "exito": "celebration_8",
+          "pistas": [
+            "hint_world2_lvl3_1",
+            "hint_world2_lvl3_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 13
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "arriba"
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 4,
+      "slug": "m02-a04-dos-colores",
+      "nombre": "Dos colores",
+      "tipo": "recoleccion",
+      "dificultad": 1,
+      "instruccionTexto": "Aqui hay una verde y una roja. Fijate bien en cual es cual antes de poner nada.",
+      "exitoTexto": "Los distinguiste. Verde sigue, rojo gira: ya no se te olvida.",
+      "pistas": [
+        "La verde no te hace girar.",
+        "La roja si: cuando llegues a ella, baja."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 7,
+          "rows": 5,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 3,
+            "y": 1
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 3,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 2
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl4",
+          "exito": "celebration_9",
+          "pistas": [
+            "hint_world2_lvl4_1",
+            "hint_world2_lvl4_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 14
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "abajo"
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 5,
+      "slug": "m02-a05-dos-giros",
+      "nombre": "Dos giros",
+      "tipo": "recoleccion",
+      "dificultad": 2,
+      "instruccionTexto": "Dos casillas rojas en el mismo camino. Dos giros. Ve una por una.",
+      "exitoTexto": "Dos giros seguidos y ni un fallo.",
+      "pistas": [
+        "Primero derecha hasta la primera roja.",
+        "Baja, y en la segunda roja gira otra vez."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 9,
+          "rows": 5,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 4,
+            "y": 1
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 3,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 3
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl5",
+          "exito": "celebration_10",
+          "pistas": [
+            "hint_world2_lvl5_1",
+            "hint_world2_lvl5_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 15
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "abajo"
+          },
+          {
+            "cmd": "derecha"
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 6,
+      "slug": "m02-a06-el-zigzag-de-colores",
+      "nombre": "El zigzag de colores",
+      "tipo": "recoleccion",
+      "dificultad": 2,
+      "instruccionTexto": "Tres rojas, tres giros. Sigue el camino con el dedo antes de empezar.",
+      "exitoTexto": "Un zigzag entero leyendo los colores. Iris estaria orgullosa.",
+      "pistas": [
+        "Cuenta las casillas rojas: son tres.",
+        "Cada roja es un giro, asi que necesitas cuatro flechas."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 7,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 3,
+            "y": 1
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 5,
+            "y": 3
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 5,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 4
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl6",
+          "exito": "celebration_11",
+          "pistas": [
+            "hint_world2_lvl6_1",
+            "hint_world2_lvl6_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 16
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "abajo"
+          },
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "abajo"
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 7,
+      "slug": "m02-a07-sube-y-baja",
+      "nombre": "Sube y baja",
+      "tipo": "recoleccion",
+      "dificultad": 2,
+      "instruccionTexto": "El camino sube y luego baja. Las rojas te avisan de donde cambia.",
+      "exitoTexto": "Perfecto. Ya lees el bosque como Iris.",
+      "pistas": [
+        "Sube hasta la primera roja.",
+        "Luego derecha, y en la siguiente roja baja."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 6,
+          "rows": 6,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 3,
+          "dir": "arriba"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 2,
+            "y": 1
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 4,
+            "y": 4,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 3
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl7",
+          "exito": "celebration_12",
+          "pistas": [
+            "hint_world2_lvl7_1",
+            "hint_world2_lvl7_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 17
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "arriba"
+          },
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "abajo"
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 8,
+      "slug": "m02-a08-cuatro-giros",
+      "nombre": "Cuatro giros",
+      "tipo": "recoleccion",
+      "dificultad": 2,
+      "instruccionTexto": "Este camino tiene cuatro rojas. Cuatro giros y cinco flechas. Empieza a ser mucho, verdad?",
+      "exitoTexto": "Cinco fichas. Funciona, pero seguro que se puede hacer mas corto. Ya lo veras.",
+      "pistas": [
+        "Cuatro rojas son cuatro giros.",
+        "Necesitas cinco flechas en total."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 9,
+          "rows": 5,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 3,
+            "y": 2
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 5,
+            "y": 2
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 1,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 5
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl8",
+          "exito": "celebration_13",
+          "pistas": [
+            "hint_world2_lvl8_1",
+            "hint_world2_lvl8_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 18
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "abajo"
+          },
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "arriba"
+          },
+          {
+            "cmd": "derecha"
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 9,
+      "slug": "m02-a09-el-camino-largo",
+      "nombre": "El camino largo",
+      "tipo": "recoleccion",
+      "dificultad": 3,
+      "instruccionTexto": "Cinco rojas. Seis flechas. Ponlas todas si quieres, pero fijate en que siempre haces lo mismo: llegar al rojo y girar.",
+      "exitoTexto": "Seis fichas para hacer siempre lo mismo. Manana Iris te ensenara algo mejor.",
+      "pistas": [
+        "Cada roja es un giro. Son cinco.",
+        "Mira el patron: siempre llegas al rojo y giras."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 9,
+          "rows": 9,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 3,
+            "y": 3
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 5,
+            "y": 5
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 7,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 6
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl9",
+          "exito": "celebration_14",
+          "pistas": [
+            "hint_world2_lvl9_1",
+            "hint_world2_lvl9_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 19
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "abajo"
+          },
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "abajo"
+          },
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "abajo"
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 10,
+      "slug": "m02-a10-la-ficha-nueva",
+      "nombre": "La ficha nueva",
+      "tipo": "recorrido",
+      "dificultad": 3,
+      "instruccionTexto": "Mira lo que te ha dejado Iris: una ficha que dice si la casilla es roja, gira. Ponla dentro y usala aqui.",
+      "exitoTexto": "Esa ficha piensa por ti. Ella mira el color y decide, tu ya no tienes que estar pendiente.",
+      "pistas": [
+        "La ficha nueva es la de color: si es roja, hace lo que le pongas dentro.",
+        "Pon una flecha de abajo dentro de la ficha de color."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 6,
+          "rows": 6,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo",
+          "siColor"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 4,
+            "y": 4,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 3,
+            "requiereEstructuras": [
+              "siColor"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl10",
+          "exito": "celebration_15",
+          "pistas": [
+            "hint_world2_lvl10_1",
+            "hint_world2_lvl10_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 20
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 11,
+      "slug": "m02-a11-con-menos-fichas",
+      "nombre": "Con menos fichas",
+      "tipo": "recoleccion",
+      "dificultad": 3,
+      "instruccionTexto": "Este camino es el mismo que hiciste con cinco flechas. Ahora hazlo con la ficha de color y cuenta cuantas te sobran.",
+      "exitoTexto": "Menos fichas, mismo camino. Eso es programar mejor, no solo programar.",
+      "pistas": [
+        "Usa la ficha de color para los giros.",
+        "Dentro de la ficha va la flecha del giro."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 7,
+          "rows": 5,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 3,
+            "y": 2
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo",
+          "siColor"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 3,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 5,
+            "requiereEstructuras": [
+              "siColor"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl11",
+          "exito": "celebration_1",
+          "pistas": [
+            "hint_world2_lvl11_1",
+            "hint_world2_lvl11_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 21
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "derecha"
+              }
+            ],
+            "sino": []
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 12,
+      "slug": "m02-a12-el-bosque-decide",
+      "nombre": "El bosque decide",
+      "tipo": "recoleccion",
+      "dificultad": 3,
+      "instruccionTexto": "Aqui no puedes saber de antemano donde estan las rojas sin mirar mucho. Deja que la ficha de color lo mire por ti.",
+      "exitoTexto": "Ya no miras tu el color: lo mira el programa. Eso cambia todo.",
+      "pistas": [
+        "Empieza yendo a la derecha.",
+        "Luego deja que la ficha de color decida el giro."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 6,
+          "rows": 5,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 4,
+            "y": 1
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 3,
+            "y": 3
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo",
+          "siColor"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 1,
+            "y": 3,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 5,
+            "requiereEstructuras": [
+              "siColor"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl12",
+          "exito": "celebration_2",
+          "pistas": [
+            "hint_world2_lvl12_1",
+            "hint_world2_lvl12_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 22
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "izquierda"
+              }
+            ],
+            "sino": []
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 13,
+      "slug": "m02-a13-verde-tambien-manda",
+      "nombre": "Verde tambien manda",
+      "tipo": "recoleccion",
+      "dificultad": 4,
+      "instruccionTexto": "Esta vez la ficha mira el verde. Si es verde, sigue recto. Es la misma idea al reves.",
+      "exitoTexto": "Da igual el color: la ficha mira, compara y decide. Siempre igual.",
+      "pistas": [
+        "Cambia el color de la ficha a verde.",
+        "En verde, sigue en la misma direccion."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 7,
+          "rows": 5,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "verde"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 4,
+            "y": 1
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo",
+          "siColor"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 3,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 3
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl13",
+          "exito": "celebration_3",
+          "pistas": [
+            "hint_world2_lvl13_1",
+            "hint_world2_lvl13_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 23
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 14,
+      "slug": "m02-a14-la-curva-doble",
+      "nombre": "La curva doble",
+      "tipo": "recoleccion",
+      "dificultad": 4,
+      "instruccionTexto": "Dos giros seguidos hacia el mismo lado. La ficha de color se encarga de los dos.",
+      "exitoTexto": "Los dos giros con la misma idea. Ya piensas en reglas, no en pasos.",
+      "pistas": [
+        "Los dos giros van hacia abajo.",
+        "Necesitas la ficha de color dos veces."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 5,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 3,
+            "y": 1
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 1,
+            "y": 3
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo",
+          "siColor"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 1,
+            "y": 5,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 7,
+            "requiereEstructuras": [
+              "siColor"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl14",
+          "exito": "celebration_4",
+          "pistas": [
+            "hint_world2_lvl14_1",
+            "hint_world2_lvl14_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 24
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "izquierda"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 15,
+      "slug": "m02-a15-sin-mirar-el-tablero",
+      "nombre": "Sin mirar el tablero",
+      "tipo": "recoleccion",
+      "dificultad": 4,
+      "instruccionTexto": "Iris te reta: haz este camino pensando solo en la regla, no en el dibujo. Si es rojo, gira. Punto.",
+      "exitoTexto": "Lo hiciste con la regla, no con los ojos. Asi funcionan los programas de verdad.",
+      "pistas": [
+        "No cuentes casillas: piensa en la regla.",
+        "Cada roja es un giro, y la ficha lo sabe."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 8,
+          "rows": 6,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 3,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 4,
+            "y": 3
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 6,
+            "y": 2
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo",
+          "siColor"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 6,
+            "y": 4,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 7,
+            "requiereEstructuras": [
+              "siColor"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl15",
+          "exito": "celebration_5",
+          "pistas": [
+            "hint_world2_lvl15_1",
+            "hint_world2_lvl15_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 25
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "arriba"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "derecha"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 16,
+      "slug": "m02-a16-el-laberinto-de-iris",
+      "nombre": "El laberinto de Iris",
+      "tipo": "recoleccion",
+      "dificultad": 4,
+      "instruccionTexto": "Cinco giros. Con flechas sueltas serian seis fichas. Con la regla, menos.",
+      "exitoTexto": "Cinco giros resueltos con una idea repetida. Eso es elegante.",
+      "pistas": [
+        "Son cinco rojas.",
+        "La ficha de color en cada giro, con la flecha correcta dentro."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 9,
+          "rows": 5,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 3,
+            "y": 2
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 5,
+            "y": 2
+          },
+          {
+            "id": "estrella3",
+            "tipo": "estrella",
+            "x": 7,
+            "y": 2
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo",
+          "siColor"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 3,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 11,
+            "requiereEstructuras": [
+              "siColor"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl16",
+          "exito": "celebration_6",
+          "pistas": [
+            "hint_world2_lvl16_1",
+            "hint_world2_lvl16_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 26
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "derecha"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "arriba"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "derecha"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 17,
+      "slug": "m02-a17-rojo-y-verde-juntos",
+      "nombre": "Rojo y verde juntos",
+      "tipo": "recoleccion",
+      "dificultad": 5,
+      "instruccionTexto": "Ahora hay de los dos. Las rojas giran y las verdes se dejan pasar. Tu programa tiene que distinguirlas.",
+      "exitoTexto": "Distinguir dos casos con la misma ficha. Ya sabes hacer que un programa piense.",
+      "pistas": [
+        "Las verdes no piden nada.",
+        "Solo pon fichas de color para las rojas."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 7,
+          "rows": 6,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "verde"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 3,
+            "y": 1
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 5,
+            "y": 2
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo",
+          "siColor"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 4,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 3
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl17",
+          "exito": "celebration_7",
+          "pistas": [
+            "hint_world2_lvl17_1",
+            "hint_world2_lvl17_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 27
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 18,
+      "slug": "m02-a18-la-regla-completa",
+      "nombre": "La regla completa",
+      "tipo": "recoleccion",
+      "dificultad": 5,
+      "instruccionTexto": "Camino largo, con verdes por medio para despistarte. Confia en la regla y no en lo que ves.",
+      "exitoTexto": "Ni una duda. Iris dice que ya sabes leer su bosque mejor que ella.",
+      "pistas": [
+        "Las verdes estan para despistar: no hacen nada.",
+        "Solo cuentan las rojas."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 8,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "verde"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 3,
+            "y": 1
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 6,
+            "y": 3
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo",
+          "siColor"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 6,
+            "y": 5,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 6,
+            "requiereEstructuras": [
+              "siColor"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl18",
+          "exito": "celebration_8",
+          "pistas": [
+            "hint_world2_lvl18_1",
+            "hint_world2_lvl18_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 28
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 19,
+      "slug": "m02-a19-el-camino-de-iris",
+      "nombre": "El camino de Iris",
+      "tipo": "recoleccion",
+      "dificultad": 5,
+      "instruccionTexto": "Este es el camino que Iris hace cada manana para pintar el bosque. Seis giros. Ella lo hace sin pensar.",
+      "exitoTexto": "El camino entero de Iris. Ya puedes ir a buscarla.",
+      "pistas": [
+        "Seis rojas, seis giros.",
+        "Una ficha de color por giro y una flecha para empezar."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 6,
+          "rows": 9,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 3,
+            "y": 2
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 1,
+            "y": 4
+          },
+          {
+            "id": "estrella3",
+            "tipo": "estrella",
+            "x": 4,
+            "y": 5
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo",
+          "siColor"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 4,
+            "y": 7,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 11,
+            "requiereEstructuras": [
+              "siColor"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl19",
+          "exito": "celebration_9",
+          "pistas": [
+            "hint_world2_lvl19_1",
+            "hint_world2_lvl19_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 29
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "izquierda"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "derecha"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          }
+        ]
+      }
+    },
+    {
+      "numeroEnMundo": 20,
+      "slug": "m02-a20-donde-esta-iris",
+      "nombre": "Donde esta Iris",
+      "tipo": "integrador",
+      "dificultad": 5,
+      "instruccionTexto": "Ultimo del bosque. Iris esta al final de este camino, y lleva mucho tiempo sola. Traela.",
+      "exitoTexto": "La encontraste. Iris dice que nunca habia visto a nadie leer sus colores tan rapido.",
+      "pistas": [
+        "Usa todo lo que has aprendido: la regla del rojo y las flechas.",
+        "Son siete giros. Ve tramo a tramo sin prisa."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": [
+          "comandos"
+        ],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 10,
+          "rows": 8,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino",
+                "color": "rojo"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 3,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 4,
+            "y": 3
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 6,
+            "y": 2
+          },
+          {
+            "id": "estrella3",
+            "tipo": "estrella",
+            "x": 8,
+            "y": 5
+          }
+        ],
+        "comandosPermitidos": [
+          "derecha",
+          "izquierda",
+          "arriba",
+          "abajo",
+          "siColor"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 6,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 13,
+            "requiereEstructuras": [
+              "siColor"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world2_lvl20",
+          "exito": "celebration_10",
+          "pistas": [
+            "hint_world2_lvl20_1",
+            "hint_world2_lvl20_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 45
+        },
+        "topeEjecucion": 4000
+      },
+      "solucionReferencia": {
+        "comandos": [
+          {
+            "cmd": "derecha"
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "arriba"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "derecha"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "derecha"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "abajo"
+              }
+            ],
+            "sino": []
+          },
+          {
+            "cmd": "siColor",
+            "color": "rojo",
+            "hijos": [
+              {
+                "cmd": "izquierda"
+              }
+            ],
+            "sino": []
+          }
+        ]
+      }
+    }
+  ]
+}

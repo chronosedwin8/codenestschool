@@ -9,11 +9,12 @@
  */
 import { ref } from 'vue';
 
-import { APERTURA, FUZZES, HISTORIA_MUNDO_1 } from '@codenest/content';
+import { APERTURA, FUZZES, HISTORIAS, HISTORIA_MUNDO_1 } from '@codenest/content';
 
 import BarraPrograma from '@/components/BarraPrograma.vue';
 import Cinematica from '@/components/Cinematica.vue';
 import EscenaHistoria from '@/components/EscenaHistoria.vue';
+import EscenaMecanica from '@/components/EscenaMecanica.vue';
 import FondoEscena from '@/components/FondoEscena.vue';
 import PiezaJuego from '@/components/PiezaJuego.vue';
 import { olvidarCinematicas } from '@/composables/cinematicas';
@@ -50,6 +51,20 @@ const ESCENAS = [
   'flechas',
   'fuzz-rescatado',
   'nido-suma',
+];
+
+/** Escenas que ensenan una mecanica, una por mundo de Exploradores. */
+const ESCENAS_MECANICA = [
+  'colores',
+  'saltos',
+  'bucle',
+  'patron',
+  'eco-extrano',
+  'orden',
+  'decision',
+  'caja',
+  'error',
+  'integrador',
 ];
 const COLORES = ['#1FA2FF', '#5AD35A', '#FF3CAC', '#FFD93D', '#FF8A3D', '#7B61FF'];
 const SOMBREROS = [null, 'sombrero_mago', 'corona', 'gorro'];
@@ -156,12 +171,41 @@ function probarInstruccion(): void {
         <BotonJuguete etiqueta="Olvidar las vistas" tono="neutro" tamano="sm" @pulsar="olvidarCinematicas()" />
       </div>
 
+      <p class="etiqueta">Cinematicas por mundo</p>
+      <div class="fila fila--envuelve">
+        <template v-for="h in HISTORIAS" :key="h.mundo">
+          <BotonJuguete
+            :etiqueta="`M${h.mundo} entrada`"
+            tono="azul"
+            tamano="sm"
+            @pulsar="cinePrueba = { beats: h.entrada, color: FUZZES[h.mundo - 1]?.color ?? '#29A9E0' }"
+          />
+          <BotonJuguete
+            :etiqueta="`M${h.mundo} rescate`"
+            tono="verde"
+            tamano="sm"
+            @pulsar="cinePrueba = { beats: h.rescate, color: FUZZES[h.mundo - 1]?.color ?? '#29A9E0' }"
+          />
+        </template>
+      </div>
+
       <p class="etiqueta">Escenas ilustradas</p>
       <div class="escenas">
         <figure v-for="e in ESCENAS" :key="e" class="escenas__caja">
           <div class="escenas__lienzo">
             <FondoEscena :destellos="4" />
             <EscenaHistoria :escena="e" color-fuzz="#29A9E0" :rescatados="5" class="escenas__svg" />
+          </div>
+          <figcaption>{{ e }}</figcaption>
+        </figure>
+      </div>
+
+      <p class="etiqueta">Escenas de mecanica</p>
+      <div class="escenas">
+        <figure v-for="e in ESCENAS_MECANICA" :key="e" class="escenas__caja">
+          <div class="escenas__lienzo">
+            <FondoEscena :destellos="3" />
+            <EscenaMecanica :escena="e" class="escenas__svg" />
           </div>
           <figcaption>{{ e }}</figcaption>
         </figure>

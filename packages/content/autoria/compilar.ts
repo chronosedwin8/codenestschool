@@ -15,9 +15,13 @@ import { worldContentFileSchema } from '@codenest/shared/zod';
 import type { WorldContentFile } from '@codenest/shared';
 
 import { mundo1 } from './m01.js';
+import { mundo2 } from './m02.js';
+import { mundo3 } from './m03.js';
+import { mundo4 } from './m04.js';
+import { mundo5 } from './m05.js';
 
 /** Mundos ya escritos. Se van añadiendo a medida que se redactan. */
-const MUNDOS: readonly WorldContentFile[] = [mundo1];
+const MUNDOS: readonly WorldContentFile[] = [mundo1, mundo2, mundo3, mundo4, mundo5];
 
 const DESTINO = resolve(import.meta.dirname, '..', 'worlds');
 

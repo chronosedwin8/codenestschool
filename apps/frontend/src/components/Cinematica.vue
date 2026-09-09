@@ -23,6 +23,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import BotonJuguete from '@/components/BotonJuguete.vue';
 import EscenaHistoria from '@/components/EscenaHistoria.vue';
+import EscenaMecanica from '@/components/EscenaMecanica.vue';
 import { marcarVista } from '@/composables/cinematicas';
 import FondoEscena from '@/components/FondoEscena.vue';
 import { useAudioStore } from '@/stores/audio';
@@ -60,6 +61,27 @@ let desbloqueo: ReturnType<typeof setTimeout> | null = null;
 
 const beat = computed(() => props.beats[indice.value]);
 const esUltimo = computed(() => indice.value >= props.beats.length - 1);
+
+/**
+ * Escenas que ensenan una mecanica en lugar de contar algo.
+ *
+ * Se dibujan con otro componente porque su objetivo es distinto: no narran, sino
+ * que muestran como funciona una idea sin escribir la instruccion.
+ */
+const ESCENAS_MECANICA = new Set([
+  'colores',
+  'saltos',
+  'bucle',
+  'patron',
+  'eco-extrano',
+  'orden',
+  'decision',
+  'caja',
+  'error',
+  'integrador',
+]);
+
+const esMecanica = computed(() => ESCENAS_MECANICA.has(beat.value?.escena ?? ''));
 
 /** Narra el momento actual y programa el paso al siguiente. */
 function reproducirBeat(): void {
@@ -121,8 +143,15 @@ onBeforeUnmount(() => {
       <div class="cine__contenido">
         <!-- La escena cambia con una transición suave entre momentos. -->
         <Transition name="escena" mode="out-in">
+          <EscenaMecanica
+            v-if="esMecanica"
+            :key="`m-${indice}`"
+            :escena="beat?.escena ?? ''"
+            class="cine__escena"
+          />
           <EscenaHistoria
-            :key="`${indice}-${beat?.escena}`"
+            v-else
+            :key="`h-${indice}`"
             :escena="beat?.escena ?? ''"
             :color-fuzz="colorFuzz"
             :rescatados="rescatados"

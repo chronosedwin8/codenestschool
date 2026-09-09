@@ -25,6 +25,7 @@ import {
   FRASES_UI,
   VOCES,
   VOZ_UI,
+  textosDeHistoria,
   vozPara,
 } from '@codenest/content';
 import { cargarMundos } from '@codenest/content/loader';
@@ -185,7 +186,21 @@ async function sembrarAudiosFijos(voces: Map<string, number>): Promise<void> {
     });
   }
 
-  console.log(`  ${FRASES_UI.length} frases de interfaz y ${celebraciones.length} celebraciones`);
+  // Narracion de las cinematicas. Va con la voz de Nube, la misma guia.
+  const historia = textosDeHistoria();
+  for (const { clave, texto } of historia) {
+    await upsertAudio({
+      clave,
+      tipo: 'ui',
+      texto,
+      vozClave: VOZ_UI.clave,
+      vozId: vozUiId,
+    });
+  }
+
+  console.log(
+    `  ${FRASES_UI.length} frases de interfaz, ${celebraciones.length} celebraciones y ${historia.length} de la historia`,
+  );
 }
 
 async function sembrarMundos(voces: Map<string, number>): Promise<Map<number, number>> {
