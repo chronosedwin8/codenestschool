@@ -1,0 +1,26 @@
+# PostgreSQL 15 exacto del stack mandatorio, en el puerto 5433 para no chocar
+# con la instalacion local de PostgreSQL 17 (que usa el proyecto Codexia).
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: codenest_pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: codenest
+      POSTGRES_PASSWORD: codenest
+      POSTGRES_DB: codenest_db
+      TZ: America/Bogota
+      PGTZ: America/Bogota
+    ports:
+      - "5433:5432"
+    volumes:
+      - codenest_pg:/var/lib/postgresql/data
+      - ./apps/backend/prisma/sql/init-shadow.sql:/docker-entrypoint-initdb.d/10-init-shadow.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codenest -d codenest_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  codenest_pg:

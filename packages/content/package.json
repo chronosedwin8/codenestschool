@@ -1,0 +1,20 @@
+{
+  "name": "@codenest/content",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Contenido curricular: 30 mundos y 600 actividades en JSON validado con zod",
+  "exports": {
+    ".": "./src/index.ts",
+    "./loader": "./src/loader.ts",
+    "./worlds/*": "./worlds/*"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@codenest/shared": "*",
+    "zod": "^3.24.1"
+  }
+}

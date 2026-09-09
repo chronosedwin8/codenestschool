@@ -1,0 +1,841 @@
+// ═══════════════════════════════════════════════════════════════════════════
+//  CodeNest School — esquema de base de datos
+//  PostgreSQL 15 + Prisma 5
+//
+//  Convencion: modelos en ingles, tablas y columnas en espanol (@map/@@map).
+//
+//  ⚠ NUNCA ejecutar `prisma db push`: recrearia las tablas particionadas
+//    (telemetria, metricas_*) sin su clausula PARTITION BY. Usar siempre
+//    `prisma migrate dev --create-only` y editar el SQL con el contenido de
+//    prisma/sql/partitions.sql.
+// ═══════════════════════════════════════════════════════════════════════════
+
+generator client {
+  provider        = "prisma-client-js"
+  // citext: usuario y email insensibles a mayusculas (evita cuentas duplicadas).
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  extensions        = [citext]
+}
+
+// ─────────────────────────── Enumeraciones ────────────────────────────────
+
+/// Multi-rol: los ninos siempre estan protegidos por un tutor o un docente.
+enum RolUsuario {
+  nino
+  tutor
+  docente
+  admin_escuela
+  admin
+
+  @@map("rol_usuario")
+}
+
+enum GrupoEdad {
+  exploradores // 4-6 anos, interfaz 100% grafica
+  creadores //    7-9 anos, bloques Blockly
+  hackers //      10-12+ anos, editor de texto
+
+  @@map("grupo_edad")
+}
+
+enum TipoEditor {
+  comandos // barra de fichas propia (mundos 1-10)
+  bloques //  Blockly 11 (mundos 11-20)
+  texto //    Monaco Editor (mundos 21-30)
+
+  @@map("tipo_editor")
+}
+
+enum LenguajeCodigo {
+  comandos
+  javascript
+  python // subconjunto transpilado por pylite
+
+  @@map("lenguaje_codigo")
+}
+
+enum TipoActividad {
+  recorrido
+  recoleccion
+  debug
+  integrador
+  jefe
+
+  @@map("tipo_actividad")
+}
+
+enum TipoAudio {
+  instruccion
+  exito
+  pista
+  ui
+  mundo_intro
+  celebracion
+
+  @@map("tipo_audio")
+}
+
+enum EstadoAudio {
+  pendiente
+  generado
+  fallido
+  obsoleto
+
+  @@map("estado_audio")
+}
+
+enum TipoItemTienda {
+  sombrero
+  gafas
+  disfraz
+  color
+  accesorio
+
+  @@map("tipo_item_tienda")
+}
+
+enum EstadoConsentimiento {
+  pendiente
+  otorgado
+  revocado
+
+  @@map("estado_consentimiento")
+}
+
+enum TipoPlan {
+  personal
+  padres
+  escuela
+
+  @@map("tipo_plan")
+}
+
+enum EstadoLicencia {
+  pendiente
+  activa
+  vencida
+  cancelada
+
+  @@map("estado_licencia")
+}
+
+enum EstadoPago {
+  pendiente
+  aprobado
+  rechazado
+  reembolsado
+  cancelado
+
+  @@map("estado_pago")
+}
+
+// ─────────────────────── Instituciones y usuarios ─────────────────────────
+
+model Institution {
+  id             Int      @id @default(autoincrement())
+  nombre         String   @db.VarChar(200)
+  nit            String?  @db.VarChar(40)
+  ciudad         String?  @db.VarChar(100)
+  pais           String   @default("Colombia") @db.VarChar(100)
+  codigoAcceso   String?  @unique @map("codigo_acceso") @db.VarChar(20)
+  /// Cupo de estudiantes contratado; null = sin limite.
+  maxEstudiantes Int?     @map("max_estudiantes")
+  activa         Boolean  @default(true)
+  creadoEn       DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  usuarios  User[]
+  aulas     Classroom[]
+  sedes     Campus[]
+  licencias License[]
+
+  @@map("instituciones")
+}
+
+/// Sede de una institucion (los colegios grandes tienen varias).
+model Campus {
+  id            Int      @id @default(autoincrement())
+  institucionId Int      @map("institucion_id")
+  nombre        String   @db.VarChar(150)
+  direccion     String?  @db.VarChar(250)
+  ciudad        String?  @db.VarChar(100)
+  activa        Boolean  @default(true)
+  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  institucion Institution @relation(fields: [institucionId], references: [id], onDelete: Cascade)
+  aulas       Classroom[]
+
+  @@index([institucionId])
+  @@map("sedes")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  /// Nombre de acceso. Los ninos entran con `usuario` + PIN de imagenes, sin
+  /// correo electronico (minimizacion de datos de menores, Ley 1581).
+  usuario      String  @unique @db.Citext
+  email        String? @unique @db.Citext
+  passwordHash String? @map("password_hash") @db.VarChar(255)
+  /// Hash del PIN de imagenes de los prelectores (bcrypt). Nunca en claro.
+  pinHash      String? @map("pin_hash") @db.VarChar(255)
+
+  nombre String     @db.VarChar(150)
+  rol    RolUsuario @default(nino)
+
+  grupoEdad       GrupoEdad?  @map("grupo_edad")
+  editorPref      TipoEditor? @map("editor_pref")
+  fechaNacimiento DateTime?   @map("fecha_nacimiento") @db.Date
+
+  /// Lo que el Fuzz lleva puesto ahora mismo (unica fuente de verdad de lo
+  /// equipado; `inventario_usuario` solo registra posesion).
+  avatarConfig Json @default("{\"fuzzColor\":\"azul\",\"sombrero\":null,\"gafas\":null,\"disfraz\":null}") @map("avatar_config") @db.JsonB
+
+  monedas          Int       @default(0)
+  estrellasTotales Int       @default(0) @map("estrellas_totales")
+  rachaDias        Int       @default(0) @map("racha_dias")
+  ultimaActividad  DateTime? @map("ultima_actividad") @db.Date
+
+  institucionId Int?     @map("institucion_id")
+  activo        Boolean  @default(true)
+  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  institucion        Institution?           @relation(fields: [institucionId], references: [id])
+  aulasComoDocente   Classroom[]            @relation("DocenteAulas")
+  inscripciones      Enrollment[]
+  asignacionesHechas Assignment[]           @relation("DocenteAsignaciones")
+  sesiones           ActivitySession[]
+  envios             CodeSubmission[]
+  progreso           UserActivityProgress[]
+  logros             UserAchievement[]
+  inventario         UserInventory[]
+  tokens             RefreshToken[]
+  metricas           UserMetricDaily[]
+
+  // Relaciones tutor <-> nino
+  ninosACargo              GuardianLink[]    @relation("TutorDeNinos")
+  tutores                  GuardianLink[]    @relation("NinoDeTutores")
+  consentimientosComoNino  ParentalConsent[] @relation("ConsentimientoNino")
+  consentimientosComoTutor ParentalConsent[] @relation("ConsentimientoTutor")
+  auditoriasComoActor      AccessAudit[]     @relation("AuditoriaActor")
+  auditoriasComoNino       AccessAudit[]     @relation("AuditoriaNino")
+
+  // Comercial
+  licencias         License[]
+  perfilFacturacion BillingProfile?
+
+  @@index([rol])
+  @@index([institucionId])
+  @@map("usuarios")
+}
+
+/// Vinculo tutor/docente -> nino. Todo nino debe tener al menos un adulto
+/// responsable; el JWT del adulto lleva la lista de ninos que puede ver.
+model GuardianLink {
+  id         Int      @id @default(autoincrement())
+  tutorId    Int      @map("tutor_id")
+  ninoId     Int      @map("nino_id")
+  parentesco String?  @db.VarChar(50)
+  creadoEn   DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  tutor User @relation("TutorDeNinos", fields: [tutorId], references: [id], onDelete: Cascade)
+  nino  User @relation("NinoDeTutores", fields: [ninoId], references: [id], onDelete: Cascade)
+
+  @@unique([tutorId, ninoId])
+  @@index([ninoId])
+  @@map("tutores_ninos")
+}
+
+/// Consentimiento del tutor para tratar datos del menor (Ley 1581/2012 y
+/// Decreto 1377/2013). Se versiona la politica aceptada.
+model ParentalConsent {
+  id              Int                  @id @default(autoincrement())
+  ninoId          Int                  @map("nino_id")
+  tutorId         Int                  @map("tutor_id")
+  estado          EstadoConsentimiento @default(pendiente)
+  versionPolitica String               @map("version_politica") @db.VarChar(20)
+  otorgadoEn      DateTime?            @map("otorgado_en") @db.Timestamptz(6)
+  revocadoEn      DateTime?            @map("revocado_en") @db.Timestamptz(6)
+  ip              String?              @db.VarChar(64)
+  creadoEn        DateTime             @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  nino  User @relation("ConsentimientoNino", fields: [ninoId], references: [id], onDelete: Cascade)
+  tutor User @relation("ConsentimientoTutor", fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@index([ninoId, estado])
+  @@map("consentimientos")
+}
+
+/// Registro de quien consulto datos de que menor (exigible en auditorias).
+model AccessAudit {
+  id       BigInt   @id @default(autoincrement())
+  actorId  Int      @map("actor_id")
+  ninoId   Int?     @map("nino_id")
+  accion   String   @db.VarChar(60)
+  recurso  String   @db.VarChar(160)
+  ip       String?  @db.VarChar(64)
+  creadoEn DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  actor User  @relation("AuditoriaActor", fields: [actorId], references: [id], onDelete: Cascade)
+  nino  User? @relation("AuditoriaNino", fields: [ninoId], references: [id], onDelete: Cascade)
+
+  @@index([ninoId, creadoEn])
+  @@index([actorId, creadoEn])
+  @@map("auditoria_accesos")
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int      @map("usuario_id")
+  tokenHash String   @unique @map("token_hash") @db.VarChar(255)
+  expiraEn  DateTime @map("expira_en") @db.Timestamptz(6)
+  revocado  Boolean  @default(false)
+  creadoEn  DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, expiraEn])
+  @@map("tokens_refresh")
+}
+
+// ──────────────────────── Aulas y asignaciones ────────────────────────────
+
+model Classroom {
+  id            Int      @id @default(autoincrement())
+  nombre        String   @db.VarChar(150)
+  codigoAcceso  String   @unique @map("codigo_acceso") @db.VarChar(20)
+  docenteId     Int      @map("docente_id")
+  institucionId Int?     @map("institucion_id")
+  sedeId        Int?     @map("sede_id")
+  grado         String?  @db.VarChar(40)
+  activa        Boolean  @default(true)
+  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  docente       User         @relation("DocenteAulas", fields: [docenteId], references: [id])
+  institucion   Institution? @relation(fields: [institucionId], references: [id])
+  sede          Campus?      @relation(fields: [sedeId], references: [id])
+  inscripciones Enrollment[]
+  asignaciones  Assignment[]
+
+  @@index([docenteId])
+  @@index([institucionId])
+  @@map("aulas")
+}
+
+model Enrollment {
+  id         Int      @id @default(autoincrement())
+  ninoId     Int      @map("nino_id")
+  aulaId     Int      @map("aula_id")
+  inscritoEn DateTime @default(now()) @map("inscrito_en") @db.Timestamptz(6)
+
+  nino User      @relation(fields: [ninoId], references: [id], onDelete: Cascade)
+  aula Classroom @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+
+  @@unique([ninoId, aulaId])
+  @@index([aulaId])
+  @@map("inscripciones")
+}
+
+/// Tarea que un docente asigna a un aula o a un estudiante concreto.
+model Assignment {
+  id            Int       @id @default(autoincrement())
+  docenteId     Int       @map("docente_id")
+  aulaId        Int?      @map("aula_id")
+  mundoId       Int?      @map("mundo_id")
+  actividadId   Int?      @map("actividad_id")
+  titulo        String?   @db.VarChar(200)
+  instrucciones String?
+  fechaLimite   DateTime? @map("fecha_limite") @db.Date
+  creadoEn      DateTime  @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  docente   User       @relation("DocenteAsignaciones", fields: [docenteId], references: [id], onDelete: Cascade)
+  aula      Classroom? @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+  mundo     World?     @relation(fields: [mundoId], references: [id])
+  actividad Activity?  @relation(fields: [actividadId], references: [id])
+
+  @@index([aulaId])
+  @@index([docenteId])
+  @@map("asignaciones")
+}
+
+// ────────────────────────── Audio (ElevenLabs) ────────────────────────────
+
+/// Perfil de voz de ElevenLabs. Se siembra desde scripts/voices.config.ts.
+model VoiceProfile {
+  id            Int      @id @default(autoincrement())
+  clave         String   @unique @db.VarChar(60)
+  nombre        String   @db.VarChar(80)
+  elevenVoiceId String   @map("eleven_voice_id") @db.VarChar(60)
+  modelo        String   @default("eleven_multilingual_v2") @db.VarChar(60)
+  settings      Json     @db.JsonB
+  rolPersonaje  String   @map("rol_personaje") @db.VarChar(40)
+  activa        Boolean  @default(true)
+  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  audios AudioAsset[]
+
+  @@map("voces")
+}
+
+/// Un clip de audio pre-renderizado.
+///
+/// El flujo es: `seed.ts` crea la fila en estado `pendiente` con su texto y su
+/// hash; `generate-voiceover.ts` produce el MP3; `sync-audio.ts` la marca
+/// `generado`. Asi las claves foraneas de actividades y pistas son validas
+/// desde el primer seed, sin depender del orden de ejecucion.
+model AudioAsset {
+  id    Int       @id @default(autoincrement())
+  clave String    @unique @db.VarChar(120)
+  tipo  TipoAudio
+
+  texto     String
+  /// sha256(texto + voz + modelo + settings + formato). Detecta cambios.
+  textoHash String @map("texto_hash") @db.VarChar(64)
+
+  vozId  Int    @map("voz_id")
+  idioma String @default("es-CO") @db.VarChar(10)
+
+  rutaArchivo String?     @map("ruta_archivo") @db.VarChar(300)
+  formato     String      @default("mp3") @db.VarChar(10)
+  duracionMs  Int?        @map("duracion_ms")
+  tamanoBytes Int?        @map("tamano_bytes")
+  estado      EstadoAudio @default(pendiente)
+  error       String?
+  generadoEn  DateTime?   @map("generado_en") @db.Timestamptz(6)
+
+  voz VoiceProfile @relation(fields: [vozId], references: [id])
+
+  mundosIntro          World[]    @relation("AudioIntroMundo")
+  actividadInstruccion Activity[] @relation("AudioInstruccion")
+  actividadExito       Activity[] @relation("AudioExito")
+  pistas               Hint[]
+
+  @@index([estado])
+  @@index([textoHash])
+  @@index([tipo])
+  @@map("audios")
+}
+
+// ──────────────────── Curriculo: 30 mundos, 600 actividades ───────────────
+
+model World {
+  id     Int    @id @default(autoincrement())
+  /// 1 a 30. El grupo de edad y el rango de actividades se derivan de aqui.
+  numero Int    @unique
+  slug   String @unique @db.VarChar(80)
+  nombre String @db.VarChar(150)
+
+  grupoEdad   GrupoEdad @map("grupo_edad")
+  concepto    String    @db.VarChar(150)
+  descripcion String
+
+  bioma     String           @db.VarChar(60)
+  editor    TipoEditor
+  lenguajes LenguajeCodigo[]
+
+  icono           String  @db.VarChar(60)
+  colorPrimario   String  @map("color_primario") @db.VarChar(20)
+  colorSecundario String  @map("color_secundario") @db.VarChar(20)
+  fondoUrl        String? @map("fondo_url") @db.VarChar(300)
+  musicaUrl       String? @map("musica_url") @db.VarChar(300)
+
+  audioIntroId Int?     @map("audio_intro_id")
+  activo       Boolean  @default(true)
+  creadoEn     DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  audioIntro   AudioAsset?  @relation("AudioIntroMundo", fields: [audioIntroId], references: [id])
+  actividades  Activity[]
+  asignaciones Assignment[]
+
+  @@index([grupoEdad])
+  @@map("mundos")
+}
+
+model Activity {
+  id      Int @id @default(autoincrement())
+  mundoId Int @map("mundo_id")
+
+  /// 1 a 600. Denormalizado desde (mundo.numero - 1) * 20 + numeroEnMundo;
+  /// la migracion añade un CHECK y el seed lo valida.
+  numeroGlobal  Int @unique @map("numero_global")
+  numeroEnMundo Int @map("numero_en_mundo")
+
+  slug       String        @unique @db.VarChar(100)
+  nombre     String        @db.VarChar(200)
+  tipo       TipoActividad
+  dificultad Int           @default(1)
+
+  /// Definicion completa del nivel (formato v3). No contiene textos narrados.
+  config Json @db.JsonB
+
+  /// Textos canonicos: los lee el generador de voz y el panel docente.
+  instruccionTexto String @map("instruccion_texto")
+  exitoTexto       String @map("exito_texto")
+
+  audioInstruccionId Int? @map("audio_instruccion_id")
+  audioExitoId       Int? @map("audio_exito_id")
+
+  /// Solucion que debe otorgar 3 estrellas (la verifica validate-content).
+  solucionReferencia Json     @map("solucion_referencia") @db.JsonB
+  version            Int      @default(3)
+  activo             Boolean  @default(true)
+  creadoEn           DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn      DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  mundo            World       @relation(fields: [mundoId], references: [id], onDelete: Cascade)
+  audioInstruccion AudioAsset? @relation("AudioInstruccion", fields: [audioInstruccionId], references: [id])
+  audioExito       AudioAsset? @relation("AudioExito", fields: [audioExitoId], references: [id])
+
+  pistas       Hint[]
+  sesiones     ActivitySession[]
+  envios       CodeSubmission[]
+  progreso     UserActivityProgress[]
+  asignaciones Assignment[]
+  metricas     ActivityMetricDaily[]
+
+  @@unique([mundoId, numeroEnMundo])
+  @@index([mundoId])
+  @@map("actividades")
+}
+
+model Hint {
+  id           Int    @id @default(autoincrement())
+  actividadId  Int    @map("actividad_id")
+  orden        Int
+  texto        String
+  audioId      Int?   @map("audio_id")
+  costoMonedas Int    @default(0) @map("costo_monedas")
+
+  actividad Activity    @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  audio     AudioAsset? @relation(fields: [audioId], references: [id])
+
+  @@unique([actividadId, orden])
+  @@map("pistas")
+}
+
+// ──────────────────── Juego: sesiones, envios, progreso ───────────────────
+
+model ActivitySession {
+  id          Int @id @default(autoincrement())
+  usuarioId   Int @map("usuario_id")
+  actividadId Int @map("actividad_id")
+
+  editorUsado TipoEditor     @map("editor_usado")
+  lenguaje    LenguajeCodigo
+
+  /// Instantanea del programa: fichas, JSON de Blockly o texto.
+  programa Json? @db.JsonB
+
+  intentos       Int     @default(0)
+  tiempoSegundos Int     @default(0) @map("tiempo_segundos")
+  completada     Boolean @default(false)
+  /// Estrellas recalculadas por el servidor; nunca las envia el cliente.
+  estrellas      Int     @default(0)
+  monedasGanadas Int     @default(0) @map("monedas_ganadas")
+  pistasUsadas   Int     @default(0) @map("pistas_usadas")
+
+  iniciadaEn   DateTime  @default(now()) @map("iniciada_en") @db.Timestamptz(6)
+  completadaEn DateTime? @map("completada_en") @db.Timestamptz(6)
+
+  usuario   User             @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  actividad Activity         @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+  envios    CodeSubmission[]
+
+  @@index([usuarioId, actividadId, completada])
+  @@index([actividadId])
+  @@map("sesiones_actividad")
+}
+
+model CodeSubmission {
+  id          Int @id @default(autoincrement())
+  sesionId    Int @map("sesion_id")
+  usuarioId   Int @map("usuario_id")
+  actividadId Int @map("actividad_id")
+
+  /// Solo registro pedagogico: el servidor NUNCA lo ejecuta.
+  codigo   String
+  editor   TipoEditor
+  lenguaje LenguajeCodigo
+
+  /// Formato confiable: el servidor re-simula estas acciones para dar estrellas.
+  accionesEjecutadas Json @map("acciones_ejecutadas") @db.JsonB
+  /// Tamano del programa escrito (fichas, bloques o lineas). Premia bucles.
+  tamanoPrograma     Int  @map("tamano_programa")
+
+  resultado         Json?    @db.JsonB
+  exitoso           Boolean  @default(false)
+  estrellas         Int      @default(0)
+  tiempoEjecucionMs Int?     @map("tiempo_ejecucion_ms")
+  enviadoEn         DateTime @default(now()) @map("enviado_en") @db.Timestamptz(6)
+
+  sesion    ActivitySession @relation(fields: [sesionId], references: [id], onDelete: Cascade)
+  usuario   User            @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  actividad Activity        @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([actividadId])
+  @@index([sesionId])
+  @@map("envios_codigo")
+}
+
+/// Mejor resultado por nino y actividad. Permite pintar el mapa-mundo con una
+/// sola consulta, sin agregar sobre `sesiones_actividad`.
+model UserActivityProgress {
+  id          Int @id @default(autoincrement())
+  usuarioId   Int @map("usuario_id")
+  actividadId Int @map("actividad_id")
+
+  mejorEstrellas  Int      @default(0) @map("mejor_estrellas")
+  completada      Boolean  @default(false)
+  intentosTotales Int      @default(0) @map("intentos_totales")
+  primeraVez      DateTime @default(now()) @map("primera_vez") @db.Timestamptz(6)
+  ultimaVez       DateTime @updatedAt @map("ultima_vez") @db.Timestamptz(6)
+
+  usuario   User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  actividad Activity @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, actividadId])
+  @@index([usuarioId])
+  @@map("progreso_actividad")
+}
+
+// ──────────────────────── Logros y tienda del Fuzz ────────────────────────
+
+model Achievement {
+  id          Int     @id @default(autoincrement())
+  clave       String  @unique @db.VarChar(60)
+  nombre      String  @db.VarChar(150)
+  descripcion String?
+  icono       String  @db.VarChar(60)
+  /// { tipo, valor, recompensa: { monedas, itemClave } }
+  condicion   Json    @db.JsonB
+  rareza      String  @default("comun") @db.VarChar(20)
+  activo      Boolean @default(true)
+
+  usuarios UserAchievement[]
+
+  @@map("logros")
+}
+
+model UserAchievement {
+  id         Int      @id @default(autoincrement())
+  usuarioId  Int      @map("usuario_id")
+  logroId    Int      @map("logro_id")
+  obtenidoEn DateTime @default(now()) @map("obtenido_en") @db.Timestamptz(6)
+
+  usuario User        @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  logro   Achievement @relation(fields: [logroId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, logroId])
+  @@map("usuarios_logros")
+}
+
+model StoreItem {
+  id            Int            @id @default(autoincrement())
+  clave         String         @unique @db.VarChar(60)
+  nombre        String         @db.VarChar(150)
+  tipo          TipoItemTienda
+  descripcion   String?
+  imagenUrl     String?        @map("imagen_url") @db.VarChar(300)
+  costoMonedas  Int            @default(0) @map("costo_monedas")
+  /// Cosmetico que solo se consigue completando un mundo (no se compra).
+  requiereMundo Int?           @map("requiere_mundo")
+  grupoEdad     GrupoEdad?     @map("grupo_edad")
+  datos         Json?          @db.JsonB
+  orden         Int            @default(0)
+  activo        Boolean        @default(true)
+
+  inventarios UserInventory[]
+
+  @@index([tipo])
+  @@map("items_tienda")
+}
+
+model UserInventory {
+  id         Int      @id @default(autoincrement())
+  usuarioId  Int      @map("usuario_id")
+  itemId     Int      @map("item_id")
+  compradoEn DateTime @default(now()) @map("comprado_en") @db.Timestamptz(6)
+
+  usuario User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  item    StoreItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, itemId])
+  @@map("inventario_usuario")
+}
+
+// ─────────────── Comercial: planes, licencias y pagos (MP) ────────────────
+
+model Plan {
+  id            Int      @id @default(autoincrement())
+  clave         TipoPlan @unique
+  nombre        String   @db.VarChar(80)
+  descripcion   String
+  /// Precio vigente en pesos colombianos. Escuela = 12.000.000.
+  precioCop     Int      @map("precio_cop")
+  vigenciaDias  Int      @default(365) @map("vigencia_dias")
+  /// Perfiles de nino incluidos; null = sin limite (plan Escuela).
+  maxNinos      Int?     @map("max_ninos")
+  maxDocentes   Int?     @map("max_docentes")
+  beneficios    Json     @db.JsonB
+  destacado     Boolean  @default(false)
+  orden         Int      @default(0)
+  activo        Boolean  @default(true)
+  actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  licencias License[]
+
+  @@map("planes")
+}
+
+model License {
+  id            Int            @id @default(autoincrement())
+  planId        Int            @map("plan_id")
+  /// Titular: tutor (Personal/Padres) o admin_escuela (Escuela).
+  titularId     Int            @map("titular_id")
+  institucionId Int?           @map("institucion_id")
+  estado        EstadoLicencia @default(pendiente)
+
+  /// Codigo que el titular comparte para vincular ninos o docentes.
+  codigoAcceso String? @unique @map("codigo_acceso") @db.VarChar(20)
+
+  inicioVigencia DateTime? @map("inicio_vigencia") @db.Timestamptz(6)
+  finVigencia    DateTime? @map("fin_vigencia") @db.Timestamptz(6)
+  /// Licencia de la que esta es renovacion (historial de suscripcion).
+  renovadaDeId   Int?      @unique @map("renovada_de_id")
+
+  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  plan        Plan         @relation(fields: [planId], references: [id])
+  titular     User         @relation(fields: [titularId], references: [id], onDelete: Cascade)
+  institucion Institution? @relation(fields: [institucionId], references: [id])
+  renovadaDe  License?     @relation("Renovacion", fields: [renovadaDeId], references: [id])
+  renovacion  License?     @relation("Renovacion")
+  pagos       Payment[]
+
+  @@index([titularId, estado])
+  @@index([finVigencia])
+  @@map("licencias")
+}
+
+/// Pago de una licencia a traves de Mercado Pago (Checkout API).
+/// El monto lo fija el servidor; el cliente solo envia el token de la tarjeta.
+model Payment {
+  id         Int @id @default(autoincrement())
+  licenciaId Int @map("licencia_id")
+
+  mpPaymentId    String? @unique @map("mp_payment_id") @db.VarChar(60)
+  mpPreferenceId String? @map("mp_preference_id") @db.VarChar(80)
+  /// Clave X-Idempotency-Key enviada a Mercado Pago: evita cobros dobles.
+  idempotencyKey String  @unique @map("idempotency_key") @db.VarChar(120)
+
+  montoCop Int        @map("monto_cop")
+  moneda   String     @default("COP") @db.VarChar(3)
+  estado   EstadoPago @default(pendiente)
+
+  mpStatus       String? @map("mp_status") @db.VarChar(40)
+  mpStatusDetail String? @map("mp_status_detail") @db.VarChar(80)
+  /// tarjeta, pse, efectivo...
+  metodo         String? @db.VarChar(40)
+  emailComprador String  @map("email_comprador") @db.VarChar(255)
+  /// Ultimo payload recibido por webhook (auditoria de conciliacion).
+  payloadWebhook Json?   @map("payload_webhook") @db.JsonB
+
+  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  licencia License @relation(fields: [licenciaId], references: [id], onDelete: Cascade)
+
+  @@index([licenciaId])
+  @@index([estado])
+  @@map("pagos")
+}
+
+/// Datos de facturacion del titular (comprobante de pago).
+model BillingProfile {
+  id            Int      @id @default(autoincrement())
+  usuarioId     Int      @unique @map("usuario_id")
+  razonSocial   String?  @map("razon_social") @db.VarChar(200)
+  nitCedula     String   @map("nit_cedula") @db.VarChar(40)
+  direccion     String?  @db.VarChar(250)
+  ciudad        String   @db.VarChar(100)
+  telefono      String?  @db.VarChar(40)
+  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("perfiles_facturacion")
+}
+
+// ─────────────── Telemetria y metricas (tablas PARTICIONADAS) ─────────────
+//
+//  Las tres tablas siguientes se convierten en particionadas editando la
+//  migracion generada con `--create-only` (ver prisma/sql/partitions.sql).
+//  Reglas de PostgreSQL que condicionan el modelado:
+//   1. Todo indice UNICO debe incluir la clave de particion -> la PK es
+//      compuesta con `creado_en` / `fecha`.
+//   2. No añadir @unique adicionales: fallaria la migracion.
+//   3. Se evita @relation en `telemetria` a proposito: una FK con RESTRICT
+//      bloquearia el derecho de supresion del menor (Ley 1581).
+
+model TelemetryEvent {
+  id          BigInt   @default(autoincrement())
+  usuarioId   Int      @map("usuario_id")
+  actividadId Int?     @map("actividad_id")
+  sesionId    Int?     @map("sesion_id")
+  evento      String   @db.VarChar(60)
+  datos       Json?    @db.JsonB
+  creadoEn    DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  @@id([id, creadoEn], map: "telemetria_pkey")
+  @@index([usuarioId, creadoEn], map: "idx_telemetria_usuario")
+  @@index([actividadId, creadoEn], map: "idx_telemetria_actividad")
+  @@index([evento, creadoEn], map: "idx_telemetria_evento")
+  @@map("telemetria")
+}
+
+/// Rollup diario por actividad. Alimenta el panel docente sin tocar la
+/// telemetria cruda. El dia se calcula en America/Bogota.
+model ActivityMetricDaily {
+  actividadId       Int      @map("actividad_id")
+  fecha             DateTime @db.Date
+  intentos          Int      @default(0)
+  completadas       Int      @default(0)
+  estrellasPromedio Decimal  @default(0) @map("estrellas_promedio") @db.Decimal(4, 2)
+  tiempoPromedioSeg Int      @default(0) @map("tiempo_promedio_seg")
+  pistasUsadas      Int      @default(0) @map("pistas_usadas")
+  /// { choque: 12, limite: 3, sintaxis: 7 }
+  erroresComunes    Json?    @map("errores_comunes") @db.JsonB
+
+  actividad Activity @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+
+  @@id([actividadId, fecha], map: "metricas_actividad_diaria_pkey")
+  @@index([fecha], map: "idx_metricas_actividad_fecha")
+  @@map("metricas_actividad_diaria")
+}
+
+/// Rollup diario por nino: base de los reportes del portal de padres y del
+/// panel docente.
+model UserMetricDaily {
+  usuarioId              Int      @map("usuario_id")
+  fecha                  DateTime @db.Date
+  tiempoSeg              Int      @default(0) @map("tiempo_seg")
+  actividadesCompletadas Int      @default(0) @map("actividades_completadas")
+  estrellas              Int      @default(0)
+  monedas                Int      @default(0)
+  sesiones               Int      @default(0)
+
+  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, fecha], map: "metricas_usuario_diaria_pkey")
+  @@index([fecha], map: "idx_metricas_usuario_fecha")
+  @@map("metricas_usuario_diaria")
+}

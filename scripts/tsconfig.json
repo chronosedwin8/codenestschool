@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "rootDir": ".",
+    "outDir": "../.tsbuild/scripts",
+    "noEmit": false,
+    "types": ["node"]
+  },
+  "include": ["**/*.ts"],
+  "exclude": [".cache"],
+  "references": [{ "path": "../packages/shared" }, { "path": "../packages/content" }]
+}

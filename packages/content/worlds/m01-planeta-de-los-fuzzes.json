@@ -1,0 +1,171 @@
+{
+  "mundo": 1,
+  "slug": "planeta-de-los-fuzzes",
+  "nombre": "El Planeta de los Fuzzes",
+  "introTexto": "Bienvenido al Planeta de los Fuzzes. Aqui viven unas bolitas peludas muy curiosas. Tu trabajo es guiarlas por los caminos para que recojan las estrellas. Arrastra las flechas y mira como rueda tu Fuzz.",
+  "actividades": [
+    {
+      "numeroEnMundo": 1,
+      "slug": "m01-a01-primer-camino",
+      "nombre": "El primer camino",
+      "tipo": "recorrido",
+      "dificultad": 1,
+      "instruccionTexto": "Tu Fuzz quiere llegar a la estrella. Arrastra la flecha que apunta a la derecha y toca el boton verde para verlo rodar.",
+      "exitoTexto": "Lo lograste. Tu Fuzz rodo hasta la estrella siguiendo tu flecha.",
+      "pistas": [
+        "Busca la flecha que apunta hacia la derecha y ponla en la barra de abajo.",
+        "El Fuzz rueda solo hasta que se le acaba el camino. Con una flecha basta."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": ["comandos"],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 5,
+          "rows": 3,
+          "tiles": [
+            [{ "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }],
+            [{ "t": "camino" }, { "t": "camino" }, { "t": "camino" }, { "t": "camino" }, { "t": "meta" }],
+            [{ "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }]
+          ]
+        },
+        "spawn": { "x": 0, "y": 1, "dir": "derecha" },
+        "items": [{ "id": "estrella1", "tipo": "estrella", "x": 4, "y": 1 }],
+        "comandosPermitidos": ["derecha"],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          { "id": "salida", "tipo": "alcanzar_celda", "x": 4, "y": 1, "obligatorio": true },
+          { "id": "estrella1", "tipo": "recoger_item", "itemId": "estrella1", "obligatorio": false }
+        ],
+        "criteriosEstrella": {
+          "1": { "objetivos": ["salida"] },
+          "2": { "objetivos": ["salida", "estrella1"] },
+          "3": { "objetivos": ["salida", "estrella1"], "maxFichas": 1 }
+        },
+        "audio": {
+          "instruccion": "instruction_world1_lvl1",
+          "exito": "celebration_1",
+          "pistas": ["hint_world1_lvl1_1", "hint_world1_lvl1_2"]
+        },
+        "demoAnimada": "demo_m1_l1",
+        "recompensa": { "monedas": 10 },
+        "topeEjecucion": 2000
+      },
+      "solucionReferencia": {
+        "comandos": [{ "cmd": "derecha" }]
+      }
+    },
+    {
+      "numeroEnMundo": 2,
+      "slug": "m01-a02-la-esquina",
+      "nombre": "La esquina",
+      "tipo": "recorrido",
+      "dificultad": 1,
+      "instruccionTexto": "El camino dobla hacia abajo. Primero manda al Fuzz a la derecha y despues hacia abajo. El orden importa.",
+      "exitoTexto": "Muy bien. Juntaste dos flechas en el orden correcto y eso es una secuencia.",
+      "pistas": [
+        "Primero la flecha de la derecha, para que el Fuzz llegue a la esquina.",
+        "Despues pon la flecha de abajo para que baje hasta la estrella."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": ["comandos"],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 5,
+          "rows": 4,
+          "tiles": [
+            [{ "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }],
+            [{ "t": "camino" }, { "t": "camino" }, { "t": "camino" }, { "t": "camino" }, { "t": "vacio" }],
+            [{ "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "camino" }, { "t": "vacio" }],
+            [{ "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "meta" }, { "t": "vacio" }]
+          ]
+        },
+        "spawn": { "x": 0, "y": 1, "dir": "derecha" },
+        "items": [{ "id": "estrella1", "tipo": "estrella", "x": 3, "y": 3 }],
+        "comandosPermitidos": ["derecha", "abajo"],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          { "id": "salida", "tipo": "alcanzar_celda", "x": 3, "y": 3, "obligatorio": true },
+          { "id": "estrella1", "tipo": "recoger_item", "itemId": "estrella1", "obligatorio": false }
+        ],
+        "criteriosEstrella": {
+          "1": { "objetivos": ["salida"] },
+          "2": { "objetivos": ["salida", "estrella1"] },
+          "3": { "objetivos": ["salida", "estrella1"], "maxFichas": 2 }
+        },
+        "audio": {
+          "instruccion": "instruction_world1_lvl2",
+          "exito": "celebration_2",
+          "pistas": ["hint_world1_lvl2_1", "hint_world1_lvl2_2"]
+        },
+        "recompensa": { "monedas": 10 },
+        "topeEjecucion": 2000
+      },
+      "solucionReferencia": {
+        "comandos": [{ "cmd": "derecha" }, { "cmd": "abajo" }]
+      }
+    },
+    {
+      "numeroEnMundo": 3,
+      "slug": "m01-a03-el-zigzag",
+      "nombre": "El zigzag",
+      "tipo": "recoleccion",
+      "dificultad": 2,
+      "instruccionTexto": "Este camino zigzaguea como una serpiente. Mira todo el recorrido antes de poner las flechas y recoge las dos estrellas.",
+      "exitoTexto": "Perfecto. Planeaste el camino entero antes de empezar, igual que los programadores.",
+      "pistas": [
+        "El camino va a la derecha, luego abajo y otra vez a la derecha.",
+        "Cuenta los giros: necesitas tres flechas en total."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "exploradores",
+        "editor": "comandos",
+        "lenguajes": ["comandos"],
+        "modoMovimiento": "rodar",
+        "grid": {
+          "cols": 6,
+          "rows": 5,
+          "tiles": [
+            [{ "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }],
+            [{ "t": "camino" }, { "t": "camino" }, { "t": "camino" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }],
+            [{ "t": "vacio" }, { "t": "vacio" }, { "t": "camino" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }],
+            [{ "t": "vacio" }, { "t": "vacio" }, { "t": "camino" }, { "t": "camino" }, { "t": "camino" }, { "t": "meta" }],
+            [{ "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }, { "t": "vacio" }]
+          ]
+        },
+        "spawn": { "x": 0, "y": 1, "dir": "derecha" },
+        "items": [
+          { "id": "estrella1", "tipo": "estrella", "x": 2, "y": 2 },
+          { "id": "estrella2", "tipo": "estrella", "x": 5, "y": 3 }
+        ],
+        "comandosPermitidos": ["derecha", "abajo"],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          { "id": "salida", "tipo": "alcanzar_celda", "x": 5, "y": 3, "obligatorio": true },
+          { "id": "todas", "tipo": "recoger_todos", "obligatorio": false }
+        ],
+        "criteriosEstrella": {
+          "1": { "objetivos": ["salida"] },
+          "2": { "objetivos": ["salida", "todas"] },
+          "3": { "objetivos": ["salida", "todas"], "maxFichas": 3 }
+        },
+        "audio": {
+          "instruccion": "instruction_world1_lvl3",
+          "exito": "success_world1_lvl3",
+          "pistas": ["hint_world1_lvl3_1", "hint_world1_lvl3_2"]
+        },
+        "recompensa": { "monedas": 15 },
+        "topeEjecucion": 2000
+      },
+      "solucionReferencia": {
+        "comandos": [{ "cmd": "derecha" }, { "cmd": "abajo" }, { "cmd": "derecha" }]
+      }
+    }
+  ]
+}

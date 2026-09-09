@@ -1,0 +1,21 @@
+{
+  "name": "@codenest/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Tipos estrictos, catalogo de mundos y logica de juego compartida entre backend, frontend y scripts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types/index.ts",
+    "./catalog": "./src/catalog/index.ts",
+    "./runtime": "./src/runtime/index.ts",
+    "./zod": "./src/zod/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  }
+}

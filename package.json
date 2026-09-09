@@ -1,0 +1,37 @@
+{
+  "name": "codenestschool",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CodeNest School \u2014 plataforma de programacion para ninos de 4 a 12+ anos (30 mundos, 600 actividades)",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "npm@11.9.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "scripts"
+  ],
+  "scripts": {
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:migrate": "npm run prisma:migrate --workspace=@codenest/backend",
+    "db:studio": "npm run prisma:studio --workspace=@codenest/backend",
+    "db:seed": "npm run seed --workspace=@codenest/backend",
+    "db:partitions": "npm run partitions --workspace=@codenest/backend",
+    "voice:generate": "tsx scripts/generate-voiceover.ts",
+    "voice:sfx": "tsx scripts/generate-sfx.ts",
+    "voice:sync": "npm run audio:sync --workspace=@codenest/backend",
+    "content:validate": "tsx scripts/validate-content.ts",
+    "dev": "npm run dev --workspace=@codenest/backend",
+    "build": "tsc -b",
+    "typecheck": "tsc -b --force",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
