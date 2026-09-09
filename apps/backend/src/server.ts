@@ -63,21 +63,31 @@ export async function construirServidor(): Promise<FastifyInstance> {
   }));
 
   // Archivos estaticos, solo si existen (en desarrollo el frontend usa Vite).
+  //
+  // Exactamente UNO de los registros debe decorar la respuesta con sendFile:
+  // @fastify/static lanza si se registra dos veces, pero si ninguno la decora,
+  // el reenvio del enrutador del cliente falla con un 500. Decora el primero
+  // que exista y los siguientes pasan la raiz explicitamente al usarlo.
+  let sendFileDisponible = false;
+
   if (existsSync(DIR_APP)) {
     await fastify.register(fastifyStatic, {
       root: DIR_APP,
       prefix: '/app/',
       wildcard: false,
-      decorateReply: false,
+      decorateReply: true,
     });
+    sendFileDisponible = true;
   }
+
   if (existsSync(DIR_HOMEPAGE)) {
     await fastify.register(fastifyStatic, {
       root: DIR_HOMEPAGE,
       prefix: '/',
       wildcard: false,
-      decorateReply: existsSync(DIR_APP) ? false : true,
+      decorateReply: !sendFileDisponible,
     });
+    sendFileDisponible = true;
   }
 
   // Rutas no encontradas: la API responde JSON; el navegador recibe la pagina
@@ -86,11 +96,15 @@ export async function construirServidor(): Promise<FastifyInstance> {
     if (request.url.startsWith('/api')) {
       return reply.code(404).send({ error: 'Ruta no encontrada' });
     }
-    if (request.method === 'GET' && request.url.startsWith('/app') && existsSync(DIR_APP)) {
-      return reply.sendFile('index.html', DIR_APP);
-    }
-    if (request.method === 'GET' && existsSync(DIR_HOMEPAGE)) {
-      return reply.sendFile('index.html', DIR_HOMEPAGE);
+    if (request.method === 'GET' && sendFileDisponible) {
+      // Rutas internas del juego y del portal: las resuelve el enrutador del
+      // cliente, asi que se devuelve su index.
+      if (request.url.startsWith('/app') && existsSync(DIR_APP)) {
+        return reply.sendFile('index.html', DIR_APP);
+      }
+      if (existsSync(DIR_HOMEPAGE)) {
+        return reply.sendFile('index.html', DIR_HOMEPAGE);
+      }
     }
     return reply.code(404).send({ error: 'Ruta no encontrada' });
   });

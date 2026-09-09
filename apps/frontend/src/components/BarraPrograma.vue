@@ -15,14 +15,8 @@ import { computed, ref } from 'vue';
 
 import FichaComando, { type ClaseFicha } from '@/components/FichaComando.vue';
 import { useArrastreFicha } from '@/composables/useArrastreFicha';
+import type { PasoPrograma } from '@/game/tipos';
 import { useAudioStore } from '@/stores/audio';
-
-export interface PasoPrograma {
-  readonly id: string;
-  readonly comando: ClaseFicha;
-  readonly veces?: number;
-  readonly color?: string;
-}
 
 const props = withDefaults(
   defineProps<{

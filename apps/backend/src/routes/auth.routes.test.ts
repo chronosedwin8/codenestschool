@@ -337,3 +337,22 @@ describe('curriculo', () => {
     expect(status).toBe(401);
   });
 });
+
+describe('servicio de archivos estaticos', () => {
+  it('devuelve el index de la aplicacion en sus rutas internas', async () => {
+    // El enrutador del cliente resuelve /app/actividad/1; el servidor solo
+    // tiene que entregar el index. Un fallo aqui deja la pantalla en blanco.
+    const respuesta = await app.inject({ method: 'GET', url: '/app/actividad/1' });
+
+    // 200 si el frontend esta compilado; 404 si todavia no. Nunca un 500.
+    expect([200, 404]).toContain(respuesta.statusCode);
+    expect(respuesta.statusCode).not.toBe(500);
+  });
+
+  it('responde JSON, no HTML, en las rutas de la API que no existen', async () => {
+    const respuesta = await app.inject({ method: 'GET', url: '/api/inventada' });
+
+    expect(respuesta.statusCode).toBe(404);
+    expect(respuesta.json()).toEqual({ error: 'Ruta no encontrada' });
+  });
+});

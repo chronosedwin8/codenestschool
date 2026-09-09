@@ -9,10 +9,11 @@
  */
 import { ref } from 'vue';
 
-import BarraPrograma, { type PasoPrograma } from '@/components/BarraPrograma.vue';
+import BarraPrograma from '@/components/BarraPrograma.vue';
 import BotonEscuchar from '@/components/BotonEscuchar.vue';
 import BotonJuguete from '@/components/BotonJuguete.vue';
 import FichaComando, { type ClaseFicha } from '@/components/FichaComando.vue';
+import type { PasoPrograma } from '@/game/tipos';
 import FuzzAvatar from '@/components/FuzzAvatar.vue';
 import PanelEstrellas from '@/components/PanelEstrellas.vue';
 import { useAudioStore } from '@/stores/audio';
