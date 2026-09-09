@@ -12,8 +12,9 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 
-import { LIMITE_ESTRICTO } from '../plugins/security.js';
+import { LIMITE_ACCESO_INFANTIL, LIMITE_ESTRICTO } from '../plugins/security.js';
 import { comprobarAccesoANino } from '../services/guardian.service.js';
+import { anotarFallo, comprobarIntentos, olvidarFallos } from '../services/intentos.service.js';
 import {
   construirToken,
   generarUsuarioLibre,
@@ -113,24 +114,56 @@ export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
     });
   });
 
-  /** Inicio de sesion de un nino con su PIN de imagenes. */
-  fastify.post('/login-nino', { config: LIMITE_ESTRICTO }, async (request, reply) => {
+  /**
+   * Inicio de sesion de un nino con su PIN de imagenes.
+   *
+   * La proteccion tiene dos capas, porque una sola no sirve:
+   *  - un limite generoso por IP (en el plugin), para que un aula entera pueda
+   *    entrar a la vez desde la red del colegio,
+   *  - un contador de fallos por cuenta (aqui), para que no se pueda adivinar el
+   *    PIN de un nino concreto a base de intentos.
+   */
+  fastify.post('/login-nino', { config: LIMITE_ACCESO_INFANTIL }, async (request, reply) => {
     const datos = loginNinoSchema.safeParse(request.body);
     if (!datos.success) {
       return reply.code(400).send({ error: 'Datos invalidos', detalles: datos.error.flatten() });
     }
 
+    const cuenta = datos.data.usuario;
+
+    // Cuenta frenada por intentos fallidos: se avisa cuanto falta.
+    const estado = comprobarIntentos(cuenta);
+    if (estado.bloqueado) {
+      return reply.code(429).send({
+        error: 'Demasiados intentos',
+        mensaje: `Espera ${Math.ceil(estado.esperaSegundos / 60)} minuto(s) y vuelve a intentarlo.`,
+      });
+    }
+
     const nino = await fastify.prisma.user.findUnique({
-      where: { usuario: datos.data.usuario },
+      where: { usuario: cuenta },
       include: { tutores: { select: { tutorId: true } } },
     });
 
+    // Mismo mensaje si el usuario no existe o si el PIN no coincide: no se
+    // revela que cuentas existen.
     if (!nino?.pinHash || nino.rol !== 'nino' || !nino.activo) {
+      anotarFallo(cuenta);
       return reply.code(401).send({ error: 'Ese usuario o esas imagenes no coinciden' });
     }
     if (!(await verificarPin(datos.data.pin, nino.pinHash))) {
+      const tras = anotarFallo(cuenta);
+      if (tras.bloqueado) {
+        return reply.code(429).send({
+          error: 'Demasiados intentos',
+          mensaje: 'Pide ayuda a un adulto para recordar tus dibujos.',
+        });
+      }
       return reply.code(401).send({ error: 'Ese usuario o esas imagenes no coinciden' });
     }
+
+    // Acceso correcto: se olvidan los fallos anteriores.
+    olvidarFallos(cuenta);
     // Un nino sin adulto responsable no puede entrar.
     if (nino.tutores.length === 0) {
       return reply.code(403).send({

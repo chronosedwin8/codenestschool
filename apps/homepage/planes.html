@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es-CO">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1FA2FF" />
+
+    <title>Planes y precios | CodeNest School</title>
+    <meta
+      name="description"
+      content="Planes de CodeNest School: Personal y Padres para familias, y Escuela por $12.000.000 COP al año para colegios, con estudiantes y docentes ilimitados. Pago seguro con Mercado Pago."
+    />
+    <link rel="canonical" href="https://codenestschool.com/planes.html" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Planes y precios | CodeNest School" />
+    <meta
+      property="og:description"
+      content="Personal y Padres para familias. Escuela por $12.000.000 COP al año, con estudiantes ilimitados."
+    />
+    <meta property="og:url" content="https://codenestschool.com/planes.html" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/estilos.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='38' fill='%231FA2FF'/%3E%3Ccircle cx='38' cy='44' r='11' fill='white'/%3E%3Ccircle cx='62' cy='44' r='11' fill='white'/%3E%3Ccircle cx='38' cy='45' r='5' fill='%231E293B'/%3E%3Ccircle cx='62' cy='45' r='5' fill='%231E293B'/%3E%3C/svg%3E"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Inicio",
+            "item": "https://codenestschool.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Planes",
+            "item": "https://codenestschool.com/planes.html"
+          }
+        ]
+      }
+    </script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "CodeNest School",
+        "description": "Plataforma de programación para niños de 4 a 12 años con 30 mundos y 600 actividades narradas.",
+        "brand": { "@type": "Brand", "name": "CodeNest School" },
+        "offers": {
+          "@type": "AggregateOffer",
+          "priceCurrency": "COP",
+          "highPrice": "12000000",
+          "offerCount": "3",
+          "url": "https://codenestschool.com/planes.html"
+        }
+      }
+    </script>
+  </head>
+
+  <body>
+    <header class="cabecera">
+      <div class="contenedor cabecera__fila">
+        <a class="marca" href="/">
+          <svg class="marca__fuzz" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="34" fill="#1FA2FF" />
+            <circle cx="38" cy="44" r="11" fill="white" />
+            <circle cx="62" cy="44" r="11" fill="white" />
+            <circle cx="38" cy="45" r="5" fill="#1E293B" />
+            <circle cx="62" cy="45" r="5" fill="#1E293B" />
+          </svg>
+          CodeNest School
+        </a>
+
+        <nav class="nav" id="nav" aria-label="Navegación principal">
+          <a href="/#como-funciona">Cómo funciona</a>
+          <a href="/#edades">Por edades</a>
+          <a href="/#demo">Pruébalo</a>
+          <a href="/planes.html" aria-current="page">Planes</a>
+          <a href="/#faq">Preguntas</a>
+        </nav>
+
+        <button class="nav-abrir" id="navAbrir" aria-label="Abrir el menú" aria-expanded="false">
+          ☰
+        </button>
+
+        <div class="cabecera__acciones">
+          <a class="boton boton--fantasma boton--pequeno" href="/app/">Entrar</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="seccion">
+        <div class="contenedor">
+          <div class="seccion__cabecera">
+            <h1>Un pago al año, sin renovación automática</h1>
+            <p>
+              Elige según cuántos niños vayan a jugar. Todos los planes incluyen los 30 mundos, las
+              600 actividades y la voz en español.
+            </p>
+          </div>
+
+          <div class="planes" id="planes">
+            <!-- Los precios se cargan del servidor: es la única fuente válida. -->
+            <p id="cargandoPlanes">Cargando los planes...</p>
+          </div>
+
+          <p style="margin-top: 2.5rem; text-align: center; color: var(--tinta-suave)">
+            Pago seguro con Mercado Pago. No guardamos los datos de tu tarjeta.
+          </p>
+        </div>
+      </section>
+
+      <section class="seccion seccion--gris">
+        <div class="contenedor">
+          <div class="seccion__cabecera">
+            <h2>¿Eres un colegio?</h2>
+            <p>
+              El plan Escuela incluye todo lo que un colegio necesita para dar la asignatura, no solo
+              acceso al juego.
+            </p>
+          </div>
+
+          <div class="tarjetas">
+            <article class="tarjeta">
+              <div class="tarjeta__icono" aria-hidden="true">🏫</div>
+              <h3>Varias sedes y aulas</h3>
+              <p>
+                Cada aula tiene su código de acceso. Los estudiantes entran con su nombre de jugador
+                y su PIN de dibujos, sin correo electrónico.
+              </p>
+            </article>
+
+            <article class="tarjeta">
+              <div class="tarjeta__icono" aria-hidden="true">📋</div>
+              <h3>Alta masiva y asignaciones</h3>
+              <p>
+                Carga la lista de estudiantes de una vez y asigna mundos o actividades concretas a
+                cada grupo, con fecha límite.
+              </p>
+            </article>
+
+            <article class="tarjeta">
+              <div class="tarjeta__icono" aria-hidden="true">📈</div>
+              <h3>Seguimiento por grupo</h3>
+              <p>
+                Matriz de estudiante por mundo, tiempo dedicado, y las actividades donde el grupo se
+                atasca, para poder explicarlas en clase.
+              </p>
+            </article>
+
+            <article class="tarjeta">
+              <div class="tarjeta__icono" aria-hidden="true">🔐</div>
+              <h3>Cumplimiento y auditoría</h3>
+              <p>
+                Consentimiento del tutor registrado por estudiante y auditoría de todo acceso de un
+                adulto a los datos de un menor, según la Ley 1581.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="pie">
+      <div class="contenedor">
+        <p class="pie__legal" style="margin-top: 0; border: none">
+          CodeNest School. Tratamiento de datos de menores conforme a la Ley 1581 de 2012.
+          <span id="anio"></span>
+        </p>
+      </div>
+    </footer>
+
+    <script src="/js/principal.js" defer></script>
+    <script src="/js/planes.js" defer></script>
+  </body>
+</html>

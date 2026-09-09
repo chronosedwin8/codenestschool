@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="es-CO">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1FA2FF" />
+
+    <title>CodeNest School | Aprende a programar jugando, desde los 4 años</title>
+    <meta
+      name="description"
+      content="Plataforma de programación para niños de 4 a 12 años: 30 mundos, 600 actividades e instrucciones narradas con voz humana. Sin leer para los más pequeños. Planes para familias y colegios."
+    />
+    <meta
+      name="keywords"
+      content="programación para niños, aprender a programar niños 4 años, plataforma educativa Colombia, pensamiento computacional, Blockly, JavaScript para niños"
+    />
+    <link rel="canonical" href="https://codenestschool.com/" />
+
+    <!-- Redes sociales -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CodeNest School" />
+    <meta property="og:locale" content="es_CO" />
+    <meta
+      property="og:title"
+      content="CodeNest School | Aprende a programar jugando, desde los 4 años"
+    />
+    <meta
+      property="og:description"
+      content="30 mundos, 600 actividades y voz humana en cada instrucción. Los más pequeños programan con fichas de flechas, sin necesidad de leer."
+    />
+    <meta property="og:url" content="https://codenestschool.com/" />
+    <meta property="og:image" content="https://codenestschool.com/img/portada.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CodeNest School" />
+    <meta
+      name="twitter:description"
+      content="Programación para niños de 4 a 12 años. 30 mundos y 600 actividades con voz."
+    />
+    <meta name="twitter:image" content="https://codenestschool.com/img/portada.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/estilos.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='38' fill='%231FA2FF'/%3E%3Ccircle cx='38' cy='44' r='11' fill='white'/%3E%3Ccircle cx='62' cy='44' r='11' fill='white'/%3E%3Ccircle cx='38' cy='45' r='5' fill='%231E293B'/%3E%3Ccircle cx='62' cy='45' r='5' fill='%231E293B'/%3E%3C/svg%3E"
+    />
+
+    <!-- Datos estructurados: ayudan a que el buscador entienda qué es esto -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "EducationalOrganization",
+        "name": "CodeNest School",
+        "description": "Plataforma de programación para niños de 4 a 12 años, con 30 mundos y 600 actividades narradas con voz humana.",
+        "url": "https://codenestschool.com/",
+        "areaServed": "CO",
+        "audience": {
+          "@type": "EducationalAudience",
+          "educationalRole": "student",
+          "audienceType": "Niños de 4 a 12 años"
+        },
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "Plan Personal",
+            "category": "Licencia anual individual",
+            "priceCurrency": "COP",
+            "url": "https://codenestschool.com/planes.html"
+          },
+          {
+            "@type": "Offer",
+            "name": "Plan Padres",
+            "category": "Licencia anual familiar, hasta 4 perfiles",
+            "priceCurrency": "COP",
+            "url": "https://codenestschool.com/planes.html"
+          },
+          {
+            "@type": "Offer",
+            "name": "Plan Escuela",
+            "category": "Licencia anual para colegios, estudiantes ilimitados",
+            "price": "12000000",
+            "priceCurrency": "COP",
+            "url": "https://codenestschool.com/planes.html"
+          }
+        ]
+      }
+    </script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "¿Un niño de cuatro años puede usarlo sin saber leer?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sí. En los diez primeros mundos no hay una sola palabra escrita: se programa arrastrando fichas de flechas, y cada instrucción se narra con voz humana. El niño puede volver a oírla cuantas veces quiera tocando el megáfono."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Qué aprende exactamente mi hijo?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Secuencias y condicionales de los 4 a los 6 años; bucles, variables y funciones de los 7 a los 9 con bloques; y JavaScript o Python real de los 10 en adelante, hasta llegar a algoritmos de rutas y manejo de errores."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Necesita descargar algo?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Funciona en el navegador, en tableta y en computador. Está pensado para tabletas: los botones son grandes y se juega tocando."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Qué datos guardan de mi hijo?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Los mínimos. Los niños no tienen correo electrónico: entran con un nombre de jugador y un PIN de cuatro dibujos, siempre bajo la cuenta de un adulto. Cumplimos la Ley 1581 de 2012: el consentimiento del tutor queda registrado y todo acceso a los datos de un menor queda auditado."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Cómo funciona la licencia para colegios?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "El plan Escuela cuesta 12.000.000 de pesos al año e incluye estudiantes y docentes ilimitados, varias sedes, aulas con código de acceso, alta masiva de estudiantes y un panel de seguimiento por grupo."
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+
+  <body>
+    <header class="cabecera">
+      <div class="contenedor cabecera__fila">
+        <a class="marca" href="/">
+          <svg class="marca__fuzz" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="34" fill="#1FA2FF" />
+            <circle cx="38" cy="44" r="11" fill="white" />
+            <circle cx="62" cy="44" r="11" fill="white" />
+            <circle cx="38" cy="45" r="5" fill="#1E293B" />
+            <circle cx="62" cy="45" r="5" fill="#1E293B" />
+            <path
+              d="M 41 64 Q 50 72 59 64"
+              stroke="#1E293B"
+              stroke-width="3"
+              fill="none"
+              stroke-linecap="round"
+            />
+          </svg>
+          CodeNest School
+        </a>
+
+        <nav class="nav" id="nav" aria-label="Navegación principal">
+          <a href="#como-funciona">Cómo funciona</a>
+          <a href="#edades">Por edades</a>
+          <a href="#demo">Pruébalo</a>
+          <a href="/planes.html">Planes</a>
+          <a href="#faq">Preguntas</a>
+        </nav>
+
+        <button class="nav-abrir" id="navAbrir" aria-label="Abrir el menú" aria-expanded="false">
+          ☰
+        </button>
+
+        <div class="cabecera__acciones">
+          <a class="boton boton--fantasma boton--pequeno" href="/app/">Entrar</a>
+          <a class="boton boton--verde boton--pequeno" href="/planes.html">Ver planes</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Portada -->
+      <section class="portada">
+        <div class="contenedor portada__rejilla">
+          <div>
+            <span class="portada__eyebrow">De 4 a 12 años</span>
+            <h1>Aprende a programar jugando, desde los cuatro años</h1>
+            <p class="portada__texto">
+              Treinta mundos, seiscientas actividades y una voz que explica cada reto. Los más
+              pequeños programan arrastrando flechas, sin necesidad de leer.
+            </p>
+            <div class="portada__acciones">
+              <a class="boton boton--verde" href="/planes.html">Empezar ahora</a>
+              <a class="boton boton--fantasma" href="#demo">Probar sin registrarse</a>
+            </div>
+            <p class="portada__prueba">
+              Funciona en el navegador, pensado para tableta. Sin descargas y sin publicidad.
+            </p>
+          </div>
+
+          <div class="portada__ilustracion">
+            <svg viewBox="0 0 320 300" width="100%" role="img" aria-label="Un Fuzz sobre un camino de casillas">
+              <!-- Camino isométrico -->
+              <g opacity="0.95">
+                <polygon points="60,190 110,215 60,240 10,215" fill="#B5DCFB" stroke="white" stroke-width="2" />
+                <polygon points="110,165 160,190 110,215 60,190" fill="#C9E7FF" stroke="white" stroke-width="2" />
+                <polygon points="160,190 210,215 160,240 110,215" fill="#B5DCFB" stroke="white" stroke-width="2" />
+                <polygon points="210,165 260,190 210,215 160,190" fill="#C9E7FF" stroke="white" stroke-width="2" />
+                <polygon points="260,190 310,215 260,240 210,215" fill="#FFD93D" stroke="white" stroke-width="2" />
+              </g>
+              <!-- Estrella de la meta -->
+              <path
+                d="M 260 172 L 265 185 L 279 186 L 268 195 L 271 209 L 260 202 L 249 209 L 252 195 L 241 186 L 255 185 Z"
+                fill="#FFD93D"
+                stroke="#E0B81C"
+                stroke-width="2"
+              />
+              <!-- Fuzz -->
+              <g transform="translate(60 150)">
+                <ellipse cx="0" cy="42" rx="26" ry="8" fill="rgb(0 0 0 / 0.16)" />
+                <g stroke="#0D7FD4" stroke-width="4" stroke-linecap="round">
+                  <line x1="-24" y1="-14" x2="-31" y2="-20" />
+                  <line x1="24" y1="-14" x2="31" y2="-20" />
+                  <line x1="0" y1="-28" x2="0" y2="-37" />
+                  <line x1="-18" y1="-22" x2="-24" y2="-30" />
+                  <line x1="18" y1="-22" x2="24" y2="-30" />
+                </g>
+                <circle cx="0" cy="0" r="28" fill="#1FA2FF" />
+                <ellipse cx="-9" cy="-11" rx="10" ry="7" fill="white" opacity="0.3" />
+                <circle cx="-9" cy="-4" r="9" fill="white" />
+                <circle cx="9" cy="-4" r="9" fill="white" />
+                <circle cx="-8" cy="-3" r="4.5" fill="#1E293B" />
+                <circle cx="10" cy="-3" r="4.5" fill="#1E293B" />
+                <path d="M -8 12 Q 0 20 8 12" stroke="#1E293B" stroke-width="3" fill="none" stroke-linecap="round" />
+              </g>
+              <!-- Fichas de flechas -->
+              <g transform="translate(30 30)">
+                <rect width="54" height="54" rx="14" fill="#1FA2FF" />
+                <path d="M 16 27 H 32 M 28 19 L 38 27 L 28 35" stroke="white" stroke-width="5" fill="none" stroke-linecap="round" />
+              </g>
+              <g transform="translate(96 30)">
+                <rect width="54" height="54" rx="14" fill="#FF8A3D" />
+                <path d="M 38 22 A 12 12 0 1 0 27 40" stroke="white" stroke-width="5" fill="none" stroke-linecap="round" />
+                <path d="M 33 12 L 40 20 L 30 23 Z" fill="white" />
+              </g>
+              <g transform="translate(162 30)">
+                <rect width="54" height="54" rx="14" fill="#5AD35A" />
+                <path d="M 14 38 Q 27 12 40 38" stroke="white" stroke-width="5" fill="none" stroke-linecap="round" />
+              </g>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cifras -->
+      <section class="cifras">
+        <div class="contenedor cifras__rejilla">
+          <div class="revelar">
+            <span class="cifra__numero" data-contar="30">30</span>
+            <span class="cifra__etiqueta">mundos por explorar</span>
+          </div>
+          <div class="revelar">
+            <span class="cifra__numero" data-contar="600">600</span>
+            <span class="cifra__etiqueta">actividades</span>
+          </div>
+          <div class="revelar">
+            <span class="cifra__numero" data-contar="3">3</span>
+            <span class="cifra__etiqueta">grupos de edad</span>
+          </div>
+          <div class="revelar">
+            <span class="cifra__numero">100%</span>
+            <span class="cifra__etiqueta">con voz en español</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cómo funciona -->
+      <section class="seccion seccion--gris" id="como-funciona">
+        <div class="contenedor">
+          <div class="seccion__cabecera">
+            <h2>Programar antes de saber leer</h2>
+            <p>
+              Un niño de cuatro años no puede leer una instrucción ni escribir una contraseña. Todo
+              en CodeNest está construido alrededor de ese hecho.
+            </p>
+          </div>
+
+          <div class="tarjetas">
+            <article class="tarjeta revelar">
+              <div class="tarjeta__icono" aria-hidden="true">🗣️</div>
+              <h3>Cada reto se explica en voz alta</h3>
+              <p>
+                Las instrucciones están narradas por una voz humana en español. El botón del
+                megáfono las repite cuantas veces haga falta, sin penalización.
+              </p>
+            </article>
+
+            <article class="tarjeta revelar">
+              <div class="tarjeta__icono" aria-hidden="true">🧩</div>
+              <h3>Se programa arrastrando fichas</h3>
+              <p>
+                Flechas gruesas y grandes, pensadas para dedos pequeños. Sin una sola palabra
+                escrita en los diez primeros mundos.
+              </p>
+            </article>
+
+            <article class="tarjeta revelar">
+              <div class="tarjeta__icono" aria-hidden="true">🎯</div>
+              <h3>Fallar no castiga</h3>
+              <p>
+                Cuando el programa no funciona, el personaje choca de forma cómica y se anima a
+                probar otra vez. Nunca aparece un mensaje de error en rojo.
+              </p>
+            </article>
+
+            <article class="tarjeta revelar">
+              <div class="tarjeta__icono" aria-hidden="true">🔓</div>
+              <h3>Las piezas aparecen poco a poco</h3>
+              <p>
+                Se empieza con cuatro flechas. Los bucles, los condicionales y las funciones llegan
+                cuando el niño ya domina lo anterior.
+              </p>
+            </article>
+
+            <article class="tarjeta revelar">
+              <div class="tarjeta__icono" aria-hidden="true">⭐</div>
+              <h3>Tres estrellas por actividad</h3>
+              <p>
+                La primera por llegar, la segunda por recogerlo todo y la tercera por hacerlo con el
+                programa más corto. Ahí es donde se aprende a optimizar.
+              </p>
+            </article>
+
+            <article class="tarjeta revelar">
+              <div class="tarjeta__icono" aria-hidden="true">📊</div>
+              <h3>Sabrás cómo va</h3>
+              <p>
+                Un reporte por niño con su progreso por mundo, el tiempo que dedica y las
+                actividades donde se atasca.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Grupos de edad -->
+      <section class="seccion" id="edades">
+        <div class="contenedor">
+          <div class="seccion__cabecera">
+            <h2>Tres formas de programar, una por edad</h2>
+            <p>
+              No es el mismo contenido con letra más grande. Cada grupo tiene su propia manera de
+              escribir un programa, y el paso de una a la siguiente está preparado.
+            </p>
+          </div>
+
+          <div class="grupos">
+            <article class="grupo revelar" style="--grupo-color: #1fa2ff">
+              <span class="grupo__edad">4 a 6 años</span>
+              <h3>Exploradores</h3>
+              <p>
+                Programan con fichas de flechas. Ninguna palabra escrita, todo narrado.
+              </p>
+              <ul class="grupo__lista">
+                <li>Secuencias y orden de los pasos</li>
+                <li>Condicionales por color de casilla</li>
+                <li>Repetir un grupo de acciones</li>
+                <li>Corregir el paso equivocado</li>
+              </ul>
+            </article>
+
+            <article class="grupo revelar" style="--grupo-color: #5ad35a">
+              <span class="grupo__edad">7 a 9 años</span>
+              <h3>Creadores</h3>
+              <p>
+                Programan con bloques y ven al lado el código que generan. Ese panel es el puente
+                hacia escribir.
+              </p>
+              <ul class="grupo__lista">
+                <li>Bucles contados y condicionales</li>
+                <li>Variables y funciones propias</li>
+                <li>Operadores lógicos y listas</li>
+                <li>Depurar programas con varios errores</li>
+              </ul>
+            </article>
+
+            <article class="grupo revelar" style="--grupo-color: #7b61ff">
+              <span class="grupo__edad">10 a 12+ años</span>
+              <h3>Hackers</h3>
+              <p>
+                Escriben JavaScript o Python en un editor de verdad, con autocompletado y avisos de
+                error.
+              </p>
+              <ul class="grupo__lista">
+                <li>Arreglos, objetos y bucles for</li>
+                <li>Eventos, async y manejo de errores</li>
+                <li>Búsqueda, ordenamiento y rutas</li>
+                <li>Refactorizar para gastar menos</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Demostración jugable -->
+      <section class="seccion seccion--gris" id="demo">
+        <div class="contenedor">
+          <div class="seccion__cabecera">
+            <h2>Pruébalo aquí mismo</h2>
+            <p>
+              Así es una actividad del primer mundo. Toca las flechas para armar el programa y pulsa
+              jugar. Cada flecha hace rodar al Fuzz hasta que se acaba el camino.
+            </p>
+          </div>
+
+          <div class="demo">
+            <div class="demo__tablero" id="demoTablero" aria-label="Tablero de la demostración"></div>
+
+            <div class="demo__panel">
+              <h3>Tu programa</h3>
+              <div class="demo__programa" id="demoPrograma" aria-live="polite"></div>
+
+              <div class="demo__fichas">
+                <button class="demo__ficha" data-dir="derecha" aria-label="Ir a la derecha">→</button>
+                <button class="demo__ficha" data-dir="abajo" aria-label="Ir hacia abajo">↓</button>
+                <button class="demo__ficha" data-dir="izquierda" aria-label="Ir a la izquierda">←</button>
+                <button class="demo__ficha" data-dir="arriba" aria-label="Ir hacia arriba">↑</button>
+              </div>
+
+              <div class="portada__acciones">
+                <button class="boton boton--verde" id="demoJugar">▶ Jugar</button>
+                <button class="boton boton--fantasma" id="demoBorrar">↺ Borrar</button>
+              </div>
+
+              <p class="demo__mensaje" id="demoMensaje"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Preguntas frecuentes -->
+      <section class="seccion" id="faq">
+        <div class="contenedor">
+          <div class="seccion__cabecera">
+            <h2>Preguntas frecuentes</h2>
+          </div>
+
+          <div class="faq">
+            <details open>
+              <summary>¿Un niño de cuatro años puede usarlo sin saber leer?</summary>
+              <p>
+                Sí. En los diez primeros mundos no hay una sola palabra escrita: se programa
+                arrastrando fichas de flechas, y cada instrucción se narra con voz humana. El niño
+                puede volver a oírla cuantas veces quiera tocando el megáfono.
+              </p>
+            </details>
+
+            <details>
+              <summary>¿Qué aprende exactamente mi hijo?</summary>
+              <p>
+                Secuencias y condicionales de los cuatro a los seis años. Bucles, variables y
+                funciones de los siete a los nueve, con bloques. Y JavaScript o Python real de los
+                diez en adelante, hasta llegar a algoritmos de rutas y manejo de errores.
+              </p>
+            </details>
+
+            <details>
+              <summary>¿Necesita descargar algo?</summary>
+              <p>
+                No. Funciona en el navegador, en tableta y en computador. Está pensado para
+                tabletas: los botones son grandes y se juega tocando.
+              </p>
+            </details>
+
+            <details>
+              <summary>¿Qué datos guardan de mi hijo?</summary>
+              <p>
+                Los mínimos. Los niños no tienen correo electrónico: entran con un nombre de jugador
+                y un PIN de cuatro dibujos, siempre bajo la cuenta de un adulto. Cumplimos la Ley
+                1581 de 2012, el consentimiento del tutor queda registrado y todo acceso a los datos
+                de un menor queda auditado. No hay publicidad ni rastreadores de terceros.
+              </p>
+            </details>
+
+            <details>
+              <summary>¿Cómo funciona la licencia para colegios?</summary>
+              <p>
+                El plan Escuela cuesta 12.000.000 de pesos al año e incluye estudiantes y docentes
+                ilimitados, varias sedes, aulas con código de acceso, alta masiva de estudiantes y
+                un panel de seguimiento por grupo.
+              </p>
+            </details>
+
+            <details>
+              <summary>¿Puedo cancelar?</summary>
+              <p>
+                Las licencias son anuales y no se renuevan solas: al terminar el año decides si
+                sigues. No guardamos tu tarjeta.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- Llamada final -->
+      <section class="cierre">
+        <div class="contenedor">
+          <h2>Que su primera clase de programación sea un juego</h2>
+          <p>
+            Elige el plan que encaje con tu familia o con tu colegio y empieza hoy mismo.
+          </p>
+          <a class="boton boton--amarillo" href="/planes.html">Ver los planes</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="pie">
+      <div class="contenedor">
+        <div class="pie__rejilla">
+          <div>
+            <h3>CodeNest School</h3>
+            <p style="color: rgb(255 255 255 / 0.7)">
+              Programación para niños de 4 a 12 años. Hecho en Colombia.
+            </p>
+          </div>
+
+          <div>
+            <h3>Producto</h3>
+            <ul>
+              <li><a href="#como-funciona">Cómo funciona</a></li>
+              <li><a href="#edades">Por edades</a></li>
+              <li><a href="#demo">Demostración</a></li>
+              <li><a href="/planes.html">Planes</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3>Cuenta</h3>
+            <ul>
+              <li><a href="/app/">Entrar a jugar</a></li>
+              <li><a href="/app/portal">Portal del cliente</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3>Legal</h3>
+            <ul>
+              <li><a href="/privacidad.html">Tratamiento de datos</a></li>
+              <li><a href="/terminos.html">Términos del servicio</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="pie__legal">
+          CodeNest School. Tratamiento de datos de menores conforme a la Ley 1581 de 2012 y el
+          Decreto 1377 de 2013.
+          <span id="anio"></span>
+        </p>
+      </div>
+    </footer>
+
+    <script src="/js/principal.js" defer></script>
+    <script src="/js/demo.js" defer></script>
+  </body>
+</html>

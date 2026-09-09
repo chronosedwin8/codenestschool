@@ -63,12 +63,31 @@ async function plugin(fastify: FastifyInstance): Promise<void> {
 export const securityPlugin = fp(plugin, { name: 'security' });
 
 /**
- * Limite estricto para inicio de sesion y pagos: pocos intentos por minuto.
- * Se aplica por ruta con la opcion `config.rateLimit`.
+ * Limite estricto para pagos y acceso de adultos: pocos intentos por minuto y
+ * por direccion IP.
  */
 export const LIMITE_ESTRICTO = {
   rateLimit: {
     max: 8,
+    timeWindow: '1 minute',
+  },
+} as const;
+
+/**
+ * Limite del acceso infantil, contado por direccion IP.
+ *
+ * Es generoso a proposito: un aula de treinta ninos comparte la red del colegio
+ * y entra a la vez, asi que un tope bajo los bloquearia sin haber hecho nada mal.
+ *
+ * La proteccion contra adivinar el PIN de un nino concreto NO esta aqui, porque
+ * este limite se aplica en el gancho `onRequest`, antes de que el cuerpo de la
+ * peticion este leido: desde aqui no se puede saber a que cuenta se intenta
+ * entrar. Esa parte la lleva services/intentos.service.ts, que cuenta los fallos
+ * por cuenta dentro del manejador.
+ */
+export const LIMITE_ACCESO_INFANTIL = {
+  rateLimit: {
+    max: 60,
     timeWindow: '1 minute',
   },
 } as const;

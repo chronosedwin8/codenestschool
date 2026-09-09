@@ -29,6 +29,12 @@ export const router = createRouter({
       meta: { requiereSesion: true },
     },
     {
+      path: '/portal',
+      name: 'portal',
+      component: () => import('@/views/PortalView.vue'),
+      meta: { requiereSesion: true },
+    },
+    {
       path: '/diseno',
       name: 'diseno',
       component: () => import('@/views/DisenoView.vue'),

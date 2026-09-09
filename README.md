@@ -17,14 +17,21 @@ Cada mundo tiene 20 actividades. La actividad número N pertenece al mundo ⌈N/
 ```
 codenestschool/
 ├── apps/
-│   ├── backend/     Fastify 4 + Prisma 5 + PostgreSQL 15
-│   ├── frontend/    Vue 3 + Pinia + Vite 5 + Phaser 3 + Blockly + Monaco + Howler
+│   ├── backend/     Fastify 5 + Prisma 5 + PostgreSQL 15
+│   ├── frontend/    Vue 3 + Pinia + Vite 5 + Phaser 3 + Blockly 11 + Monaco + Howler
 │   └── homepage/    Sitio público estático, optimizado para buscadores
 ├── packages/
-│   ├── shared/      Tipos, catálogo de los 30 mundos, simulador y esquemas zod
-│   └── content/     Reparto de voces, textos de interfaz y los JSON de mundos
+│   ├── shared/      Tipos, catálogo de mundos, simulador, estrellas y pylite
+│   └── content/     Voces, textos de interfaz, generadores y los JSON de mundos
 └── scripts/         Generación de voz con ElevenLabs y validación de contenido
 ```
+
+El sitio público se sirve en la raíz, el juego y el portal en `/app`, y la API en
+`/api`, todo desde el mismo proceso.
+
+Se usa Fastify 5 en lugar de la 4 que figuraba en el encargo inicial: la rama 4
+está fuera de soporte y arrastraba un fallo crítico de omisión de autenticación
+en su dependencia de JWT. El cambio está autorizado.
 
 ## Requisitos
 
@@ -75,6 +82,18 @@ Los precios los fija siempre el servidor a partir de variables de entorno. El pa
 | `npm run db:studio` | Explorador visual de la base de datos |
 | `npm run db:partitions` | Crea las particiones mensuales que falten |
 | `npm run voice:sfx` | Genera los efectos de sonido del juego |
+
+## Pruebas
+
+```bash
+npm test                       # los tres paquetes
+npm run content:validate       # valida el contenido y simula cada solución
+```
+
+Hay 105 pruebas. Las que más importan: que el servidor rechace acciones de juego
+falsificadas, que la aplicación nunca se quede muda si falta un MP3, que un aula
+entera pueda entrar a la vez sin que el límite de peticiones la bloquee, y que un
+pago rechazado no deje una cuenta a medias.
 
 ## Notas de desarrollo
 

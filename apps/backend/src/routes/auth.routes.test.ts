@@ -356,3 +356,102 @@ describe('servicio de archivos estaticos', () => {
     expect(respuesta.json()).toEqual({ error: 'Ruta no encontrada' });
   });
 });
+
+describe('un aula entera entrando a la vez', () => {
+  /**
+   * Treinta ninos comparten la red del colegio, asi que llegan con la misma IP.
+   * Si el limite de peticiones contara solo por IP, los ultimos se quedarian
+   * fuera sin haber hecho nada mal. Se cuenta por IP mas nombre de usuario.
+   */
+  it('no bloquea a los estudiantes que entran despues', async () => {
+    const tutor = await json<{ token: string; usuario: { id: number } }>(
+      'POST',
+      '/api/auth/registro',
+      {
+        body: {
+          nombre: 'Docente Aula',
+          email: `aula.${marca}@prueba.local`,
+          password: PASSWORD,
+          rol: 'docente',
+        },
+      },
+    );
+    creados.push(tutor.datos.usuario.id);
+
+    // Doce estudiantes, mas que el tope de ocho por minuto del acceso adulto.
+    const usuarios: string[] = [];
+    for (let i = 0; i < 12; i++) {
+      const alta = await json<{ nino: { id: number; usuario: string } }>(
+        'POST',
+        '/api/auth/ninos',
+        {
+          token: tutor.datos.token,
+          body: {
+            nombre: `Estudiante ${i} Aula`,
+            fechaNacimiento: '2020-05-10',
+            pin: PIN,
+          },
+        },
+      );
+      creados.push(alta.datos.nino.id);
+      usuarios.push(alta.datos.nino.usuario);
+    }
+
+    // Todos entran desde la misma direccion, como en un aula real.
+    const resultados: number[] = [];
+    for (const usuario of usuarios) {
+      const respuesta = await app.inject({
+        method: 'POST',
+        url: '/api/auth/login-nino',
+        payload: { usuario, pin: PIN },
+        remoteAddress: '190.85.10.20',
+      });
+      resultados.push(respuesta.statusCode);
+    }
+
+    // Ni uno solo bloqueado por el limite de peticiones.
+    expect(resultados.filter((c) => c === 429)).toHaveLength(0);
+    expect(resultados.every((c) => c === 200)).toBe(true);
+  });
+
+  it('sigue frenando los intentos repetidos contra el mismo estudiante', async () => {
+    const tutor = await json<{ token: string; usuario: { id: number } }>(
+      'POST',
+      '/api/auth/registro',
+      {
+        body: {
+          nombre: 'Tutor Fuerza',
+          email: `fuerza.${marca}@prueba.local`,
+          password: PASSWORD,
+          rol: 'tutor',
+        },
+      },
+    );
+    creados.push(tutor.datos.usuario.id);
+
+    const alta = await json<{ nino: { id: number; usuario: string } }>(
+      'POST',
+      '/api/auth/ninos',
+      {
+        token: tutor.datos.token,
+        body: { nombre: 'Objetivo Fuerza', fechaNacimiento: '2020-01-01', pin: PIN },
+      },
+    );
+    creados.push(alta.datos.nino.id);
+
+    // Quince intentos con PIN equivocado contra el mismo usuario.
+    const codigos: number[] = [];
+    for (let i = 0; i < 15; i++) {
+      const respuesta = await app.inject({
+        method: 'POST',
+        url: '/api/auth/login-nino',
+        payload: { usuario: alta.datos.nino.usuario, pin: ['pez', 'pez', 'pez', 'pez'] },
+        remoteAddress: '200.1.2.3',
+      });
+      codigos.push(respuesta.statusCode);
+    }
+
+    // A partir de cierto punto se corta: adivinar un PIN a fuerza bruta no vale.
+    expect(codigos).toContain(429);
+  });
+});

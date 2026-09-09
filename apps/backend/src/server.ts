@@ -18,6 +18,8 @@ import { prismaPlugin } from './plugins/prisma.js';
 import { securityPlugin } from './plugins/security.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { curriculumRoutes } from './routes/curriculum.routes.js';
+import { pagosRoutes } from './routes/pagos.routes.js';
+import { portalRoutes } from './routes/portal.routes.js';
 import { sessionsRoutes } from './routes/sessions.routes.js';
 import { telemetryRoutes } from './routes/telemetry.routes.js';
 import { asegurarParticiones } from '../scripts/ensure-partitions.js';
@@ -57,6 +59,8 @@ export async function construirServidor(): Promise<FastifyInstance> {
   await fastify.register(curriculumRoutes, { prefix: '/api/curriculo' });
   await fastify.register(sessionsRoutes, { prefix: '/api/sesiones' });
   await fastify.register(telemetryRoutes, { prefix: '/api/telemetria' });
+  await fastify.register(pagosRoutes, { prefix: '/api/pagos' });
+  await fastify.register(portalRoutes, { prefix: '/api/portal' });
 
   fastify.get('/health', async () => ({
     estado: 'ok',
@@ -112,13 +116,20 @@ export async function construirServidor(): Promise<FastifyInstance> {
   });
 
   fastify.setErrorHandler(async (error: FastifyError, request, reply) => {
-    const status = error.statusCode ?? 500;
+    // El codigo puede venir en `statusCode` o en `status` segun quien lance el
+    // error: los plugins no son uniformes. Leer solo `statusCode` convertia el
+    // 429 del limite de peticiones en un 500, que rompe los reintentos del
+    // cliente y ensucia la monitorizacion.
+    const conCodigo = error as FastifyError & { status?: number };
+    const status = conCodigo.statusCode ?? conCodigo.status ?? reply.statusCode ?? 500;
+
     if (status >= 500) {
       fastify.log.error({ err: error, url: request.url }, 'Error no controlado');
     }
+
     // Al cliente no se le devuelven trazas internas.
     return reply.code(status).send({
-      error: status >= 500 ? 'Error interno' : error.name,
+      error: status >= 500 ? 'Error interno' : (error.name || 'Error'),
       mensaje: status >= 500 ? 'Algo salio mal. Intentalo de nuevo.' : error.message,
     });
   });
