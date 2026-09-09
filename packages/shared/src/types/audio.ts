@@ -4,7 +4,11 @@
  * La convencion de nombres es la unica fuente de verdad compartida por:
  *  - scripts/generate-voiceover.ts (genera los MP3)
  *  - apps/backend/prisma/seed.ts   (crea las filas `audios` en estado pendiente)
- *  - apps/frontend/stores/audio.ts (reproduce con Howler + fallback Web Speech)
+ *  - apps/frontend/stores/audio.ts (reproduce con Howler)
+ *  - scripts/validate-content.ts   (exige que la clave tenga su MP3)
+ *
+ * Toda la voz es grabada: no hay sintesis del navegador en ninguna parte. Una
+ * clave sin MP3 deja la pantalla muda, asi que el validador la rechaza.
  */
 
 export const TIPO_AUDIO = {

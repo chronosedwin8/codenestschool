@@ -9,7 +9,7 @@ Repositorio destino: `C:\Users\eortiz\Desktop\codenestschool` (vacío) → `http
 ## 1. Contexto
 
 - **Problema:** Codexia cubre 6–12 años con 10 mundos de programación y 7 materias extra. No tiene la capa "prelectores 4–6" estilo Kodable (fichas gigantes, cero texto, fuzzes), ni un pipeline formal de voz ElevenLabs con fallback, ni el volumen de 600 actividades en 3 grupos de edad. Además arrastra deuda: 8 `PrismaClient`, sin migraciones Prisma, sin tests, sin rate-limit, claves hardcodeadas, cero assets visuales.
-- **Objetivo:** producto nuevo y limpio (monorepo) que reutilice lo probado en Codexia y añada: 3 grupos × 10 mundos, editor de fichas drag&drop (M1–10), Blockly (M11–20), Monaco (M21–30), motor Phaser isométrico 2.5D, audio ElevenLabs pre-renderizado + Web Speech, telemetría particionada.
+- **Objetivo:** producto nuevo y limpio (monorepo) que reutilice lo probado en Codexia y añada: 3 grupos × 10 mundos, editor de fichas drag&drop (M1–10), Blockly (M11–20), Monaco (M21–30), motor Phaser isométrico 2.5D, audio ElevenLabs pre-renderizado (sin Web Speech, ver §2), telemetría particionada.
 - **Resultado esperado de esta sesión:** plan aprobado y FASE 1 ejecutada (estructura monorepo, `schema.prisma`, `scripts/generate-voiceover.ts`), con pausa para aprobación antes de Fastify / FASE 2.
 
 ## 2. Decisiones tomadas (confirmadas con el usuario)
@@ -26,6 +26,7 @@ Repositorio destino: `C:\Users\eortiz\Desktop\codenestschool` (vacío) → `http
 | Deps extra autorizadas | `@fastify/rate-limit`, `pino-pretty` (solo dev). **No** `@vueuse/core` → drag&drop con Pointer Events propios. Sin `dotenv` (Node 24 `process.loadEnvFile`). |
 | Idioma | Español (Colombia). Comandos del juego en español (`avanzar`, `repararPuente`). `TZ=America/Bogota`. |
 | Comercial (añadido) | **Homepage pública optimizada para SEO** con todos los beneficios; **portal del cliente completo**; **pasarela Mercado Pago**; **planes Personal, Padres y Escuela** (Escuela = **$12.000.000 COP/año**). Precios de Personal y Padres: **por confirmar** (Codexia usaba Individual $2.000.000/año y Prueba 24 h $10.000; se proponen esos como punto de partida, configurables por env). |
+| Audio (revisado 2026-09-09) | **Toda la voz es grabada con ElevenLabs; sin Web Speech.** La voz del navegador lee los signos de puntuación, se equivoca con los nombres de los Fuzzes y suena distinta en cada aparato: para un niño que no lee no es un respaldo, es otra experiencia. En su lugar, un clip que falta es un error de contenido: `validate-content` rechaza cualquier clave de audio que no tenga MP3 en el manifest, y el almacén de audio la anota en `clipsQueFaltan` y avisa por consola. Coste medido de los mundos 1–10: 697 clips y 46.524 caracteres. |
 
 ## 3. Referencia técnica: qué se porta de BeSmart/Codexia
 
@@ -44,7 +45,7 @@ Rutas bajo `C:\Users\eortiz\Desktop\BeSmart\`.
 | Blockly: toolbox filtrado por `bloques_disponibles`, bloques en español, generador que devuelve string, filtro de eventos, tema | `frontend/src/components/EditorBloques.vue` | Se porta; se cambia a imports `blockly/core` + `msg/es` y renderer `zelos`. |
 | Monaco: tema, completion provider `heroe.*`, `automaticLayout` | `frontend/src/components/EditorTexto.vue` | Se porta; se añade `fuzz.d.ts` para IntelliSense real. |
 | Vite: `worker.format 'es'`, `manualChunks` phaser/monaco/blockly, `optimizeDeps.exclude monaco`, proxy `/api` | `frontend/vite.config.ts` | Copiar y pasar `manualChunks` a función + carga diferida por ruta. |
-| Audio: canal único de voz, clips de ánimo/éxito, `speak()` Web Speech es-CO | `frontend/src/composables/useAudio.ts`, `useVoz.ts` | Reescrito como store Pinia con Howler (voz/sfx/música) + fallback `speechSynthesis`. |
+| Audio: canal único de voz, clips de ánimo/éxito, `speak()` Web Speech es-CO | `frontend/src/composables/useAudio.ts`, `useVoz.ts` | Reescrito como store Pinia con Howler (voz/sfx/música). **Sin `speechSynthesis`**: decisión revisada, ver §2. |
 | `assetUrl()` (BASE_URL) | `frontend/src/utils/asset.ts` | Copiar tal cual. |
 | UI infantil: `CelebrationModal.vue` (confeti, estrellas, recompensas), `StarRating.vue`, `MascotaGuia.vue`, `MapaMundo.vue`, `AvatarConfig.vue` (paper-doll SVG), `StoreView.vue` | `frontend/src/components/*`, `views/StoreView.vue` | Base de `PanelEstrellas`, `MapaMundo`, `TiendaFuzz`, `FuzzAvatar` (SVG, sin assets). |
 | Login/registro con consentimiento Ley 1581 | `frontend/src/views/LoginView.vue`, `backend/src/routes/auth.ts` | Flujo tutor→niño; se sustituye el guest `POST /preescolar` (inseguro) por cuentas de niño creadas por tutor + PIN de imágenes. |
@@ -168,7 +169,7 @@ Presentar árbol, `schema.prisma`, migración editada, script y **esperar aproba
 ### FASE 2 — Frontend base, design system infantil, audio (Sprints 3–4)
 - Tokens (`styles/tokens.css`): Fredoka + Nunito; paleta saturada (`--azul-neon #1FA2FF`, `--verde-cesped #5AD35A`, `--magenta #FF3CAC`, `--amarillo #FFD93D`, `--naranja #FF8A3D`, `--morado #7B61FF`); fondos por grupo (espacio/fantasía/naturaleza); radios 24 px; sombras biseladas "juguete"; objetivos táctiles ≥ 72 px; `prefers-reduced-motion`.
 - Componentes: `BotonJuguete`, `FichaComando`, `BarraPrograma` (dropzones grandes; Pointer Events propios en `composables/useDragFicha.ts`, sin HTML5 DnD), `PanelEstrellas`, `MapaMundo`, `TiendaFuzz`, `BotonEscucharDeNuevo` (megáfono), `FuzzAvatar` (SVG), `LoginImagenes` (PIN de imágenes), `MascotaGuia`, `CelebrationModal`.
-- `stores/audio.ts` (Howler): canales `voz` (único), `sfx`, `musica` (loop por bioma, fade); `narrar(key, textoFallback)` → MP3 de `static/audio` → en `loaderror` → `speechSynthesis` es-CO; desbloqueo tras primer gesto; mute persistido; precarga por mundo desde `manifest.json`. Cada actividad reproduce su instrucción al montar.
+- `stores/audio.ts` (Howler): canales `voz` (único), `sfx`, `musica` (loop por bioma, fade); `narrar(key, texto)` → MP3 de `static/audio`; en `loaderror` se anota el hueco en `clipsQueFaltan` y se avisa por consola, sin sintetizar (§2); desbloqueo tras primer gesto; mute persistido; precarga por mundo desde `manifest.json`. Cada actividad reproduce su instrucción al montar.
 - **Vertical slice al final del sprint 3:** M1-L1 jugable (fichas → simulador → canvas Phaser mínimo → estrellas persistidas), antes de completar todo el design system.
 - Carga diferida por ruta: un explorador de M1 no descarga Blockly ni Monaco.
 
@@ -255,7 +256,7 @@ Extiende el v2 de Codexia (`frontend/src/game/types.ts:43-70`). Los textos narra
 |---|---|
 | Claves expuestas en BeSmart (ElevenLabs, PG) | Rotar clave ElevenLabs; `.env` gitignored; check CI `grep -rn "sk_"`; `JWT_SECRET` obligatorio. |
 | Prisma sin particiones nativas / `db push` destructivo | Migración editada + `_default` + `ensure-partitions`; sin script `db:push`; `migrate diff` en CI. |
-| Coste ElevenLabs | Hash + caché content-addressed + pool de celebraciones; comprobar cuota antes; fallback Web Speech siempre. |
+| Coste ElevenLabs | Hash + caché content-addressed + pool de celebraciones; comprobar cuota antes. Sin fallback: el coste real medido de los mundos 1–10 fue de 46.524 caracteres para 697 clips, sobre un plan Pro de 1.500.000/mes. |
 | Autoría de 600 actividades | Pista paralela desde sprint 3; generadores procedurales; `validate-content` en CI. |
 | DnD táctil 4–6 años sin librería | Pointer Events propios, fichas ≥ 72 px, snap, playtesting en M1. |
 | Python sin Pyodide | `pylite` subconjunto; actividades declaran `lenguajes`; M25/M27 solo JS. |
@@ -280,7 +281,7 @@ Extiende el v2 de Codexia (`frontend/src/game/types.ts:43-70`). Los textos narra
 9. `validate-content.ts --schema-only` valida `m01-*.json`.
 10. `git check-ignore .env` → `.env`; `git lfs ls-files` lista los mp3; `grep -rn "sk_" --exclude-dir=node_modules .` vacío.
 
-Verificación de fases posteriores: FASE 1.5 vitest auth (tutor→niño→PIN→JWT con `ninos[]`) y recálculo de estrellas; FASE 2 M1-L1 jugable y fallback Web Speech al renombrar un MP3; FASE 3 tests de inyección al sandbox; FASE 4 M11 con vista paralela y M21 con IntelliSense/errores por línea + pylite en vitest; FASE 5 `validate-content` en 600 actividades, Playwright un mundo por grupo, panel docente con métricas; FASE 6 compra de cada plan con tarjetas de prueba de Mercado Pago (aprobada, rechazada, pendiente), webhook duplicado sin doble activación, renovación desde el portal, Lighthouse ≥ 90 en homepage, `sitemap.xml` válido, Playwright del flujo padre: registro → pago → crear niño → PIN → jugar → ver reporte.
+Verificación de fases posteriores: FASE 1.5 vitest auth (tutor→niño→PIN→JWT con `ninos[]`) y recálculo de estrellas; FASE 2 M1-L1 jugable y, al renombrar un MP3, `validate-content` lo detecta y la app anota el hueco sin quedarse a medias; FASE 3 tests de inyección al sandbox; FASE 4 M11 con vista paralela y M21 con IntelliSense/errores por línea + pylite en vitest; FASE 5 `validate-content` en 600 actividades, Playwright un mundo por grupo, panel docente con métricas; FASE 6 compra de cada plan con tarjetas de prueba de Mercado Pago (aprobada, rechazada, pendiente), webhook duplicado sin doble activación, renovación desde el portal, Lighthouse ≥ 90 en homepage, `sitemap.xml` válido, Playwright del flujo padre: registro → pago → crear niño → PIN → jugar → ver reporte.
 
 ## 11. Entrega del plan
 Este documento se guarda en `C:\Users\eortiz\Desktop\codenestschool\docs\PLAN.md` y se incluye en el primer commit de FASE 1 para seguimiento posterior.

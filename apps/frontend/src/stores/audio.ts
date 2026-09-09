@@ -7,9 +7,16 @@
  *  1. Tres canales separados. La voz es única (una instrucción interrumpe a la
  *     anterior, nunca se solapan dos), los efectos son polifónicos y la música
  *     va en bucle de fondo con volumen bajo.
- *  2. Respaldo automático. Si falta el MP3 de ElevenLabs, se sintetiza con la
- *     voz del navegador. Es peor, pero la actividad sigue siendo jugable.
- *  3. Desbloqueo por gesto. Los navegadores no dejan sonar nada hasta que el
+ *  2. Solo voz grabada. Toda la narración es MP3 pre-renderizado con ElevenLabs,
+ *     y no hay síntesis del navegador. La voz del navegador lee los signos, se
+ *     equivoca con los nombres de los Fuzzes y cambia de un aparato a otro: para
+ *     un niño que no lee, esa voz no es un respaldo, es otra experiencia. Se
+ *     prefiere que falte un clip y se vea, a que suene mal y no se vea.
+ *  3. Por eso, un clip que falta es un error de contenido, no una degradación.
+ *     Se anota en `clipsQueFaltan` y se avisa por consola, y `validate-content`
+ *     comprueba en cada compilación que el manifest cubre todas las claves que
+ *     el currículo menciona. Ese es el sustituto del respaldo.
+ *  4. Desbloqueo por gesto. Los navegadores no dejan sonar nada hasta que el
  *     usuario toca la pantalla; hasta entonces la voz queda en espera y se
  *     reproduce en cuanto haya permiso.
  */
@@ -49,6 +56,8 @@ export const useAudioStore = defineStore('audio', () => {
   /** Última clave narrada, para el botón "escuchar de nuevo". */
   const ultimaVoz = ref<{ clave: string; texto: string } | null>(null);
   const manifest = ref<Manifest | null>(null);
+  /** Locuciones que se pidieron y no existen. Sin respaldo, son un error visible. */
+  const clipsQueFaltan = ref<readonly string[]>([]);
 
   // Caché de sonidos ya cargados: un efecto no se descarga dos veces.
   const cache = new Map<string, Howl>();
@@ -61,7 +70,8 @@ export const useAudioStore = defineStore('audio', () => {
 
   /** Comprueba si un clip existe según el manifest. */
   function existeClip(clave: string): boolean {
-    // Sin manifest se intenta de todos modos: el respaldo cubre el fallo.
+    // Sin manifest se intenta igual: si el archivo esta, suena, y si no, el
+    // error de carga lo anota. Es mejor que dar por perdido un clip que existe.
     if (!manifest.value) return true;
     return clave in manifest.value.entradas;
   }
@@ -107,36 +117,24 @@ export const useAudioStore = defineStore('audio', () => {
     return sonido;
   }
 
-  /** Voz del navegador: peor calidad, pero mejor que el silencio. */
-  function sintetizar(texto: string): void {
-    if (silenciado.value || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-
-    const locucion = new SpeechSynthesisUtterance(texto);
-    locucion.lang = 'es-CO';
-    locucion.rate = 0.9; // más despacio: son niños
-    locucion.pitch = 1.15; // algo más agudo, resulta más amable
-    locucion.volume = 0.95;
-
-    const voces = window.speechSynthesis.getVoices();
-    const enEspanol =
-      voces.find((v) => v.lang.startsWith('es') && /google|microsoft/i.test(v.name)) ??
-      voces.find((v) => v.lang.startsWith('es'));
-    if (enEspanol) locucion.voice = enEspanol;
-
-    locucion.onstart = () => {
-      hablando.value = true;
-    };
-    locucion.onend = () => {
-      hablando.value = false;
-    };
-
-    window.speechSynthesis.speak(locucion);
+  /**
+   * Anota un clip que no se pudo reproducir.
+   *
+   * No hay nada que hacer en tiempo de ejecución: sin voz grabada, esta pantalla
+   * se queda sin narración. Lo que sí se puede es dejar constancia, para que el
+   * hueco se arregle en el contenido y no se quede escondido.
+   */
+  function avisarFalta(clave: string, motivo: string): void {
+    if (clipsQueFaltan.value.includes(clave)) return;
+    clipsQueFaltan.value = [...clipsQueFaltan.value, clave];
+    console.warn(`[audio] falta la locucion "${clave}" (${motivo}).`);
   }
 
   /**
-   * Narra una instrucción. `texto` es el respaldo si el MP3 no está disponible.
-   * Siempre se pasan los dos: la app no debe quedarse muda nunca.
+   * Narra una instrucción con su clip grabado.
+   *
+   * `texto` no se sintetiza: se guarda porque el botón del megáfono repite la
+   * última narración y porque las pantallas muestran ese mismo texto escrito.
    */
   async function narrar(clave: string, texto: string): Promise<void> {
     ultimaVoz.value = { clave, texto };
@@ -151,7 +149,7 @@ export const useAudioStore = defineStore('audio', () => {
     detenerVoz();
 
     if (!existeClip(clave)) {
-      sintetizar(texto);
+      avisarFalta(clave, 'no esta en el manifest');
       return;
     }
 
@@ -161,14 +159,13 @@ export const useAudioStore = defineStore('audio', () => {
     sonido.once('end', () => {
       hablando.value = false;
     });
-    // Si el archivo no carga, se recurre a la voz del navegador.
     sonido.once('loaderror', () => {
       hablando.value = false;
-      sintetizar(texto);
+      avisarFalta(clave, 'el archivo no carga');
     });
     sonido.once('playerror', () => {
       hablando.value = false;
-      sintetizar(texto);
+      avisarFalta(clave, 'el navegador no lo reproduce');
     });
 
     sonido.play();
@@ -185,7 +182,6 @@ export const useAudioStore = defineStore('audio', () => {
   function detenerVoz(): void {
     vozActual?.stop();
     vozActual = null;
-    window.speechSynthesis?.cancel();
     hablando.value = false;
   }
 
@@ -196,10 +192,10 @@ export const useAudioStore = defineStore('audio', () => {
   }
 
   /** Celebración: elige un clip del grupo compartido para no repetir siempre. */
-  async function celebrar(textoRespaldo = 'Muy bien, lo lograste'): Promise<void> {
+  async function celebrar(texto = 'Muy bien, lo lograste'): Promise<void> {
     efecto('victoria');
     const n = 1 + Math.floor(Math.random() * POOL_CELEBRACIONES);
-    await narrar(`celebration_${n}`, textoRespaldo);
+    await narrar(`celebration_${n}`, texto);
   }
 
   /** Música de fondo del bioma, con transición suave entre mundos. */
@@ -262,6 +258,7 @@ export const useAudioStore = defineStore('audio', () => {
     desbloqueado,
     hablando,
     ultimaVoz,
+    clipsQueFaltan,
     hayManifest,
     cargarManifest,
     desbloquear,

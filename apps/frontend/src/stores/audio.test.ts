@@ -1,9 +1,14 @@
 /**
  * Pruebas del motor de audio.
  *
- * Lo que se protege aquí es la promesa de que la aplicación nunca se queda muda:
- * si el MP3 falta, tiene que hablar el navegador. Para un niño que no lee, un
- * clip ausente sin respaldo equivale a una actividad imposible de entender.
+ * Lo que se protege aquí es que toda la voz sea grabada. No hay síntesis del
+ * navegador: la voz del navegador lee los signos, se equivoca con los nombres de
+ * los Fuzzes y suena distinta en cada aparato, así que para un niño que no lee no
+ * es un respaldo sino otra experiencia. Se prefiere que falte un clip y quede
+ * anotado, a que suene mal y nadie se entere.
+ *
+ * Por eso estas pruebas comprueban dos cosas contrarias a la vez: que un clip
+ * ausente no produce ningún sonido, y que sí deja constancia de que falta.
  *
  * Las pruebas cargan el manifest por la vía real (una petición de red simulada)
  * en lugar de manipular el estado interno del almacén, para que ejerciten el
@@ -62,8 +67,6 @@ vi.mock('howler', () => {
 // Se importa después del simulacro para que el almacén reciba el doble.
 const { useAudioStore } = await import('./audio');
 
-let hablado: string[] = [];
-
 /** Prepara un manifest simulado con las claves indicadas. */
 function conManifest(claves: readonly string[]): void {
   const entradas = Object.fromEntries(
@@ -80,27 +83,8 @@ function conManifest(claves: readonly string[]): void {
 beforeEach(() => {
   setActivePinia(createPinia());
   sonidos.length = 0;
-  hablado = [];
-
-  vi.stubGlobal('speechSynthesis', {
-    speak: (locucion: { text: string }) => hablado.push(locucion.text),
-    cancel: vi.fn(),
-    getVoices: () => [{ lang: 'es-CO', name: 'Google español' }],
-  });
-  vi.stubGlobal(
-    'SpeechSynthesisUtterance',
-    class {
-      lang = '';
-      rate = 1;
-      pitch = 1;
-      volume = 1;
-      voice: unknown = null;
-      onstart: (() => void) | null = null;
-      onend: (() => void) | null = null;
-      constructor(public text: string) {}
-    },
-  );
   vi.stubGlobal('localStorage', { getItem: () => null, setItem: vi.fn() });
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
 describe('desbloqueo por gesto del usuario', () => {
@@ -113,7 +97,6 @@ describe('desbloqueo por gesto del usuario', () => {
 
     expect(audio.desbloqueado).toBe(false);
     expect(sonidos).toHaveLength(0);
-    expect(hablado).toHaveLength(0);
   });
 
   it('lanza la narración pendiente en cuanto llega el permiso', async () => {
@@ -131,8 +114,35 @@ describe('desbloqueo por gesto del usuario', () => {
   });
 });
 
-describe('respaldo cuando falta el audio grabado', () => {
-  it('usa la voz del navegador si el clip no está en el manifest', async () => {
+describe('toda la voz es grabada', () => {
+  it('no hay sintesis del navegador en el almacen', async () => {
+    // Si alguien vuelve a meter speechSynthesis, esta prueba lo caza: el objeto
+    // no existe en el entorno de prueba, asi que usarlo reventaria la narracion.
+    conManifest([]);
+    const audio = useAudioStore();
+    await audio.cargarManifest();
+    audio.desbloquear();
+
+    expect('speechSynthesis' in globalThis).toBe(false);
+    await expect(audio.narrar('instruction_world9_lvl4', 'Corrige el paso')).resolves
+      .toBeUndefined();
+  });
+
+  it('reproduce el MP3 cuando existe', async () => {
+    conManifest(['ui_bienvenida']);
+    const audio = useAudioStore();
+    await audio.cargarManifest();
+    audio.desbloquear();
+
+    await audio.narrar('ui_bienvenida', 'Hola, soy Nube');
+
+    expect(sonidos.at(-1)?.src[0]).toContain('ui_bienvenida.mp3');
+    expect(sonidos.at(-1)?.reproducido).toBe(true);
+  });
+});
+
+describe('un clip que falta es un error visible', () => {
+  it('no inventa voz si la clave no esta en el manifest, y la anota', async () => {
     conManifest(['instruction_world1_lvl1']);
     const audio = useAudioStore();
     await audio.cargarManifest();
@@ -142,43 +152,44 @@ describe('respaldo cuando falta el audio grabado', () => {
     await audio.narrar('instruction_world9_lvl4', 'Corrige el paso equivocado');
 
     expect(sonidos).toHaveLength(0);
-    expect(hablado).toEqual(['Corrige el paso equivocado']);
+    expect(audio.clipsQueFaltan).toEqual(['instruction_world9_lvl4']);
+    expect(console.warn).toHaveBeenCalled();
   });
 
-  it('usa la voz del navegador si el archivo falla al cargar', async () => {
+  it('anota tambien el clip que figura en el manifest y no carga', async () => {
     conManifest(['instruction_world1_lvl1']);
     const audio = useAudioStore();
     await audio.cargarManifest();
     audio.desbloquear();
 
-    await audio.narrar('instruction_world1_lvl1', 'Texto de respaldo');
-
+    await audio.narrar('instruction_world1_lvl1', 'Lleva al Fuzz a la estrella');
     const sonido = sonidos.at(-1);
     expect(sonido?.reproducido).toBe(true);
-    expect(hablado).toHaveLength(0);
+    expect(audio.clipsQueFaltan).toEqual([]);
 
     // El archivo no está en el servidor pese a figurar en el manifest.
     sonido?.dispararError();
 
-    expect(hablado).toEqual(['Texto de respaldo']);
+    expect(audio.clipsQueFaltan).toEqual(['instruction_world1_lvl1']);
+    expect(audio.hablando).toBe(false);
   });
 
-  it('reproduce el MP3 cuando sí existe, sin recurrir a la síntesis', async () => {
+  it('no repite el aviso de la misma clave', async () => {
     conManifest(['ui_bienvenida']);
     const audio = useAudioStore();
     await audio.cargarManifest();
     audio.desbloquear();
 
-    await audio.narrar('ui_bienvenida', 'Hola, soy Nube');
+    await audio.narrar('ui_falta', 'Texto');
+    await audio.narrar('ui_falta', 'Texto');
 
-    expect(sonidos.at(-1)?.src[0]).toContain('ui_bienvenida.mp3');
-    expect(hablado).toHaveLength(0);
+    expect(audio.clipsQueFaltan).toEqual(['ui_falta']);
   });
 });
 
 describe('memoria de la última narración', () => {
   it('permite repetir la instrucción con el botón del megáfono', async () => {
-    conManifest([]);
+    conManifest(['instruction_world2_lvl3']);
     const audio = useAudioStore();
     await audio.cargarManifest();
     audio.desbloquear();
@@ -186,14 +197,20 @@ describe('memoria de la última narración', () => {
     await audio.narrar('instruction_world2_lvl3', 'Si la casilla es roja, gira');
     expect(audio.ultimaVoz?.clave).toBe('instruction_world2_lvl3');
 
-    hablado = [];
+    // El clip ya cargado se reutiliza, asi que se vuelve a reproducir el mismo
+    // sonido en lugar de crear otro: se comprueba sobre ese.
+    const sonido = sonidos.at(-1)!;
+    expect(sonido.src[0]).toContain('instruction_world2_lvl3.mp3');
+    sonido.reproducido = false;
+
     await audio.repetir();
 
-    expect(hablado).toEqual(['Si la casilla es roja, gira']);
+    expect(sonido.reproducido).toBe(true);
+    expect(sonidos).toHaveLength(1);
   });
 
   it('recuerda la narración aunque esté silenciado, para poder repetirla luego', async () => {
-    conManifest([]);
+    conManifest(['ui_bienvenida']);
     const audio = useAudioStore();
     await audio.cargarManifest();
     audio.alternarSilencio();
@@ -201,7 +218,7 @@ describe('memoria de la última narración', () => {
     await audio.narrar('ui_bienvenida', 'Hola, soy Nube');
 
     expect(audio.silenciado).toBe(true);
-    expect(hablado).toHaveLength(0);
+    expect(sonidos).toHaveLength(0);
     expect(audio.ultimaVoz?.texto).toBe('Hola, soy Nube');
   });
 });
@@ -218,7 +235,6 @@ describe('silencio', () => {
     audio.efecto('boton');
 
     expect(sonidos).toHaveLength(0);
-    expect(hablado).toHaveLength(0);
   });
 });
 

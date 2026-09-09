@@ -15,7 +15,8 @@
  *   npm run content:validate
  *   npm run content:validate -- --schema-only
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 import { DIR_MUNDOS, cargarMundos } from '@codenest/content/loader';
 import {
@@ -56,6 +57,43 @@ function aviso(archivo: string, detalle: string): void {
 
 /** Casillas por las que el Fuzz puede pasar. */
 const TRANSITABLES = new Set(['camino', 'meta', 'hielo', 'viento', 'charco']);
+
+/**
+ * Claves de audio que ya existen como MP3, segun el manifest del generador.
+ *
+ * Esta comprobacion es el sustituto del respaldo que habia antes. Mientras la
+ * aplicacion sintetizaba con la voz del navegador, un clip que faltaba era una
+ * molestia; ahora que toda la voz es grabada, es una pantalla muda, y para un
+ * nino que no lee eso es una actividad imposible de entender. Asi que el hueco
+ * tiene que aparecer aqui y no en una tableta.
+ *
+ * Si no hay manifest todavia (nadie ha generado voz aun) no se exige nada: seria
+ * ruido en una instalacion nueva.
+ */
+const RUTA_MANIFEST = resolve(
+  import.meta.dirname,
+  '..',
+  'apps',
+  'frontend',
+  'public',
+  'static',
+  'audio',
+  'manifest.json',
+);
+
+function cargarClavesDeAudio(): Set<string> | null {
+  if (!existsSync(RUTA_MANIFEST)) return null;
+  try {
+    const crudo = JSON.parse(readFileSync(RUTA_MANIFEST, 'utf8')) as {
+      entradas?: Record<string, unknown>;
+    };
+    return new Set(Object.keys(crudo.entradas ?? {}));
+  } catch {
+    return null;
+  }
+}
+
+const clavesGeneradas = cargarClavesDeAudio();
 
 function validarMundo(archivo: string, contenido: WorldContentFileInput): void {
   const mundo = MUNDOS.find((m) => m.numero === contenido.mundo);
@@ -125,6 +163,20 @@ function validarMundo(archivo: string, contenido: WorldContentFileInput): void {
         error(archivo, `${etiqueta}: la pista ${i + 1} usa "${clave}" y deberia usar "${esperada}"`);
       }
     });
+
+    // Toda la voz es grabada, asi que una clave sin MP3 es una pantalla muda.
+    if (clavesGeneradas) {
+      const usadas = [cfg.audio.instruccion, cfg.audio.exito, ...cfg.audio.pistas];
+      for (const clave of usadas) {
+        if (clave && !clavesGeneradas.has(clave)) {
+          error(
+            archivo,
+            `${etiqueta}: la locucion "${clave}" no esta generada. ` +
+              `Ejecuta: npm run voice:generate -- --worlds ${mundo.numero}`,
+          );
+        }
+      }
+    }
 
     // Geometria: spawn, objetivos e items sobre casillas transitables.
     const tile = (x: number, y: number): string | undefined => cfg.grid.tiles[y]?.[x]?.t;
