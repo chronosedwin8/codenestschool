@@ -242,7 +242,9 @@ export function codigoDeBloques(bloques: readonly Bloque[], sangria = ''): strin
       continue;
     }
     if ('pon' in b) {
-      salida += `${sangria}let ${b.pon} = ${codigoExpresion(b.a)};\n`;
+      // `var` y no `let`: es lo que genera Blockly, y ademas asignar dos veces la
+      // misma variable con `let` seria un error de sintaxis.
+      salida += `${sangria}var ${b.pon} = ${codigoExpresion(b.a)};\n`;
       continue;
     }
     salida += `${sangria}${b.suma} = ${b.suma} + ${codigoExpresion(b.cuanto)};\n`;

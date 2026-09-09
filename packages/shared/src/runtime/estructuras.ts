@@ -61,8 +61,15 @@ export function estructurasDelCodigo(codigo: string): string[] {
     }
   }
 
-  // Variables declaradas por el nino. Blockly usa `var`, el editor de texto `let`.
-  if (/\b(let|var|const)\s+[A-Za-z_$][\w$]*\s*=/.test(codigo)) encontradas.add('variable');
+  /**
+   * Variables declaradas por el nino.
+   *
+   * No se exige el igual en la misma linea: Blockly declara arriba (`var pasos;`)
+   * y asigna despues (`pasos = 4;`). Pedir `var pasos = 4` dejaba sin la tercera
+   * estrella al mundo 12 entero, porque ningun programa real de Blockly tiene esa
+   * forma.
+   */
+  if (/\b(let|var|const)\s+[A-Za-z_$][\w$]*/.test(codigo)) encontradas.add('variable');
 
   // Listas: un literal con corchetes, no un acceso por indice.
   if (/=\s*\[|\[\s*\d+\s*,/.test(codigo)) encontradas.add('lista');

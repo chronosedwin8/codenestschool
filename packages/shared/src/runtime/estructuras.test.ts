@@ -89,6 +89,12 @@ describe('variables y listas', () => {
     expect(estructurasDelCodigo('let pasos = 3;')).toContain('variable');
   });
 
+  it('reconoce la forma en que Blockly declara y asigna aparte', () => {
+    // Blockly declara arriba y asigna despues. Si se exigiera el igual en la
+    // misma linea, el mundo de las variables no daria nunca su tercera estrella.
+    expect(estructurasDelCodigo('var pasos;\npasos = 3;\nfuzz.avanzar();')).toContain('variable');
+  });
+
   it('no confunde un acceso por indice con una lista', () => {
     const acceso = estructurasDelCodigo('fuzz.avanzar();\nvar x = ruta[i - 1];');
 
