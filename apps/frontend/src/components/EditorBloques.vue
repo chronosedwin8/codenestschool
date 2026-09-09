@@ -123,22 +123,30 @@ function definirBloques(): void {
     Order.RELATIONAL,
   ];
 
-  // Bucle contado: el mismo `repetir` que usa la barra de fichas, para que el
-  // niño que sube de grupo reconozca la estructura.
+  /**
+   * Bucle contado: el mismo `repetir` que usa la barra de fichas, para que el
+   * niño que sube de grupo reconozca la estructura.
+   *
+   * El número va en un hueco de valor y no escrito dentro del propio bloque. Con
+   * el número dentro, un bucle no puede depender de una variable, y entonces el
+   * mundo 12 no tiene nada que enseñar: una variable que no gobierna nada es un
+   * adorno. Con el hueco ahí encaja un número, una variable o una cuenta. El tres
+   * de por defecto viene como bloque en la sombra, así que quien solo quiera
+   * escribir un número no nota la diferencia.
+   */
   Blockly.Blocks.fuzz_repetir = {
     init() {
-      this.appendDummyInput()
-        .appendField('repetir')
-        .appendField(new Blockly.FieldNumber(3, 1, 100, 1), 'VECES')
-        .appendField('veces');
+      this.appendValueInput('VECES').setCheck('Number').appendField('repetir');
+      this.appendDummyInput().appendField('veces');
       this.appendStatementInput('CUERPO').setCheck(null);
       this.setPreviousStatement(true, null);
       this.setNextStatement(true, null);
       this.setColour(COLOR.bucle);
+      this.setInputsInline(true);
     },
   };
   javascriptGenerator.forBlock.fuzz_repetir = (bloque, generador) => {
-    const veces = bloque.getFieldValue('VECES') as number;
+    const veces = generador.valueToCode(bloque, 'VECES', Order.NONE) || '0';
     const cuerpo = generador.statementToCode(bloque, 'CUERPO');
     return `repetir(${veces}, () => {\n${cuerpo}});\n`;
   };
@@ -175,7 +183,15 @@ function construirToolbox(): Blockly.utils.toolbox.ToolboxDefinition {
 
   if (permitido('repetir') || permitido('mientras') || permitido('hasta')) {
     const contenido: Blockly.utils.toolbox.ToolboxItemInfo[] = [];
-    if (permitido('repetir')) contenido.push({ kind: 'block', type: 'fuzz_repetir' });
+    if (permitido('repetir')) {
+      // El numero viene puesto en la sombra: quien solo quiera escribir un tres
+      // no tiene que ir a buscar el bloque de numero a otra categoria.
+      contenido.push({
+        kind: 'block',
+        type: 'fuzz_repetir',
+        inputs: { VECES: { shadow: { type: 'math_number', fields: { NUM: 3 } } } },
+      });
+    }
     if (permitido('mientras') || permitido('hasta')) {
       contenido.push({ kind: 'block', type: 'controls_whileUntil' });
     }

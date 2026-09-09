@@ -25,6 +25,34 @@ const SIMBOLO: Record<string, string> = {
   charco: 'o',
 };
 
+/**
+ * Ejecuta una solucion en JavaScript, la de los mundos de bloques y de texto.
+ *
+ * Es la misma superficie que ofrece el sandbox del navegador, para que lo que se
+ * ve aqui sea lo que hara el niño.
+ */
+function ejecutarJavaScript(sim: GridSimulator, codigo: string): void {
+  const fuzz = {
+    derecha: () => sim.mover('derecha'),
+    izquierda: () => sim.mover('izquierda'),
+    arriba: () => sim.mover('arriba'),
+    abajo: () => sim.mover('abajo'),
+    avanzar: () => sim.avanzar(),
+    girarDerecha: () => sim.girarDerecha(),
+    girarIzquierda: () => sim.girarIzquierda(),
+    saltar: () => sim.saltar(),
+    recoger: () => sim.recoger(),
+    repararPuente: () => sim.repararPuente(),
+    puedeAvanzar: () => sim.puedeAvanzar(),
+    colorCasilla: () => sim.colorCasilla(),
+    hayObstaculo: () => sim.hayObstaculo(),
+  };
+  const repetir = (veces: number, cuerpo: () => void): void => {
+    for (let i = 0; i < veces; i++) cuerpo();
+  };
+  new Function('fuzz', 'repetir', codigo)(fuzz, repetir);
+}
+
 async function main(): Promise<void> {
   const archivos = await cargarMundos([mundoPedido]);
   const mundo = archivos.find((a) => a.contenido.mundo === mundoPedido)?.contenido;
@@ -65,10 +93,15 @@ async function main(): Promise<void> {
     topeEjecucion: cfg.topeEjecucion,
   });
 
-  const pasos = act.solucionReferencia.comandos ?? [];
   let fallo: string | null = null;
   try {
-    interpretarFichas(sim, pasos);
+    if (act.solucionReferencia.comandos) {
+      interpretarFichas(sim, act.solucionReferencia.comandos);
+    } else if (act.solucionReferencia.javascript) {
+      ejecutarJavaScript(sim, act.solucionReferencia.javascript);
+    } else {
+      fallo = 'la actividad no trae solucion de referencia';
+    }
   } catch (e) {
     fallo = (e as Error).message;
   }

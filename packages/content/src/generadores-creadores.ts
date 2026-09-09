@@ -129,7 +129,7 @@ function bloquesExpresion(e: Expresion): number {
 /** Un bloque de sentencia, de los que se apilan uno debajo de otro. */
 export type Bloque =
   | { readonly hacer: 'avanzar' | 'girarDerecha' | 'girarIzquierda' | 'saltar' | 'recoger' | 'repararPuente' }
-  | { readonly repetir: number; readonly cuerpo: readonly Bloque[] }
+  | { readonly repetir: Expresion; readonly cuerpo: readonly Bloque[] }
   | {
       readonly si: Expresion;
       readonly entonces: readonly Bloque[];
@@ -149,7 +149,15 @@ export const saltar = (): Bloque => ({ hacer: 'saltar' });
 export const recoger = (): Bloque => ({ hacer: 'recoger' });
 export const repararPuente = (): Bloque => ({ hacer: 'repararPuente' });
 
-export const repetir = (veces: number, ...cuerpo: Bloque[]): Bloque => ({ repetir: veces, cuerpo });
+/**
+ * Bucle contado. El número puede ser un número o una variable, porque en el
+ * editor va en un hueco de valor: es lo que permite que el mundo 12 use una
+ * variable para gobernar un bucle.
+ */
+export const repetir = (veces: number | Expresion, ...cuerpo: Bloque[]): Bloque => ({
+  repetir: typeof veces === 'number' ? { numero: veces } : veces,
+  cuerpo,
+});
 export const si = (cond: Expresion, entonces: Bloque[], sino?: Bloque[]): Bloque => ({
   si: cond,
   entonces,
@@ -195,7 +203,7 @@ export function codigoDeBloques(bloques: readonly Bloque[], sangria = ''): strin
       continue;
     }
     if ('repetir' in b) {
-      salida += `${sangria}repetir(${b.repetir}, () => {\n`;
+      salida += `${sangria}repetir(${codigoExpresion(b.repetir)}, () => {\n`;
       salida += codigoDeBloques(b.cuerpo, dentro);
       salida += `${sangria}});\n`;
       continue;
@@ -260,7 +268,8 @@ export function contarBloques(bloques: readonly Bloque[]): number {
       continue;
     }
     if ('repetir' in b) {
-      total += 1 + contarBloques(b.cuerpo);
+      // El numero del bucle es un bloque aparte, enchufado en su hueco.
+      total += 1 + bloquesExpresion(b.repetir) + contarBloques(b.cuerpo);
       continue;
     }
     if ('si' in b) {
@@ -401,6 +410,24 @@ export function tableroDeCamino(
     casillas.set(`${cx},${cy}`, tile);
   };
 
+  /**
+   * Exige que una casilla esté libre antes de romperla.
+   *
+   * Un camino que da la vuelta puede volver a pasar por donde ya estuvo, y eso no
+   * molesta a nadie. Pero abrir un agujero o poner un puente roto encima de una
+   * casilla por la que el Fuzz ya paso deja la actividad imposible, y a veces de
+   * forma muy escondida: si cae sobre la casilla de salida, el Fuzz aparece dentro
+   * del agujero. Es mejor que reviente al compilar y con el sitio exacto.
+   */
+  const libre = (cx: number, cy: number, que: string): void => {
+    if (casillas.has(`${cx},${cy}`)) {
+      throw new Error(
+        `El camino pone ${que} en (${cx},${cy}), donde ya hay camino. ` +
+          'Separa los tramos o cambia el orden de los pasos.',
+      );
+    }
+  };
+
   for (const paso of pasos) {
     if ('gira' in paso) {
       dir = paso.gira === 'derecha' ? GIRO_DERECHA[dir] : GIRO_DERECHA[GIRO_DERECHA[GIRO_DERECHA[dir]]];
@@ -416,6 +443,7 @@ export function tableroDeCamino(
     }
     if ('salta' in paso) {
       const { dx, dy } = DELTA[dir];
+      libre(x + dx, y + dy, 'un agujero');
       poner(x + dx, y + dy, { t: 'agujero' });
       x += dx * 2;
       y += dy * 2;
@@ -427,6 +455,7 @@ export function tableroDeCamino(
       const { dx, dy } = DELTA[dir];
       x += dx;
       y += dy;
+      libre(x, y, 'un puente roto');
       poner(x, y, { t: 'puente' });
       recorrido.push({ x, y });
       continue;

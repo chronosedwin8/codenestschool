@@ -10,7 +10,7 @@
  *   npx tsx scripts/smoke-play.ts
  *   npx tsx scripts/smoke-play.ts 1 4 6 7 9 10
  */
-import { GridSimulator, interpretarFichas } from '@codenest/shared';
+import { GridSimulator, estructurasDelCodigo, interpretarFichas } from '@codenest/shared';
 
 const BASE = process.env.SMOKE_BASE ?? 'http://127.0.0.1:3001';
 const MUNDOS = process.argv.slice(2).map(Number).filter((n) => n >= 1 && n <= 30);
@@ -45,6 +45,45 @@ async function pedir(
     cuerpo = { crudo: texto.slice(0, 200) };
   }
   return { estado: respuesta.status, cuerpo };
+}
+
+/**
+ * Ejecuta una solucion en JavaScript, como haria el sandbox del navegador.
+ *
+ * El tamano del programa lo dice la propia solucion (`bloques`) porque el editor
+ * cuenta bloques y no lineas: es la unidad con la que se compara la tercera
+ * estrella.
+ */
+function ejecutarJavaScript(
+  sim: GridSimulator,
+  solucion: { readonly javascript?: string; readonly bloques?: number },
+): { tamano: number; estructuras: readonly string[] } {
+  const codigo = solucion.javascript ?? '';
+  const fuzz = {
+    derecha: () => sim.mover('derecha'),
+    izquierda: () => sim.mover('izquierda'),
+    arriba: () => sim.mover('arriba'),
+    abajo: () => sim.mover('abajo'),
+    avanzar: () => sim.avanzar(),
+    girarDerecha: () => sim.girarDerecha(),
+    girarIzquierda: () => sim.girarIzquierda(),
+    saltar: () => sim.saltar(),
+    recoger: () => sim.recoger(),
+    repararPuente: () => sim.repararPuente(),
+    puedeAvanzar: () => sim.puedeAvanzar(),
+    colorCasilla: () => sim.colorCasilla(),
+    hayObstaculo: () => sim.hayObstaculo(),
+  };
+  const repetir = (veces: number, cuerpo: () => void): void => {
+    for (let i = 0; i < veces; i++) cuerpo();
+  };
+  new Function('fuzz', 'repetir', codigo)(fuzz, repetir);
+
+  return {
+    tamano:
+      solucion.bloques ?? codigo.split(/\r?\n/).filter((l) => l.trim().length > 0).length,
+    estructuras: estructurasDelCodigo(codigo),
+  };
 }
 
 function exigir(respuesta: Respuesta, que: string): Record<string, unknown> {
@@ -140,8 +179,6 @@ async function main(): Promise<void> {
       const definicion = mundoJson.actividades.find(
         (a) => a.numeroEnMundo === resumen.numeroEnMundo,
       )!;
-      const pasos = definicion.solucionReferencia.comandos ?? [];
-
       const sim = new GridSimulator({
         grid: cfg.grid,
         spawn: cfg.spawn,
@@ -150,7 +187,11 @@ async function main(): Promise<void> {
         comandosPermitidos: cfg.comandosPermitidos,
         topeEjecucion: cfg.topeEjecucion,
       });
-      const medida = interpretarFichas(sim, pasos);
+
+      // Fichas en los mundos 1 al 10, JavaScript de los bloques a partir del 11.
+      const medida = definicion.solucionReferencia.comandos
+        ? interpretarFichas(sim, definicion.solucionReferencia.comandos)
+        : ejecutarJavaScript(sim, definicion.solucionReferencia);
 
       const sesion = exigir(
         await pedir('/api/sesiones', {
@@ -169,7 +210,7 @@ async function main(): Promise<void> {
           cuerpo: {
             acciones: sim.accionesEjecutadas,
             tamanoPrograma: medida.tamano,
-            estructurasUsadas: medida.estructuras,
+            estructurasUsadas: [...medida.estructuras],
             tiempoSegundos: 30,
             codigo: '',
           },
