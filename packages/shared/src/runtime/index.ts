@@ -1,14 +1,14 @@
 /**
- * Logica de juego pura (sin DOM, sin Phaser, sin Prisma).
+ * Logica de juego pura: sin DOM, sin Phaser, sin Prisma.
  *
- * FASE 1.5 implementara aqui:
- *  - GridSimulator.ts : simulador de rejilla (modos `rodar` y `paso`), unica
- *    semantica compartida por el Web Worker, el renderizador y el backend.
- *  - stars.ts         : calculo de estrellas (objetivos + maxFichas + maxInstrucciones).
- *  - pylite/          : transpilador de un subconjunto de Python a JavaScript
- *    para los mundos 21-30 (sin Pyodide, sin dependencias nuevas).
+ * La comparten el Web Worker (mientras el nino juega), el renderizador de
+ * Phaser (para animar) y el backend (para recalcular estrellas sin ejecutar
+ * codigo del alumno).
  *
- * Se deja el modulo declarado para que las referencias de proyecto de
- * TypeScript y los `exports` del paquete existan desde la FASE 1.
+ * Pendiente de la fase 4: pylite/, el transpilador de un subconjunto de Python
+ * a JavaScript para los mundos 21-30.
  */
-export const RUNTIME_VERSION = '0.1.0';
+export * from './GridSimulator.js';
+export * from './stars.js';
+
+export const RUNTIME_VERSION = '0.2.0';

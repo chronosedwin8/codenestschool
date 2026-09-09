@@ -1,0 +1,263 @@
+/**
+ * Pruebas del simulador de rejilla.
+ *
+ * Cubren lo que define la experiencia de juego: que rodar funcione como en
+ * Kodable, que chocar sea un error amable y no un fallo tecnico, que el tope de
+ * instrucciones corte los bucles infinitos, y que el servidor pueda detectar un
+ * intento de hacer trampa reproduciendo acciones imposibles.
+ */
+import { describe, expect, it } from 'vitest';
+
+import type { Accion, Grid, ItemNivel, Spawn } from '../types/runtime.js';
+
+import { ErrorJuego, GridSimulator, reproducirAcciones } from './GridSimulator.js';
+import { calcularEstrellas, evaluarObjetivos, monedasPorEstrellas } from './stars.js';
+
+/** Construye una rejilla a partir de un dibujo en texto. */
+function rejilla(filas: readonly string[]): Grid {
+  const tiles = filas.map((fila) =>
+    [...fila].map((c) => {
+      switch (c) {
+        case '.':
+          return { t: 'camino' as const };
+        case 'M':
+          return { t: 'meta' as const };
+        case 'O':
+          return { t: 'agujero' as const };
+        case 'R':
+          return { t: 'camino' as const, color: 'rojo' as const };
+        default:
+          return { t: 'vacio' as const };
+      }
+    }),
+  );
+  return { cols: filas[0]?.length ?? 0, rows: filas.length, tiles };
+}
+
+const SPAWN: Spawn = { x: 0, y: 1, dir: 'derecha' };
+
+/** Pasillo recto de 5 casillas con la meta al final. */
+const PASILLO = rejilla([
+  '     ',
+  '....M',
+  '     ',
+]);
+
+function crear(opciones?: {
+  grid?: Grid;
+  spawn?: Spawn;
+  items?: readonly ItemNivel[];
+  modo?: 'rodar' | 'paso';
+  comandos?: readonly string[];
+  tope?: number;
+}): GridSimulator {
+  return new GridSimulator({
+    grid: opciones?.grid ?? PASILLO,
+    spawn: opciones?.spawn ?? SPAWN,
+    items: opciones?.items ?? [],
+    modo: opciones?.modo ?? 'rodar',
+    comandosPermitidos: opciones?.comandos ?? ['derecha', 'izquierda', 'arriba', 'abajo'],
+    topeEjecucion: opciones?.tope ?? 1000,
+  });
+}
+
+describe('modo rodar (mundos 1 al 10)', () => {
+  it('una sola ficha lleva al Fuzz hasta el final del camino', () => {
+    const sim = crear();
+    const accion = sim.mover('derecha');
+
+    expect(sim.estado.x).toBe(4);
+    expect(sim.estado.y).toBe(1);
+    expect(accion.celdasRecorridas).toHaveLength(4);
+  });
+
+  it('el Fuzz se detiene al borde de un agujero sin caer', () => {
+    const sim = crear({ grid: rejilla(['     ', '..O.M', '     ']) });
+    sim.mover('derecha');
+
+    expect(sim.estado.x).toBe(1);
+    expect(sim.estado.vivo).toBe(true);
+  });
+
+  it('avisa con un mensaje amable cuando no hay camino', () => {
+    const sim = crear();
+
+    expect(() => sim.mover('arriba')).toThrow(ErrorJuego);
+    try {
+      sim.mover('arriba');
+    } catch (error) {
+      expect((error as ErrorJuego).codigo).toBe('choque');
+      // El mensaje es para un nino de cuatro anos: sin jerga tecnica.
+      expect((error as ErrorJuego).message).not.toMatch(/undefined|null|Error|stack/i);
+    }
+  });
+
+  it('recoge los items que encuentra al pasar por encima', () => {
+    const items: ItemNivel[] = [
+      { id: 'e1', tipo: 'estrella', x: 2, y: 1 },
+      { id: 'e2', tipo: 'estrella', x: 4, y: 1 },
+    ];
+    const sim = crear({ items });
+    sim.mover('derecha');
+
+    expect(sim.estado.recogidos).toEqual(['e1', 'e2']);
+  });
+});
+
+describe('modo paso (mundos 11 en adelante)', () => {
+  it('cada comando avanza exactamente una casilla', () => {
+    const sim = crear({ modo: 'paso' });
+    sim.mover('derecha');
+
+    expect(sim.estado.x).toBe(1);
+  });
+
+  it('avanzar respeta la direccion en que mira el Fuzz', () => {
+    const sim = crear({
+      modo: 'paso',
+      comandos: ['avanzar', 'girarDerecha', 'girarIzquierda'],
+    });
+    sim.avanzar();
+    sim.avanzar();
+
+    expect(sim.estado.x).toBe(2);
+    expect(sim.estado.dir).toBe('derecha');
+  });
+
+  it('girar cuatro veces a la derecha deja al Fuzz mirando igual', () => {
+    const sim = crear({ modo: 'paso', comandos: ['girarDerecha'] });
+    const inicial = sim.estado.dir;
+    for (let i = 0; i < 4; i++) sim.girarDerecha();
+
+    expect(sim.estado.dir).toBe(inicial);
+  });
+});
+
+describe('limites de seguridad', () => {
+  it('corta el programa al superar el tope de instrucciones', () => {
+    const sim = crear({ tope: 3 });
+
+    expect(() => {
+      for (let i = 0; i < 100; i++) {
+        try {
+          sim.mover('derecha');
+        } catch (error) {
+          if ((error as ErrorJuego).codigo === 'limite') throw error;
+          // Los choques son normales aqui; solo nos interesa el tope.
+        }
+      }
+    }).toThrow(/repite demasiadas veces/);
+  });
+
+  it('rechaza comandos que la actividad no ha desbloqueado', () => {
+    const sim = crear({ comandos: ['derecha'] });
+
+    expect(() => sim.mover('abajo')).toThrow(/todavia no puedes usar/);
+  });
+});
+
+describe('verificacion en el servidor', () => {
+  const items: ItemNivel[] = [{ id: 'e1', tipo: 'estrella', x: 4, y: 1 }];
+  const opciones = {
+    grid: PASILLO,
+    spawn: SPAWN,
+    items,
+    modo: 'rodar' as const,
+    comandosPermitidos: ['derecha'],
+    topeEjecucion: 1000,
+  };
+
+  it('reproduce un intento legitimo y concede las tres estrellas', () => {
+    const sim = new GridSimulator(opciones);
+    sim.mover('derecha');
+    const acciones = [...sim.accionesEjecutadas];
+
+    const resultado = evaluarObjetivos(
+      opciones,
+      acciones,
+      [
+        { id: 'salida', tipo: 'alcanzar_celda', x: 4, y: 1, obligatorio: true },
+        { id: 'estrella', tipo: 'recoger_item', itemId: 'e1', obligatorio: false },
+      ],
+      items,
+    );
+
+    expect(resultado.valida).toBe(true);
+    expect(resultado.cumplidos.salida).toBe(true);
+
+    const estrellas = calcularEstrellas(
+      {
+        '1': { objetivos: ['salida'] },
+        '2': { objetivos: ['salida', 'estrella'] },
+        '3': { objetivos: ['salida', 'estrella'], maxFichas: 1 },
+      },
+      resultado.cumplidos,
+      { tamanoPrograma: 1, instruccionesEjecutadas: acciones.length },
+    );
+
+    expect(estrellas).toBe(3);
+  });
+
+  it('no concede nada si el cliente inventa acciones imposibles', () => {
+    // Un cliente manipulado afirma haber llegado a la meta de un salto.
+    const inventadas: Accion[] = [
+      { cmd: 'arriba', desde: { x: 0, y: 1 }, hasta: { x: 4, y: 1 } },
+    ];
+
+    const resultado = evaluarObjetivos(
+      opciones,
+      inventadas,
+      [{ id: 'salida', tipo: 'alcanzar_celda', x: 4, y: 1, obligatorio: true }],
+      items,
+    );
+
+    expect(resultado.valida).toBe(false);
+    expect(resultado.cumplidos.salida).toBe(false);
+  });
+
+  it('baja a dos estrellas cuando el programa usa mas fichas de las permitidas', () => {
+    const sim = new GridSimulator({ ...opciones, modo: 'paso', comandosPermitidos: ['derecha'] });
+    for (let i = 0; i < 4; i++) sim.mover('derecha');
+    const acciones = [...sim.accionesEjecutadas];
+
+    const resultado = evaluarObjetivos(
+      { ...opciones, modo: 'paso' },
+      acciones,
+      [
+        { id: 'salida', tipo: 'alcanzar_celda', x: 4, y: 1, obligatorio: true },
+        { id: 'estrella', tipo: 'recoger_item', itemId: 'e1', obligatorio: false },
+      ],
+      items,
+    );
+
+    const estrellas = calcularEstrellas(
+      {
+        '1': { objetivos: ['salida'] },
+        '2': { objetivos: ['salida', 'estrella'] },
+        '3': { objetivos: ['salida', 'estrella'], maxFichas: 1 },
+      },
+      resultado.cumplidos,
+      { tamanoPrograma: 4, instruccionesEjecutadas: acciones.length },
+    );
+
+    expect(estrellas).toBe(2);
+  });
+});
+
+describe('recompensas', () => {
+  it('reparte las monedas segun las estrellas', () => {
+    expect(monedasPorEstrellas(30, 3)).toBe(30);
+    expect(monedasPorEstrellas(30, 2)).toBe(20);
+    expect(monedasPorEstrellas(30, 0)).toBe(0);
+  });
+});
+
+describe('condicionales de color (mundo 2)', () => {
+  it('el sensor informa del color de la casilla actual', () => {
+    const sim = crear({ grid: rejilla(['     ', '..R.M', '     ']), modo: 'paso' });
+    sim.mover('derecha');
+    sim.mover('derecha');
+
+    expect(sim.colorCasilla()).toBe('rojo');
+  });
+});
