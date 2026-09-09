@@ -411,11 +411,20 @@ export const MUNDOS: readonly WorldDefinition[] = [
     slug: 'reactor-nuclear',
     nombre: 'El Reactor Nuclear',
     grupo: GRUPO_EDAD.hackers,
-    concepto: 'Eventos y async / await',
-    descripcion: 'Usa async/await, onSensorDetect() y escuchadores de eventos.',
+    concepto: 'Eventos: responder en vez de decidir antes',
+    /**
+     * El plan original decia async/await, y no se puede ensenar aqui con
+     * honestidad: la API del juego es sincrona y no hay nada que esperar, asi que
+     * un await seria decorativo y el nino aprenderia a escribir una palabra que no
+     * hace nada. Lo que si es la mitad de verdad de esa idea, y ademas la mitad
+     * util, es dejar de decidir de antemano y responder a lo que llega: una tabla
+     * que asocia cada aviso del reactor con la funcion que lo atiende.
+     */
+    descripcion:
+      'Guarda funciones en un objeto y llama a la que toque segun el aviso que llegue.',
     bioma: 'reactor-nuclear',
     editor: TIPO_EDITOR.texto,
-    // Solo JavaScript: pylite no cubre async/await con fidelidad.
+    // Solo JavaScript: en pylite una funcion no es un valor que se pueda guardar.
     lenguajes: [javascript],
     icono: 'reactor',
     colorPrimario: '#FFD93D',

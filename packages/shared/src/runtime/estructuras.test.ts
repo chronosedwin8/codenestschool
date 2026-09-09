@@ -46,6 +46,26 @@ describe('funciones', () => {
     expect(estructurasDelCodigo(codigo)).not.toContain('parametro');
   });
 
+  it('una funcion guardada en una variable tambien es una funcion', () => {
+    // El mundo 25 ensena justo esto: una funcion es un valor y se guarda.
+    const codigo = 'const tramo = function () {\n  fuzz.avanzar();\n};\ntramo();';
+
+    expect(estructurasDelCodigo(codigo)).toContain('funcion');
+  });
+
+  it('una funcion dentro de un objeto tambien cuenta', () => {
+    const codigo = 'const avisos = {\n  fuga: function () {\n    fuzz.girarDerecha();\n  },\n};';
+
+    expect(estructurasDelCodigo(codigo)).toContain('funcion');
+  });
+
+  it('una flecha guardada cuenta, y una flecha suelta de argumento no', () => {
+    expect(estructurasDelCodigo('const girar = () => fuzz.girarDerecha();')).toContain('funcion');
+    expect(estructurasDelCodigo('repetir(3, () => {\n  fuzz.avanzar();\n});')).not.toContain(
+      'funcion',
+    );
+  });
+
   it('distingue una funcion con parametros', () => {
     const codigo = 'function andar(pasos) {\n  repetir(pasos, () => {\n  fuzz.avanzar();\n});\n}';
 

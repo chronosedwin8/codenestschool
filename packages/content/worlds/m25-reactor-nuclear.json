@@ -1,0 +1,5948 @@
+{
+  "mundo": 25,
+  "slug": "reactor-nuclear",
+  "nombre": "El Reactor Nuclear",
+  "introTexto": "El Reactor Nuclear tiene un panel lleno de avisos y aqui vas a aprender a atenderlos sin decidir de antemano cual va a llegar. La idea es esta: en JavaScript una funcion es un valor, asi que se puede guardar en una variable, meter en una lista, poner dentro de un objeto y pasar a otra funcion. Con eso se hace una tabla que asocia cada aviso con la funcion que lo atiende, y el programa deja de preguntar que ha pasado: lo busca.",
+  "actividades": [
+    {
+      "numeroEnMundo": 1,
+      "slug": "m25-a01-una-funcion-con-nombre-propio",
+      "nombre": "Una funcion con nombre propio",
+      "tipo": "recorrido",
+      "dificultad": 1,
+      "instruccionTexto": "El Reactor Nuclear del Nido lleva funcionando desde antes de que nadie se acuerde, y tiene un panel lleno de avisos. Empieza por algo que ya sabes con una vuelta de tuerca: en JavaScript, una funcion se puede guardar en una variable y llamarse por el nombre de esa variable.",
+      "exitoTexto": "Una funcion guardada en una variable. Parece un detalle y es la puerta de todo lo que viene: si una funcion se puede guardar, se puede pasar, elegir y meter en una lista.",
+      "pistas": [
+        "Se escribe const y el nombre, igual, y la funcion sin nombre propio.",
+        "Y se llama poniendo el nombre de la variable con parentesis."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 12,
+          "rows": 6,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "codigoInicial": {
+          "javascript": "const tramo = function () {\n  // escribe aqui el tramo\n};\n\n"
+        },
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 10,
+            "y": 4,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 10,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl1",
+          "exito": "celebration_1",
+          "pistas": [
+            "hint_world25_lvl1_1",
+            "hint_world25_lvl1_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 16
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const tramo = function () {\n  for (let p = 0; p < 3; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n};\n\ntramo();\ntramo();\ntramo();"
+      }
+    },
+    {
+      "numeroEnMundo": 2,
+      "slug": "m25-a02-dos-funciones-guardadas",
+      "nombre": "Dos funciones guardadas",
+      "tipo": "recorrido",
+      "dificultad": 1,
+      "instruccionTexto": "Dos funciones en dos variables: una gira a la derecha y otra a la izquierda al acabar.",
+      "exitoTexto": "Dos funciones guardadas. Ahora hay dos nombres y el programa elige cual llamar.",
+      "pistas": [
+        "Cada funcion en su variable.",
+        "Se llaman por su nombre, en el orden que pide el tablero."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 7,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 5,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 15,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl2",
+          "exito": "celebration_2",
+          "pistas": [
+            "hint_world25_lvl2_1",
+            "hint_world25_lvl2_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 17
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const aDerecha = function () {\n  for (let p = 0; p < 2; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n};\n\nconst aIzquierda = function () {\n  for (let p = 0; p < 2; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarIzquierda();\n};\n\naDerecha();\naIzquierda();\naDerecha();\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 3,
+      "slug": "m25-a03-elegir-la-funcion",
+      "nombre": "Elegir la funcion",
+      "tipo": "recorrido",
+      "dificultad": 1,
+      "instruccionTexto": "Una variable puede guardar una funcion o la otra segun una condicion, y luego se llama sin saber cual quedo dentro.",
+      "exitoTexto": "La variable no sabe que funcion lleva y el programa la llama igual. Eso es lo raro y lo potente: la decision se tomo antes, en otro sitio.",
+      "pistas": [
+        "Una variable que se asigna dentro de un if.",
+        "Y una sola llamada al final."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 5,
+          "rows": 6,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 3,
+            "y": 4,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 15,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl3",
+          "exito": "celebration_3",
+          "pistas": [
+            "hint_world25_lvl3_1",
+            "hint_world25_lvl3_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 18
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const aDerecha = function () {\n  fuzz.girarDerecha();\n};\n\nconst aIzquierda = function () {\n  fuzz.girarIzquierda();\n};\n\nconst aviso = \"fuga\";\nlet atender = aIzquierda;\nif (aviso === \"fuga\") {\n  atender = aDerecha;\n}\n\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}\natender();\nfor (let p = 0; p < 3; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 4,
+      "slug": "m25-a04-sensores-del-reactor",
+      "nombre": "Sensores del reactor",
+      "tipo": "recoleccion",
+      "dificultad": 1,
+      "instruccionTexto": "Hay sensores por los tramos. Pasa por encima de todos.",
+      "exitoTexto": "Los sensores. El reactor tiene doscientos y dicen que ninguno se ha averiado nunca.",
+      "pistas": [
+        "La funcion guardada en una variable.",
+        "Los sensores estan en el camino."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 10,
+          "rows": 6,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [
+          {
+            "id": "estrella1",
+            "tipo": "estrella",
+            "x": 3,
+            "y": 1
+          },
+          {
+            "id": "estrella2",
+            "tipo": "estrella",
+            "x": 6,
+            "y": 2
+          },
+          {
+            "id": "estrella3",
+            "tipo": "estrella",
+            "x": 8,
+            "y": 3
+          }
+        ],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 8,
+            "y": 4,
+            "obligatorio": true
+          },
+          {
+            "id": "todas",
+            "tipo": "recoger_todos",
+            "obligatorio": false
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida",
+              "todas"
+            ],
+            "maxFichas": 10,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl4",
+          "exito": "celebration_4",
+          "pistas": [
+            "hint_world25_lvl4_1",
+            "hint_world25_lvl4_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 19
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const tramo = function (largo) {\n  for (let p = 0; p < largo; p++) {\n    fuzz.avanzar();\n  }\n  fuzz.girarDerecha();\n  fuzz.avanzar();\n  fuzz.girarIzquierda();\n};\n\ntramo(2);\ntramo(3);\ntramo(2);"
+      }
+    },
+    {
+      "numeroEnMundo": 5,
+      "slug": "m25-a05-la-tabla-de-avisos",
+      "nombre": "La tabla de avisos",
+      "tipo": "recorrido",
+      "dificultad": 2,
+      "instruccionTexto": "Aqui esta la idea del mundo. Un objeto puede guardar funciones igual que guarda numeros: la clave es el aviso y el valor es la funcion que lo atiende. Y para atender un aviso se saca su funcion de la tabla y se llama.",
+      "exitoTexto": "Una tabla de avisos. Fijate en lo que NO hay: ninguna cadena de condiciones. El programa no pregunta que aviso es, lo busca.",
+      "pistas": [
+        "El objeto lleva claves con nombres de aviso y funciones como valor.",
+        "Para llamarla se saca de la tabla con corchetes y se le ponen los parentesis."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 7,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "codigoInicial": {
+          "javascript": "const avisos = {\n  fuga: function () {\n    // que se hace cuando hay una fuga\n  },\n};\n\nconst panel = [\"fuga\", \"calor\", \"fuga\"];\n"
+        },
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 5,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 15,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl5",
+          "exito": "celebration_5",
+          "pistas": [
+            "hint_world25_lvl5_1",
+            "hint_world25_lvl5_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 20
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const avisos = {\n  fuga: function () {\n    fuzz.girarDerecha();\n  },\n  calor: function () {\n    fuzz.girarIzquierda();\n  },\n};\n\nconst panel = [\"fuga\", \"calor\", \"fuga\"];\nfor (const aviso of panel) {\n  for (let p = 0; p < 2; p++) {\n    fuzz.avanzar();\n  }\n  avisos[aviso]();\n}\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 6,
+      "slug": "m25-a06-un-aviso-mas",
+      "nombre": "Un aviso mas",
+      "tipo": "recorrido",
+      "dificultad": 2,
+      "instruccionTexto": "Ahora hay tres clases de aviso, y uno de ellos significa seguir recto. Anade su funcion a la tabla y no toques el bucle.",
+      "exitoTexto": "Un aviso mas y el bucle intacto. Eso es lo que se gana con una tabla: crecer por un lado sin tocar el otro.",
+      "pistas": [
+        "La tabla tiene tres claves.",
+        "La del aviso que no gira no hace nada."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 7,
+          "rows": 9,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 7,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 18,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl6",
+          "exito": "celebration_6",
+          "pistas": [
+            "hint_world25_lvl6_1",
+            "hint_world25_lvl6_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 21
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const avisos = {\n  fuga: function () {\n    fuzz.girarDerecha();\n  },\n  calor: function () {\n    fuzz.girarIzquierda();\n  },\n  estable: function () {\n    return;\n  },\n};\n\nconst panel = [\"fuga\", \"estable\", \"calor\", \"fuga\"];\nfor (const aviso of panel) {\n  for (let p = 0; p < 2; p++) {\n    fuzz.avanzar();\n  }\n  avisos[aviso]();\n}\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 7,
+      "slug": "m25-a07-ocho-avisos",
+      "nombre": "Ocho avisos",
+      "tipo": "recorrido",
+      "dificultad": 2,
+      "instruccionTexto": "El panel entero: ocho avisos mezclados. La tabla no crece y el bucle tampoco.",
+      "exitoTexto": "Ocho avisos atendidos y el programa igual de largo que con tres. Eso no lo consigue una cadena de condiciones.",
+      "pistas": [
+        "La tabla es la misma.",
+        "Solo crece la lista de avisos del panel."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 5,
+          "rows": 15,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 3,
+            "y": 13,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 27,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl7",
+          "exito": "celebration_7",
+          "pistas": [
+            "hint_world25_lvl7_1",
+            "hint_world25_lvl7_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 22
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const avisos = {\n  fuga: function () {\n    fuzz.girarDerecha();\n  },\n  calor: function () {\n    fuzz.girarIzquierda();\n  },\n  estable: function () {\n    return;\n  },\n};\n\nconst panel = [\n  \"fuga\",\n  \"estable\",\n  \"fuga\",\n  \"calor\",\n  \"estable\",\n  \"calor\",\n  \"fuga\",\n  \"estable\",\n];\nfor (const aviso of panel) {\n  for (let p = 0; p < 2; p++) {\n    fuzz.avanzar();\n  }\n  avisos[aviso]();\n}\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 8,
+      "slug": "m25-a08-la-tabla-con-datos-y-funciones",
+      "nombre": "La tabla con datos y funciones",
+      "tipo": "recorrido",
+      "dificultad": 2,
+      "instruccionTexto": "Cada aviso puede llevar su funcion y ademas cuantos pasos hay que dar antes de atenderlo. Un objeto con una clave que es un numero y otra que es una funcion.",
+      "exitoTexto": "Datos y comportamiento en el mismo objeto. Es la primera vez que ves algo asi, y es como se construye casi todo el software que usas.",
+      "pistas": [
+        "Cada aviso es un objeto con las claves pasos y atender.",
+        "Se leen las dos: una con un bucle y la otra con parentesis."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 10,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 8,
+            "y": 5,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 28,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl8",
+          "exito": "celebration_8",
+          "pistas": [
+            "hint_world25_lvl8_1",
+            "hint_world25_lvl8_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 23
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const avisos = {\n  fuga: {\n    pasos: 3,\n    atender: function () {\n      fuzz.girarDerecha();\n    },\n  },\n  calor: {\n    pasos: 2,\n    atender: function () {\n      fuzz.girarIzquierda();\n    },\n  },\n  purga: {\n    pasos: 4,\n    atender: function () {\n      fuzz.girarDerecha();\n    },\n  },\n};\n\nconst panel = [\"fuga\", \"calor\", \"purga\"];\nfor (const aviso of panel) {\n  const orden = avisos[aviso];\n  for (let p = 0; p < orden.pasos; p++) {\n    fuzz.avanzar();\n  }\n  orden.atender();\n}\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 9,
+      "slug": "m25-a09-cinco-clases-de-aviso",
+      "nombre": "Cinco clases de aviso",
+      "tipo": "recorrido",
+      "dificultad": 3,
+      "instruccionTexto": "Cinco avisos distintos, cada uno con sus pasos y su funcion. Leelos del tablero.",
+      "exitoTexto": "Cinco clases de aviso y una sola linea que las atiende todas.",
+      "pistas": [
+        "Cada aviso es un objeto con pasos y atender.",
+        "El bucle no cambia."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 7,
+          "rows": 8,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 6,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 34,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl9",
+          "exito": "celebration_9",
+          "pistas": [
+            "hint_world25_lvl9_1",
+            "hint_world25_lvl9_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 24
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const avisos = {\n  fuga: {\n    pasos: 2,\n    atender: function () {\n      fuzz.girarDerecha();\n    },\n  },\n  calor: {\n    pasos: 3,\n    atender: function () {\n      fuzz.girarDerecha();\n    },\n  },\n  purga: {\n    pasos: 1,\n    atender: function () {\n      fuzz.girarIzquierda();\n    },\n  },\n  frio: {\n    pasos: 2,\n    atender: function () {\n      fuzz.girarIzquierda();\n    },\n  },\n};\n\nconst panel = [\"fuga\", \"calor\", \"purga\", \"frio\"];\nfor (const aviso of panel) {\n  const orden = avisos[aviso];\n  for (let p = 0; p < orden.pasos; p++) {\n    fuzz.avanzar();\n  }\n  orden.atender();\n}\nfor (let p = 0; p < 3; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 10,
+      "slug": "m25-a10-pasar-una-funcion-a-otra-funcion",
+      "nombre": "Pasar una funcion a otra funcion",
+      "tipo": "recorrido",
+      "dificultad": 3,
+      "instruccionTexto": "Si una funcion es un valor, se le puede pasar a otra funcion como parametro. Escribe una que reciba cuantos pasos dar y que hacer al final.",
+      "exitoTexto": "Una funcion que recibe otra funcion. Se llama asi, sin mas: el parametro se usa con parentesis igual que cualquier funcion.",
+      "pistas": [
+        "El segundo parametro es una funcion.",
+        "Dentro se llama poniendole los parentesis."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 9,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 5,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 17,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl10",
+          "exito": "celebration_10",
+          "pistas": [
+            "hint_world25_lvl10_1",
+            "hint_world25_lvl10_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 25
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const tramo = function (pasos, alFinal) {\n  for (let p = 0; p < pasos; p++) {\n    fuzz.avanzar();\n  }\n  alFinal();\n};\n\nconst aDerecha = function () {\n  fuzz.girarDerecha();\n};\n\nconst aIzquierda = function () {\n  fuzz.girarIzquierda();\n};\n\ntramo(3, aDerecha);\ntramo(2, aIzquierda);\ntramo(3, aDerecha);\ntramo(2, function () {\n  return;\n});"
+      }
+    },
+    {
+      "numeroEnMundo": 11,
+      "slug": "m25-a11-la-funcion-sin-nombre",
+      "nombre": "La funcion sin nombre",
+      "tipo": "recorrido",
+      "dificultad": 3,
+      "instruccionTexto": "Una funcion que solo se usa una vez no necesita nombre: se escribe donde hace falta. Aqui el que hacer al final va escrito en la propia llamada.",
+      "exitoTexto": "Una funcion escrita en el sitio donde se usa. Ahorra un nombre, y un nombre que no hace falta es un nombre que hay que leer.",
+      "pistas": [
+        "La funcion va dentro de los parentesis de la llamada.",
+        "No lleva nombre, solo la palabra function."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 7,
+          "rows": 9,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 7,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 17,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl11",
+          "exito": "celebration_11",
+          "pistas": [
+            "hint_world25_lvl11_1",
+            "hint_world25_lvl11_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 26
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const tramo = function (pasos, alFinal) {\n  for (let p = 0; p < pasos; p++) {\n    fuzz.avanzar();\n  }\n  alFinal();\n};\n\ntramo(2, function () {\n  fuzz.girarDerecha();\n});\ntramo(3, function () {\n  fuzz.girarIzquierda();\n});\ntramo(2, function () {\n  fuzz.girarDerecha();\n});\ntramo(3, function () {\n  return;\n});"
+      }
+    },
+    {
+      "numeroEnMundo": 12,
+      "slug": "m25-a12-una-lista-de-funciones",
+      "nombre": "Una lista de funciones",
+      "tipo": "recorrido",
+      "dificultad": 3,
+      "instruccionTexto": "Si una funcion es un valor, cabe en una lista. Guarda en una lista lo que hay que hacer en cada esquina, en orden, y recorrela.",
+      "exitoTexto": "Una lista de funciones recorrida con un bucle. El programa no sabe que hace cada una: las llama en orden.",
+      "pistas": [
+        "La lista lleva funciones separadas por comas.",
+        "Y el bucle sin indice las llama una a una."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 5,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 1,
+            "y": 5,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 17,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl12",
+          "exito": "celebration_12",
+          "pistas": [
+            "hint_world25_lvl12_1",
+            "hint_world25_lvl12_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 27
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const plan = [\n  function () {\n    fuzz.girarDerecha();\n  },\n  function () {\n    fuzz.girarDerecha();\n  },\n  function () {\n    fuzz.girarIzquierda();\n  },\n];\n\nfor (const paso of plan) {\n  for (let p = 0; p < 2; p++) {\n    fuzz.avanzar();\n  }\n  paso();\n}\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 13,
+      "slug": "m25-a13-la-funcion-que-devuelve-una-funcion",
+      "nombre": "La funcion que devuelve una funcion",
+      "tipo": "recorrido",
+      "dificultad": 4,
+      "instruccionTexto": "Y lo mas raro del mundo, que ademas es util: una funcion puede devolver otra funcion. Escribe una que reciba un lado y devuelva la funcion que gira hacia ese lado.",
+      "exitoTexto": "Una funcion que fabrica funciones. Suena a truco y es lo que hay detras de la mitad de las librerias que vas a usar en tu vida.",
+      "pistas": [
+        "La funcion de fuera recibe el lado y devuelve una funcion.",
+        "La de dentro es la que gira, y se llama despues."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 7,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 5,
+            "y": 5,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 17,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl13",
+          "exito": "celebration_13",
+          "pistas": [
+            "hint_world25_lvl13_1",
+            "hint_world25_lvl13_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 28
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const giroHacia = function (lado) {\n  if (lado === \"derecha\") {\n    return function () {\n      fuzz.girarDerecha();\n    };\n  }\n  return function () {\n    fuzz.girarIzquierda();\n  };\n};\n\nconst plan = [\"derecha\", \"izquierda\", \"derecha\"];\nfor (const lado of plan) {\n  for (let p = 0; p < 2; p++) {\n    fuzz.avanzar();\n  }\n  const girar = giroHacia(lado);\n  girar();\n}\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 14,
+      "slug": "m25-a14-la-tabla-que-crece",
+      "nombre": "La tabla que crece",
+      "tipo": "recorrido",
+      "dificultad": 4,
+      "instruccionTexto": "Un aviso nuevo no obliga a tocar el bucle: se anade a la tabla y ya esta. Aqui hay seis clases y el bucle es el mismo de la actividad cinco.",
+      "exitoTexto": "Seis clases de aviso, y el bucle no ha cambiado desde la actividad cinco. Eso es lo que se busca al separar la tabla del bucle.",
+      "pistas": [
+        "La tabla tiene seis claves.",
+        "El bucle no cambia ni una letra."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 13,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 11,
+            "y": 5,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 27,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl14",
+          "exito": "celebration_14",
+          "pistas": [
+            "hint_world25_lvl14_1",
+            "hint_world25_lvl14_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 29
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const avisos = {\n  fuga: function () {\n    fuzz.girarDerecha();\n  },\n  calor: function () {\n    fuzz.girarIzquierda();\n  },\n  estable: function () {\n    return;\n  },\n  purga: function () {\n    fuzz.girarDerecha();\n  },\n  frio: function () {\n    fuzz.girarIzquierda();\n  },\n  revision: function () {\n    return;\n  },\n};\n\nconst panel = [\"fuga\", \"calor\", \"estable\", \"purga\", \"frio\", \"revision\"];\nfor (const aviso of panel) {\n  for (let p = 0; p < 2; p++) {\n    fuzz.avanzar();\n  }\n  avisos[aviso]();\n}\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 15,
+      "slug": "m25-a15-el-aviso-desconocido",
+      "nombre": "El aviso desconocido",
+      "tipo": "recorrido",
+      "dificultad": 4,
+      "instruccionTexto": "El panel trae un aviso que no esta en la tabla. Si se llama sin comprobar, el programa se rompe. Comprueba antes si la tabla lo conoce.",
+      "exitoTexto": "Comprobar antes de llamar. Una tabla de funciones es potente y tiene ese precio: hay que preguntar si la clave existe.",
+      "pistas": [
+        "Se saca la funcion a una variable y se comprueba que existe.",
+        "Si no existe, se sigue sin hacer nada."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 9,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 5,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 17,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl15",
+          "exito": "celebration_15",
+          "pistas": [
+            "hint_world25_lvl15_1",
+            "hint_world25_lvl15_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 30
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const avisos = {\n  fuga: function () {\n    fuzz.girarDerecha();\n  },\n  calor: function () {\n    fuzz.girarIzquierda();\n  },\n};\n\nconst panel = [\"fuga\", \"raro\", \"calor\", \"otro\"];\nfor (const aviso of panel) {\n  for (let p = 0; p < 2; p++) {\n    fuzz.avanzar();\n  }\n  const atender = avisos[aviso];\n  if (atender) {\n    atender();\n  }\n}\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 16,
+      "slug": "m25-a16-diez-avisos",
+      "nombre": "Diez avisos",
+      "tipo": "recorrido",
+      "dificultad": 4,
+      "instruccionTexto": "El panel completo del reactor: diez avisos y dos de ellos desconocidos.",
+      "exitoTexto": "Diez avisos, dos desconocidos, y el programa no se ha roto. El reactor sigue en marcha.",
+      "pistas": [
+        "La tabla, la comprobacion y el bucle.",
+        "Lee el panel del tablero en orden."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 9,
+          "rows": 15,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 13,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 26,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl16",
+          "exito": "celebration_1",
+          "pistas": [
+            "hint_world25_lvl16_1",
+            "hint_world25_lvl16_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 31
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const avisos = {\n  fuga: function () {\n    fuzz.girarDerecha();\n  },\n  calor: function () {\n    fuzz.girarIzquierda();\n  },\n};\n\nconst panel = [\n  \"fuga\",\n  \"raro\",\n  \"calor\",\n  \"fuga\",\n  \"otro\",\n  \"calor\",\n  \"fuga\",\n  \"raro\",\n];\nfor (const aviso of panel) {\n  for (let p = 0; p < 2; p++) {\n    fuzz.avanzar();\n  }\n  const atender = avisos[aviso];\n  if (atender) {\n    atender();\n  }\n}\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 17,
+      "slug": "m25-a17-un-aviso-que-atiende-dos-cosas",
+      "nombre": "Un aviso que atiende dos cosas",
+      "tipo": "recorrido",
+      "dificultad": 5,
+      "instruccionTexto": "Una funcion de la tabla puede hacer mas de una cosa, y puede llamar a otras funciones de la misma tabla. Aqui el aviso de emergencia hace lo de la fuga y lo del calor.",
+      "exitoTexto": "Una funcion de la tabla llamando a otra de la tabla. Se compone como se componen los bloques propios, y por las mismas razones.",
+      "pistas": [
+        "La funcion de emergencia llama a las otras dos por la tabla.",
+        "Ojo al orden en que las llama."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 5,
+          "rows": 5,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 1,
+            "y": 3,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 22,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl17",
+          "exito": "celebration_2",
+          "pistas": [
+            "hint_world25_lvl17_1",
+            "hint_world25_lvl17_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 32
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const avisos = {\n  fuga: function () {\n    fuzz.girarDerecha();\n  },\n  calor: function () {\n    fuzz.girarDerecha();\n  },\n  emergencia: function () {\n    avisos.fuga();\n    avisos.calor();\n  },\n};\n\nconst panel = [\"emergencia\", \"izquierda\"];\navisos.emergencia === undefined;\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}\navisos.emergencia();\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}\nfuzz.girarIzquierda();\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 18,
+      "slug": "m25-a18-la-cuenta-atras",
+      "nombre": "La cuenta atras",
+      "tipo": "recorrido",
+      "dificultad": 5,
+      "instruccionTexto": "Chispa oyo una cuenta atras la noche de la tormenta: cinco, cuatro, tres. El panel del reactor guarda las cuentas atras de esa noche, y hay una que no acabo en cero. Ve a verla.",
+      "exitoTexto": "La cuenta atras del panel llega hasta uno y se corta. No hay cero. Y en el sitio del cero hay una palabra: lanzado. El reactor no lanza nada. El reactor solo calienta.",
+      "pistas": [
+        "La tabla de avisos con la comprobacion.",
+        "Seis avisos en el panel."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 9,
+          "rows": 11,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 9,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 20,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl18",
+          "exito": "celebration_3",
+          "pistas": [
+            "hint_world25_lvl18_1",
+            "hint_world25_lvl18_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 33
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const avisos = {\n  fuga: function () {\n    fuzz.girarDerecha();\n  },\n  calor: function () {\n    fuzz.girarIzquierda();\n  },\n  estable: function () {\n    return;\n  },\n};\n\nconst panel = [\"fuga\", \"estable\", \"calor\", \"fuga\", \"estable\", \"calor\"];\nfor (const aviso of panel) {\n  for (let p = 0; p < 2; p++) {\n    fuzz.avanzar();\n  }\n  const atender = avisos[aviso];\n  if (atender) {\n    atender();\n  }\n}\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 19,
+      "slug": "m25-a19-el-panel-de-esa-noche",
+      "nombre": "El panel de esa noche",
+      "tipo": "recorrido",
+      "dificultad": 5,
+      "instruccionTexto": "Este es el panel entero de la noche de la tormenta, con todos sus avisos en orden. Recorrelo. Al final esta Reactor esperando.",
+      "exitoTexto": "El panel de esa noche tiene veintidos avisos y el ultimo no es un aviso: es una hora. Las tres y catorce. Otra vez.",
+      "pistas": [
+        "La tabla con datos y funciones: pasos y atender.",
+        "Cinco avisos con pasos distintos."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 9,
+          "rows": 8,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 6,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 34,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl19",
+          "exito": "celebration_4",
+          "pistas": [
+            "hint_world25_lvl19_1",
+            "hint_world25_lvl19_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 34
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const avisos = {\n  fuga: {\n    pasos: 2,\n    atender: function () {\n      fuzz.girarDerecha();\n    },\n  },\n  calor: {\n    pasos: 3,\n    atender: function () {\n      fuzz.girarIzquierda();\n    },\n  },\n  purga: {\n    pasos: 1,\n    atender: function () {\n      fuzz.girarDerecha();\n    },\n  },\n  frio: {\n    pasos: 2,\n    atender: function () {\n      fuzz.girarIzquierda();\n    },\n  },\n};\n\nconst panel = [\"fuga\", \"calor\", \"purga\", \"frio\"];\nfor (const aviso of panel) {\n  const orden = avisos[aviso];\n  for (let p = 0; p < orden.pasos; p++) {\n    fuzz.avanzar();\n  }\n  orden.atender();\n}\nfor (let p = 0; p < 3; p++) {\n  fuzz.avanzar();\n}"
+      }
+    },
+    {
+      "numeroEnMundo": 20,
+      "slug": "m25-a20-donde-esta-reactor",
+      "nombre": "Donde esta Reactor",
+      "tipo": "integrador",
+      "dificultad": 5,
+      "instruccionTexto": "Ultimo del reactor. Reactor, el Fuzz, esta en la sala de control con el panel de esa noche congelado en la pantalla. Ve a por el. Tabla, lista de funciones y comprobacion: todo lo del mundo junto.",
+      "exitoTexto": "Reactor esta en casa, y ha traido la pantalla con el panel congelado. Dice que el reactor no lanzo nada esa noche, porque el reactor no puede lanzar nada. Que solo hay un sitio en el Nido capaz de lanzar algo, y es el Nucleo.",
+      "pistas": [
+        "La tabla de avisos con pasos y funcion, y la comprobacion de que el aviso existe.",
+        "Cinco avisos y uno desconocido."
+      ],
+      "config": {
+        "version": 3,
+        "grupo": "hackers",
+        "editor": "texto",
+        "lenguajes": [
+          "javascript"
+        ],
+        "modoMovimiento": "paso",
+        "grid": {
+          "cols": 9,
+          "rows": 7,
+          "tiles": [
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "camino"
+              },
+              {
+                "t": "meta"
+              },
+              {
+                "t": "vacio"
+              }
+            ],
+            [
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              },
+              {
+                "t": "vacio"
+              }
+            ]
+          ]
+        },
+        "spawn": {
+          "x": 1,
+          "y": 1,
+          "dir": "derecha"
+        },
+        "items": [],
+        "comandosPermitidos": [
+          "avanzar",
+          "girarDerecha",
+          "girarIzquierda",
+          "puedeAvanzar",
+          "hayObstaculo"
+        ],
+        "bloquesDisponibles": [],
+        "objetivos": [
+          {
+            "id": "salida",
+            "tipo": "alcanzar_celda",
+            "x": 7,
+            "y": 5,
+            "obligatorio": true
+          }
+        ],
+        "criteriosEstrella": {
+          "1": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "2": {
+            "objetivos": [
+              "salida"
+            ]
+          },
+          "3": {
+            "objetivos": [
+              "salida"
+            ],
+            "maxFichas": 35,
+            "requiereEstructuras": [
+              "funcion"
+            ]
+          }
+        },
+        "audio": {
+          "instruccion": "instruction_world25_lvl20",
+          "exito": "celebration_5",
+          "pistas": [
+            "hint_world25_lvl20_1",
+            "hint_world25_lvl20_2"
+          ]
+        },
+        "recompensa": {
+          "monedas": 145
+        },
+        "topeEjecucion": 8000
+      },
+      "solucionReferencia": {
+        "javascript": "const avisos = {\n  fuga: {\n    pasos: 2,\n    atender: function () {\n      fuzz.girarDerecha();\n    },\n  },\n  calor: {\n    pasos: 3,\n    atender: function () {\n      fuzz.girarIzquierda();\n    },\n  },\n  purga: {\n    pasos: 2,\n    atender: function () {\n      fuzz.girarDerecha();\n    },\n  },\n  frio: {\n    pasos: 1,\n    atender: function () {\n      fuzz.girarIzquierda();\n    },\n  },\n};\n\nconst panel = [\"fuga\", \"calor\", \"purga\", \"frio\"];\nfor (const aviso of panel) {\n  const orden = avisos[aviso];\n  if (orden) {\n    for (let p = 0; p < orden.pasos; p++) {\n      fuzz.avanzar();\n    }\n    orden.atender();\n  }\n}\nfor (let p = 0; p < 2; p++) {\n  fuzz.avanzar();\n}"
+      }
+    }
+  ]
+}

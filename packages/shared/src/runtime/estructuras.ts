@@ -49,16 +49,27 @@ export function estructurasDelCodigo(codigo: string): string[] {
   if (/&&|\|\|/.test(codigo)) encontradas.add('logica');
 
   /**
-   * Funcion propia. Solo cuenta una declaracion con nombre, que es lo que genera
-   * el bloque "mis bloques" de Blockly y lo que se escribe en los mundos de
-   * texto. La flecha suelta no cuenta: es el cuerpo de un bucle.
+   * Funcion propia del nino.
+   *
+   * Cuenta la palabra `function` en cualquiera de sus formas, porque en el mundo 25
+   * una funcion se guarda en una variable o dentro de un objeto y sigue siendo una
+   * funcion suya.
+   *
+   * Lo que NO cuenta es la flecha suelta que va como argumento: el bucle de los
+   * bloques se genera como `repetir(3, () => ...)`, y esa flecha es del generador y
+   * no del nino. Darla por buena hacia que la tercera estrella del mundo de las
+   * funciones se consiguiera sin escribir ninguna. Una flecha guardada detras de un
+   * igual o de dos puntos si cuenta: eso lo ha escrito alguien.
    */
-  const declaracion = /\bfunction\s+([A-Za-z_$][\w$]*)\s*\(([^)]*)\)/.exec(codigo);
-  if (declaracion) {
+  const flechaGuardada = /[=:]\s*(?:async\s*)?\([^)]*\)\s*=>/.test(codigo);
+  if (/\bfunction\b/.test(codigo) || flechaGuardada) {
     encontradas.add('funcion');
-    if (declaracion[2] !== undefined && declaracion[2].trim().length > 0) {
-      encontradas.add('parametro');
-    }
+
+    const conParametros =
+      /\bfunction\s*[A-Za-z_$][\w$]*\s*\(\s*[A-Za-z_$][^)]*\)/.test(codigo) ||
+      /\bfunction\s*\(\s*[A-Za-z_$][^)]*\)/.test(codigo) ||
+      /[=:]\s*\(\s*[A-Za-z_$][^)]*\)\s*=>/.test(codigo);
+    if (conParametros) encontradas.add('parametro');
   }
 
   /**
