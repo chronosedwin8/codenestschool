@@ -370,7 +370,17 @@ export type PasoCamino =
   | { readonly salta: true }
   | { readonly puente: true }
   | { readonly estrella: true }
-  | { readonly pinta: ColorCasilla };
+  | { readonly pinta: ColorCasilla }
+  /**
+   * Un pasillo falso: sigue recto y no lleva a ninguna parte.
+   *
+   * Hace falta para que un sensor tenga algo que decidir. Sin señuelos, "¿puedes
+   * avanzar?" solo dice no en las esquinas, y entonces una condición con dos
+   * partes no tiene sentido: la mitad nunca cambia nada. Con un señuelo delante,
+   * el Fuzz sí puede avanzar y aun así no debe, y ahí empieza a hacer falta mirar
+   * también el color del suelo.
+   */
+  | { readonly senuelo: number };
 
 export const andar = (casillas = 1): PasoCamino => ({ andar: casillas });
 export const gira = (lado: 'derecha' | 'izquierda'): PasoCamino => ({ gira: lado });
@@ -378,6 +388,7 @@ export const brinca = (): PasoCamino => ({ salta: true });
 export const puenteRoto = (): PasoCamino => ({ puente: true });
 export const estrellaAqui = (): PasoCamino => ({ estrella: true });
 export const pinta = (color: ColorCasilla): PasoCamino => ({ pinta: color });
+export const senuelo = (largo = 2): PasoCamino => ({ senuelo: largo });
 
 export interface TableroCreador {
   readonly grid: Grid;
@@ -398,10 +409,13 @@ export interface TableroCreador {
 export function tableroDeCamino(
   pasos: readonly PasoCamino[],
   dirInicial: Direccion = 'derecha',
+  /** De que actividad es, para que los errores digan donde mirar. */
+  etiqueta = 'una actividad',
 ): TableroCreador {
   const casillas = new Map<string, Tile>();
   const recorrido: { x: number; y: number }[] = [{ x: 0, y: 0 }];
   const estrellas: { x: number; y: number }[] = [];
+  const senuelos: { x: number; y: number }[] = [];
 
   let x = 0;
   let y = 0;
@@ -424,7 +438,7 @@ export function tableroDeCamino(
   const libre = (cx: number, cy: number, que: string): void => {
     if (casillas.has(`${cx},${cy}`)) {
       throw new Error(
-        `El camino pone ${que} en (${cx},${cy}), donde ya hay camino. ` +
+        `${etiqueta}: el camino pone ${que} en (${cx},${cy}), donde ya hay camino. ` +
           'Separa los tramos o cambia el orden de los pasos.',
       );
     }
@@ -441,6 +455,20 @@ export function tableroDeCamino(
     }
     if ('pinta' in paso) {
       poner(x, y, { t: 'camino', color: paso.pinta });
+      continue;
+    }
+    if ('senuelo' in paso) {
+      // Se pinta hacia delante sin mover al Fuzz: es un pasillo que no lleva a
+      // ningun sitio.
+      const { dx, dy } = DELTA[dir];
+      for (let i = 1; i <= paso.senuelo; i++) {
+        const sx = x + dx * i;
+        const sy = y + dy * i;
+        if (!casillas.has(`${sx},${sy}`)) {
+          poner(sx, sy, { t: 'camino' });
+          senuelos.push({ x: sx, y: sy });
+        }
+      }
       continue;
     }
     if ('salta' in paso) {
@@ -474,6 +502,22 @@ export function tableroDeCamino(
 
   const meta = { x, y };
   poner(meta.x, meta.y, { t: 'meta' });
+
+  /**
+   * Un señuelo que cae sobre el camino de verdad no es un señuelo: es un atajo.
+   * El Fuzz llegaria a la meta por donde no toca, o el sensor veria camino donde
+   * la actividad supone que hay pared. Se comprueba al final porque el señuelo se
+   * pinta antes de que el camino haya pasado por ahi.
+   */
+  const enElCamino = new Set(recorrido.map((c) => `${c.x},${c.y}`));
+  for (const falso of senuelos) {
+    if (enElCamino.has(`${falso.x},${falso.y}`)) {
+      throw new Error(
+        `${etiqueta}: el senuelo de (${falso.x},${falso.y}) cae sobre el camino ` +
+          'de verdad. Acortalo o cambialo de sitio.',
+      );
+    }
+  }
 
   // Recorte con un borde de una casilla alrededor.
   const xs = [...casillas.keys()].map((c) => Number(c.split(',')[0]));
@@ -542,7 +586,11 @@ export function actividadCreador(
   opciones: OpcionesCreador,
 ): ActivityDefinition {
   const { mundo, numeroEnMundo, textos } = contexto;
-  const tablero = tableroDeCamino(opciones.camino, opciones.dirInicial);
+  const tablero = tableroDeCamino(
+    opciones.camino,
+    opciones.dirInicial,
+    `M${mundo}-A${numeroEnMundo} "${textos.nombre}"`,
+  );
 
   const objetivos: Objetivo[] = [
     {

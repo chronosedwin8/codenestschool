@@ -27,9 +27,11 @@ import { mundo10 } from './m10.js';
 import { mundo11 } from './m11.js';
 import { mundo12 } from './m12.js';
 import { mundo13 } from './m13.js';
+import { mundo14 } from './m14.js';
+import { mundo15 } from './m15.js';
 
 /** Mundos ya escritos. Se van añadiendo a medida que se redactan. */
-const MUNDOS: readonly WorldContentFile[] = [mundo1, mundo2, mundo3, mundo4, mundo5, mundo6, mundo7, mundo8, mundo9, mundo10, mundo11, mundo12, mundo13];
+const MUNDOS: readonly WorldContentFile[] = [mundo1, mundo2, mundo3, mundo4, mundo5, mundo6, mundo7, mundo8, mundo9, mundo10, mundo11, mundo12, mundo13, mundo14, mundo15];
 
 const DESTINO = resolve(import.meta.dirname, '..', 'worlds');
 
