@@ -105,7 +105,82 @@ export function olvidarFallos(clave: string): void {
   registros.delete(clave.toLowerCase());
 }
 
-/** Vacía todos los contadores. Solo para las pruebas. */
+/** Vacía todos los contadores, por cuenta y por IP. Solo para las pruebas. */
 export function reiniciarIntentos(): void {
   registros.clear();
+  registrosIp.clear();
+}
+
+// ─────────────────── Fallos por direccion IP ───────────────────
+//
+// El contador por cuenta frena adivinar el PIN de un nino concreto, pero no a
+// quien recorre nombres de usuario probando uno cada vez: cada cuenta acumula un
+// solo fallo y ninguna llega al tope.
+//
+// Este segundo contador cierra ese hueco mirando la IP, y lo hace contando SOLO
+// los fallos. Un colegio entero entrando bien no suma nada, asi que ciento
+// cincuenta estudiantes a las ocho de la manana no se ven afectados. Alguien
+// probando nombres al azar acumula fallos muy rapido.
+
+/** Fallos desde una misma IP antes de frenarla. */
+export const MAX_FALLOS_IP = 30;
+/** Cuanto dura el freno por IP. */
+export const BLOQUEO_IP_MS = 10 * 60 * 1000;
+/** Ventana en la que se acumulan los fallos de una IP. */
+export const VENTANA_IP_MS = 10 * 60 * 1000;
+
+const registrosIp = new Map<string, Registro>();
+
+function limpiarIpSiToca(ip: string, ahora: number): Registro | undefined {
+  const registro = registrosIp.get(ip);
+  if (!registro) return undefined;
+  if (registro.bloqueadoHasta > ahora) return registro;
+
+  if (ahora - registro.ultimoFallo > VENTANA_IP_MS) {
+    registrosIp.delete(ip);
+    return undefined;
+  }
+  return registro;
+}
+
+/** Comprueba si una direccion IP esta frenada por acumular fallos. */
+export function comprobarIntentosIp(ip: string): EstadoIntentos {
+  const ahora = Date.now();
+  const registro = limpiarIpSiToca(ip, ahora);
+
+  if (!registro) return { bloqueado: false, esperaSegundos: 0, fallos: 0 };
+
+  const bloqueado = registro.bloqueadoHasta > ahora;
+  return {
+    bloqueado,
+    esperaSegundos: bloqueado ? Math.ceil((registro.bloqueadoHasta - ahora) / 1000) : 0,
+    fallos: registro.fallos,
+  };
+}
+
+/** Anota un intento fallido procedente de una direccion IP. */
+export function anotarFalloIp(ip: string): EstadoIntentos {
+  const ahora = Date.now();
+  const registro = limpiarIpSiToca(ip, ahora) ?? {
+    fallos: 0,
+    ultimoFallo: 0,
+    bloqueadoHasta: 0,
+  };
+
+  registro.fallos += 1;
+  registro.ultimoFallo = ahora;
+
+  if (registro.fallos >= MAX_FALLOS_IP) {
+    registro.bloqueadoHasta = ahora + BLOQUEO_IP_MS;
+    registro.fallos = 0;
+  }
+
+  registrosIp.set(ip, registro);
+
+  const bloqueado = registro.bloqueadoHasta > ahora;
+  return {
+    bloqueado,
+    esperaSegundos: bloqueado ? Math.ceil((registro.bloqueadoHasta - ahora) / 1000) : 0,
+    fallos: registro.fallos,
+  };
 }

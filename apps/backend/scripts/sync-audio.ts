@@ -6,7 +6,8 @@
  *
  *   generate-voiceover.ts  ->  manifest.json  ->  sync-audio.ts  ->  audios
  *
- * Uso: npm run voice:sync
+ * Uso: npm run voice:sync              (informa de los audios huerfanos)
+ *      npm run voice:sync -- --limpiar (y los borra)
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -28,6 +29,9 @@ const RUTA_MANIFEST = resolve(
   'manifest.json',
 );
 
+/** Borrar filas es destructivo, asi que hay que pedirlo de forma explicita. */
+const limpiar = process.argv.includes('--limpiar');
+
 async function main(): Promise<void> {
   if (!existsSync(RUTA_MANIFEST)) {
     console.log('No hay manifest.json todavia. Ejecuta antes: npm run voice:generate');
@@ -39,13 +43,14 @@ async function main(): Promise<void> {
 
   let actualizados = 0;
   let sinFila = 0;
-  const huerfanos: string[] = [];
+  /** Claves que estan en el manifest pero no tienen fila en la base de datos. */
+  const sinSembrar: string[] = [];
 
   for (const entrada of entradas) {
     const fila = await prisma.audioAsset.findUnique({ where: { clave: entrada.clave } });
     if (!fila) {
       sinFila++;
-      huerfanos.push(entrada.clave);
+      sinSembrar.push(entrada.clave);
       continue;
     }
 
@@ -67,6 +72,41 @@ async function main(): Promise<void> {
     actualizados++;
   }
 
+  // Audios que ya no referencia nadie.
+  //
+  // Aparecen cuando el contenido cambia: si una actividad pasa de tener su propio
+  // texto de exito a usar el grupo compartido de celebraciones, su clip queda
+  // suelto. Sin esta comprobacion se regeneraria en cada pasada, pagando por un
+  // audio que nadie va a oir.
+  const sinUsar = await prisma.audioAsset.findMany({
+    where: {
+      // Las frases de interfaz y las celebraciones no las referencia ninguna
+      // actividad por diseno: se piden por clave desde el cliente.
+      tipo: { in: ['instruccion', 'exito', 'pista', 'mundo_intro'] },
+      actividadInstruccion: { none: {} },
+      actividadExito: { none: {} },
+      pistas: { none: {} },
+      mundosIntro: { none: {} },
+    },
+    select: { id: true, clave: true, tipo: true },
+  });
+
+  if (sinUsar.length > 0) {
+    console.log('');
+    console.log(`Audios sin usar         : ${sinUsar.length}`);
+    for (const h of sinUsar.slice(0, 10)) {
+      console.log(`  ${h.clave} (${h.tipo})`);
+    }
+    if (sinUsar.length > 10) console.log(`  ... y ${sinUsar.length - 10} mas`);
+
+    if (limpiar) {
+      await prisma.audioAsset.deleteMany({ where: { id: { in: sinUsar.map((h) => h.id) } } });
+      console.log(`  Borrados. Los archivos MP3 siguen en disco; se pueden borrar a mano.`);
+    } else {
+      console.log('  Ejecuta con --limpiar para borrarlos de la base de datos.');
+    }
+  }
+
   const [generados, pendientes, obsoletos] = await Promise.all([
     prisma.audioAsset.count({ where: { estado: 'generado' } }),
     prisma.audioAsset.count({ where: { estado: 'pendiente' } }),
@@ -76,7 +116,9 @@ async function main(): Promise<void> {
   console.log(`Entradas en el manifest : ${entradas.length}`);
   console.log(`Filas actualizadas      : ${actualizados}`);
   if (sinFila > 0) {
-    console.log(`Sin fila en la base     : ${sinFila}  (${huerfanos.slice(0, 5).join(', ')}${huerfanos.length > 5 ? ', ...' : ''})`);
+    console.log(
+      `Sin fila en la base     : ${sinFila}  (${sinSembrar.slice(0, 5).join(', ')}${sinSembrar.length > 5 ? ', ...' : ''})`,
+    );
     console.log('  Sugerencia: ejecuta el seed para crear esas filas.');
   }
   console.log('');

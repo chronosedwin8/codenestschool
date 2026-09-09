@@ -15,6 +15,10 @@ import { join, resolve } from 'node:path';
 import { setTimeout as esperar } from 'node:timers/promises';
 
 import { ErrorFatalElevenLabs, generarSonido, leerApiKey } from './lib/elevenlabs.js';
+import { cargarEntorno } from './lib/entorno.js';
+
+// La clave de ElevenLabs vive en el .env de la raiz.
+cargarEntorno();
 
 const DIR_SALIDA = resolve(
   import.meta.dirname,

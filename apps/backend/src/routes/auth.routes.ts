@@ -12,9 +12,15 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 
-import { LIMITE_ACCESO_INFANTIL, LIMITE_ESTRICTO } from '../plugins/security.js';
+import { LIMITE_ACCESO } from '../plugins/security.js';
 import { comprobarAccesoANino } from '../services/guardian.service.js';
-import { anotarFallo, comprobarIntentos, olvidarFallos } from '../services/intentos.service.js';
+import {
+  anotarFallo,
+  anotarFalloIp,
+  comprobarIntentos,
+  comprobarIntentosIp,
+  olvidarFallos,
+} from '../services/intentos.service.js';
 import {
   construirToken,
   generarUsuarioLibre,
@@ -58,7 +64,7 @@ const consentimientoSchema = z.object({
 
 export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   /** Alta de un adulto responsable. */
-  fastify.post('/registro', { config: LIMITE_ESTRICTO }, async (request, reply) => {
+  fastify.post('/registro', { config: LIMITE_ACCESO }, async (request, reply) => {
     const datos = registroAdultoSchema.safeParse(request.body);
     if (!datos.success) {
       return reply.code(400).send({ error: 'Datos invalidos', detalles: datos.error.flatten() });
@@ -85,15 +91,29 @@ export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
   });
 
   /** Inicio de sesion de un adulto. */
-  fastify.post('/login', { config: LIMITE_ESTRICTO }, async (request, reply) => {
+  fastify.post('/login', { config: LIMITE_ACCESO }, async (request, reply) => {
     const datos = loginAdultoSchema.safeParse(request.body);
     if (!datos.success) {
       return reply.code(400).send({ error: 'Datos invalidos', detalles: datos.error.flatten() });
     }
 
+    const identificador = datos.data.email;
+
+    // Los docentes de un colegio tambien comparten la red, asi que aqui vale el
+    // mismo criterio: se cuentan los fallos, no los accesos correctos.
+    const estadoCuenta = comprobarIntentos(identificador);
+    const estadoRed = comprobarIntentosIp(request.ip);
+    if (estadoCuenta.bloqueado || estadoRed.bloqueado) {
+      const espera = Math.max(estadoCuenta.esperaSegundos, estadoRed.esperaSegundos);
+      return reply.code(429).send({
+        error: 'Demasiados intentos',
+        mensaje: `Espera ${Math.ceil(espera / 60)} minuto(s) y vuelve a intentarlo.`,
+      });
+    }
+
     const cuenta = await fastify.prisma.user.findFirst({
       where: {
-        OR: [{ email: datos.data.email }, { usuario: datos.data.email }],
+        OR: [{ email: identificador }, { usuario: identificador }],
         rol: { not: 'nino' },
       },
     });
@@ -101,12 +121,17 @@ export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
     // Mismo mensaje para usuario inexistente y contrasena erronea: no se
     // revela si un correo esta registrado.
     if (!cuenta?.passwordHash || !cuenta.activo) {
+      anotarFallo(identificador);
+      anotarFalloIp(request.ip);
       return reply.code(401).send({ error: 'Usuario o contrasena incorrectos' });
     }
     if (!(await verificarPassword(datos.data.password, cuenta.passwordHash))) {
+      anotarFallo(identificador);
+      anotarFalloIp(request.ip);
       return reply.code(401).send({ error: 'Usuario o contrasena incorrectos' });
     }
 
+    olvidarFallos(identificador);
     const token = fastify.jwt.sign(await construirToken(fastify.prisma, cuenta.id));
     return reply.send({
       token,
@@ -123,7 +148,7 @@ export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
    *  - un contador de fallos por cuenta (aqui), para que no se pueda adivinar el
    *    PIN de un nino concreto a base de intentos.
    */
-  fastify.post('/login-nino', { config: LIMITE_ACCESO_INFANTIL }, async (request, reply) => {
+  fastify.post('/login-nino', { config: LIMITE_ACCESO }, async (request, reply) => {
     const datos = loginNinoSchema.safeParse(request.body);
     if (!datos.success) {
       return reply.code(400).send({ error: 'Datos invalidos', detalles: datos.error.flatten() });
@@ -140,6 +165,16 @@ export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
       });
     }
 
+    // Y la red frenada por acumular fallos con muchas cuentas distintas. Solo
+    // cuentan los fallos, asi que un colegio entero entrando bien nunca lo activa.
+    const estadoRed = comprobarIntentosIp(request.ip);
+    if (estadoRed.bloqueado) {
+      return reply.code(429).send({
+        error: 'Demasiados intentos desde esta red',
+        mensaje: 'Pide ayuda a tu profe o a un adulto.',
+      });
+    }
+
     const nino = await fastify.prisma.user.findUnique({
       where: { usuario: cuenta },
       include: { tutores: { select: { tutorId: true } } },
@@ -149,10 +184,12 @@ export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
     // revela que cuentas existen.
     if (!nino?.pinHash || nino.rol !== 'nino' || !nino.activo) {
       anotarFallo(cuenta);
+      anotarFalloIp(request.ip);
       return reply.code(401).send({ error: 'Ese usuario o esas imagenes no coinciden' });
     }
     if (!(await verificarPin(datos.data.pin, nino.pinHash))) {
       const tras = anotarFallo(cuenta);
+      anotarFalloIp(request.ip);
       if (tras.bloqueado) {
         return reply.code(429).send({
           error: 'Demasiados intentos',

@@ -51,6 +51,7 @@ import {
   leerApiKey,
   textoAVoz,
 } from './lib/elevenlabs.js';
+import { cargarEntorno } from './lib/entorno.js';
 import {
   CELEBRACIONES,
   FRASES_UI,
@@ -59,6 +60,9 @@ import {
   vozPara,
   type PerfilVoz,
 } from '@codenest/content';
+
+// La clave de ElevenLabs vive en el .env de la raiz.
+cargarEntorno();
 
 // ──────────────────────────── Rutas del proyecto ──────────────────────────
 

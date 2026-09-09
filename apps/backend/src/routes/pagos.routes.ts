@@ -26,7 +26,7 @@ import {
   traducirEstado,
   ErrorMercadoPago,
 } from '../lib/mercadopago.js';
-import { LIMITE_ESTRICTO } from '../plugins/security.js';
+import { LIMITE_PAGO } from '../plugins/security.js';
 import { generarCodigoAcceso, hashPassword } from '../services/auth.service.js';
 
 const compraSchema = z.object({
@@ -96,7 +96,7 @@ export const pagosRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
   });
 
   /** Compra de una licencia nueva, con alta de cuenta. */
-  fastify.post('/comprar', { config: LIMITE_ESTRICTO }, async (request, reply) => {
+  fastify.post('/comprar', { config: LIMITE_PAGO }, async (request, reply) => {
     if (!pagosConfigurados(config)) {
       return reply.code(503).send({
         error: 'Pasarela sin configurar',
@@ -272,7 +272,7 @@ export const pagosRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
   /** Renovación de una licencia por su titular. */
   fastify.post(
     '/renovar',
-    { config: LIMITE_ESTRICTO, preHandler: fastify.exigirRol('tutor', 'admin_escuela') },
+    { config: LIMITE_PAGO, preHandler: fastify.exigirRol('tutor', 'admin_escuela') },
     async (request, reply) => {
       const datos = renovacionSchema.safeParse(request.body);
       if (!datos.success) {

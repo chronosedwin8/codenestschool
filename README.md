@@ -95,6 +95,23 @@ falsificadas, que la aplicación nunca se quede muda si falta un MP3, que un aul
 entera pueda entrar a la vez sin que el límite de peticiones la bloquee, y que un
 pago rechazado no deje una cuenta a medias.
 
+## Límites de peticiones y el plan Escuela
+
+Un colegio sale a internet por una sola dirección IP, así que cinco aulas son
+ciento cincuenta niños jugando desde esa misma IP y más de mil peticiones por
+minuto legítimas. Un límite por IP no distingue eso de un abusador.
+
+Por eso las peticiones autenticadas se cuentan **por credencial** y no por IP:
+cada estudiante tiene su cupo y el aula de al lado no le consume el suyo. Las
+peticiones anónimas sí se cuentan por IP, con topes dimensionados para un colegio
+entero empezando la clase, y la protección contra adivinar credenciales vive en
+un contador de fallos por cuenta y por red. Entrar bien no cuesta nada;
+equivocarse sí.
+
+Una inundación volumetrica de tráfico basura no se resuelve aquí sino delante de
+la aplicación: cualquier tope que frenara a un atacante con ancho de banda
+frenaría antes a un colegio.
+
 ## Notas de desarrollo
 
 Nunca ejecutes `prisma db push` en este proyecto. Las tablas de telemetría y métricas están particionadas por rango y ese comando las recrearía sin la partición. Usa siempre migraciones, y si regeneras la inicial, vuelve a aplicar `apps/backend/scripts/patch-partition-migration.mjs`.
