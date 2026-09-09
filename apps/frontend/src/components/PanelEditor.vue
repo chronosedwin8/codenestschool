@@ -19,6 +19,7 @@
  */
 import { computed, defineAsyncComponent, ref, shallowRef, watch } from 'vue';
 
+import { estructurasDelCodigo } from '@codenest/shared';
 import type { GrupoEdad, LenguajeCodigo, TipoEditor } from '@codenest/shared';
 
 import BarraPrograma from '@/components/BarraPrograma.vue';
@@ -108,17 +109,6 @@ function emitir(): void {
       });
       break;
   }
-}
-
-/** Detecta qué estructuras usa un programa, para los criterios de eficiencia. */
-function estructurasDelCodigo(codigo: string): string[] {
-  const encontradas: string[] = [];
-  if (/\brepetir\s*\(|\bfor\s*\(/.test(codigo)) encontradas.push('repetir');
-  if (/\bwhile\s*\(/.test(codigo)) encontradas.push('mientras');
-  if (/\bif\s*\(/.test(codigo)) encontradas.push('si');
-  if (/\bfunction\b|=>\s*\{/.test(codigo)) encontradas.push('funcion');
-  if (/\[.*\]/.test(codigo)) encontradas.push('lista');
-  return encontradas;
 }
 
 watch(fichas, emitir, { deep: true });

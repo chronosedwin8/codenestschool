@@ -89,6 +89,16 @@ export interface SolucionReferencia {
   readonly comandos?: readonly PasoPrograma[];
   readonly javascript?: string;
   readonly python?: string;
+  /**
+   * Bloques que ocupa la solucion en el editor de Blockly (mundos 11 al 20).
+   *
+   * Hace falta porque las dos partes miden el programa en unidades distintas: el
+   * editor cuenta bloques y el validador, que solo tiene el JavaScript, contaria
+   * lineas. Un `repetir` con dos bloques dentro son tres bloques y cuatro lineas,
+   * asi que sin este dato el limite de la tercera estrella se aflojaria sin que
+   * nadie lo notara.
+   */
+  readonly bloques?: number;
 }
 
 /** Actividad tal como se escribe en packages/content/worlds/*.json. */

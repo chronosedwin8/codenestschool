@@ -187,6 +187,7 @@ export const solucionReferenciaSchema = z
     comandos: z.array(pasoProgramaSchema).optional(),
     javascript: z.string().optional(),
     python: z.string().optional(),
+    bloques: z.number().int().min(1).max(200).optional(),
   })
   .refine((s) => Boolean(s.comandos ?? s.javascript ?? s.python), {
     message: 'La solucion de referencia debe traer comandos, javascript o python',

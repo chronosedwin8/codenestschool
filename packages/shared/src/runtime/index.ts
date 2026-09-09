@@ -11,6 +11,7 @@
 export * from './GridSimulator.js';
 export * from './stars.js';
 export * from './interpretarFichas.js';
+export * from './estructuras.js';
 export * from './pylite/index.js';
 
 export const RUNTIME_VERSION = '0.3.0';

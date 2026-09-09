@@ -23,6 +23,7 @@ import {
   GridSimulator,
   calcularEstrellas,
   evaluarObjetivos,
+  estructurasDelCodigo,
   interpretarFichas,
   transpilarPython,
   type ActivityDefinition,
@@ -272,7 +273,10 @@ function comprobarSolucion(act: ActivityDefinition): string | null {
       tamano = resultado.tamano;
       estructuras.push(...resultado.estructuras);
     } else if (act.solucionReferencia.javascript) {
-      tamano = ejecutarJavaScript(sim, act.solucionReferencia.javascript, estructuras);
+      const lineas = ejecutarJavaScript(sim, act.solucionReferencia.javascript, estructuras);
+      // En los mundos de bloques manda el numero de bloques: es lo que cuenta el
+      // editor del nino, y por tanto lo que compara la tercera estrella.
+      tamano = act.solucionReferencia.bloques ?? lineas;
     } else if (act.solucionReferencia.python) {
       const { codigo, estructuras: usadas } = transpilarPython(act.solucionReferencia.python);
       estructuras.push(...usadas);
@@ -388,10 +392,11 @@ function ejecutarJavaScript(
     for (let i = 0; i < veces; i++) cuerpo();
   };
 
-  if (/repetir\s*\(|for\s*\(/.test(codigo)) estructuras.push('repetir');
-  if (/while\s*\(/.test(codigo)) estructuras.push('mientras');
-  if (/if\s*\(/.test(codigo)) estructuras.push('si');
-  if (/function/.test(codigo)) estructuras.push('funcion');
+
+  // La deteccion vive en el paquete compartido: es la misma que usa el editor
+  // del nino y la misma con la que el servidor decide las estrellas. Tenerla
+  // por duplicado era lo que dejaba pasar por funcion el cuerpo de un bucle.
+  estructuras.push(...estructurasDelCodigo(codigo));
 
   new Function('fuzz', 'repetir', codigo)(fuzz, repetir);
 
