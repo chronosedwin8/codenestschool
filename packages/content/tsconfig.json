@@ -7,6 +7,13 @@
     "outDir": "dist",
     "noEmit": false
   },
-  "include": ["src/**/*.ts"],
-  "references": [{ "path": "../shared" }]
+  "include": [
+    "src/**/*.ts",
+    "autoria/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../shared"
+    }
+  ]
 }

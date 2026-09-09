@@ -21,7 +21,8 @@
     "partitions": "tsx scripts/ensure-partitions.ts",
     "audio:sync": "tsx scripts/sync-audio.ts",
     "test": "vitest run",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "metrics:rollup": "tsx scripts/rollup-metrics.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

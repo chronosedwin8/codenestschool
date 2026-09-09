@@ -11,10 +11,14 @@
   },
   "types": "./src/index.ts",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "compile": "tsx autoria/compilar.ts"
   },
   "dependencies": {
     "@codenest/shared": "*",
     "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
   }
 }

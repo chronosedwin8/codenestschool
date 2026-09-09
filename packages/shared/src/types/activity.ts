@@ -41,11 +41,18 @@ export interface RecompensaActividad {
   readonly gemas?: number;
 }
 
-/** Programa prefijado con errores a corregir (mundos 9 y 19). */
+/**
+ * Un paso de programa. Se usa en el programa prefijado con errores a corregir
+ * (mundos 9 y 19) y en las soluciones de referencia de las actividades de fichas.
+ */
 export interface PasoPrograma {
   readonly cmd: string;
+  /** Repeticiones de un bucle. */
   readonly veces?: number;
+  /** Pasos anidados dentro de un bucle, un condicional o una funcion. */
   readonly hijos?: readonly PasoPrograma[];
+  /** Rama alternativa de un condicional si / si no. */
+  readonly sino?: readonly PasoPrograma[];
 }
 
 /** Contenido de `Activity.config` en la base de datos. */

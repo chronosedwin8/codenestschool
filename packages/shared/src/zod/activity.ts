@@ -9,7 +9,12 @@ import { z } from 'zod';
 
 import { GRUPO_EDAD } from '../types/age-group.js';
 import { LENGUAJE_CODIGO, TIPO_EDITOR } from '../types/editor.js';
-import { ACTIVIDADES_POR_MUNDO, TIPO_ACTIVIDAD, TOTAL_MUNDOS } from '../types/activity.js';
+import {
+  ACTIVIDADES_POR_MUNDO,
+  TIPO_ACTIVIDAD,
+  TOTAL_MUNDOS,
+  type PasoPrograma,
+} from '../types/activity.js';
 
 export const grupoEdadSchema = z.enum([
   GRUPO_EDAD.exploradores,
@@ -128,15 +133,19 @@ export const criteriosEstrellaSchema = z.object({
   '3': criterioEstrellaSchema,
 });
 
-export const pasoProgramaSchema: z.ZodType<{
-  cmd: string;
-  veces?: number;
-  hijos?: unknown[];
-}> = z.lazy(() =>
+/**
+ * Esquema recursivo de un paso de programa.
+ *
+ * Se anota con el tipo real de `PasoPrograma` (y no con una forma inferida) para
+ * que zod no deduzca `unknown[]` en las ramas anidadas: sin la anotacion, el
+ * contenido validado no encajaria con el tipo que consume el resto del codigo.
+ */
+export const pasoProgramaSchema: z.ZodType<PasoPrograma> = z.lazy(() =>
   z.object({
     cmd: z.string().min(1),
     veces: z.number().int().min(1).max(20).optional(),
     hijos: z.array(pasoProgramaSchema).optional(),
+    sino: z.array(pasoProgramaSchema).optional(),
   }),
 );
 

@@ -18,6 +18,14 @@
 import { existsSync } from 'node:fs';
 
 import { DIR_MUNDOS, cargarMundos } from '@codenest/content';
+import {
+  GridSimulator,
+  calcularEstrellas,
+  evaluarObjetivos,
+  transpilarPython,
+  type ActivityDefinition,
+  type PasoPrograma,
+} from '@codenest/shared';
 
 import {
   ACTIVIDADES_POR_MUNDO,
@@ -172,9 +180,169 @@ function validarMundo(archivo: string, contenido: WorldContentFileInput): void {
     }
 
     if (!soloEsquema) {
-      // Reservado para la FASE 5: simular solucionReferencia y exigir 3 estrellas.
+      const problema = comprobarSolucion(act);
+      if (problema) error(archivo, `${etiqueta}: ${problema}`);
     }
   }
+}
+
+/**
+ * Ejecuta la solucion de referencia y exige que otorgue las tres estrellas.
+ *
+ * Es la comprobacion que de verdad importa: una actividad cuya solucion optima
+ * no llega a tres estrellas es una actividad imposible de completar del todo, y
+ * un nino que lo intente veinte veces no va a entender por que.
+ */
+function comprobarSolucion(act: ActivityDefinition): string | null {
+  const cfg = act.config;
+  const opciones = {
+    grid: cfg.grid,
+    spawn: cfg.spawn,
+    items: cfg.items,
+    modo: cfg.modoMovimiento,
+    comandosPermitidos: cfg.comandosPermitidos,
+    topeEjecucion: cfg.topeEjecucion,
+  };
+
+  const sim = new GridSimulator(opciones);
+  let tamano = 0;
+  const estructuras: string[] = [];
+
+  try {
+    if (act.solucionReferencia.comandos) {
+      tamano = ejecutarComandos(sim, act.solucionReferencia.comandos, estructuras);
+    } else if (act.solucionReferencia.javascript) {
+      tamano = ejecutarJavaScript(sim, act.solucionReferencia.javascript, estructuras);
+    } else if (act.solucionReferencia.python) {
+      const { codigo, estructuras: usadas } = transpilarPython(act.solucionReferencia.python);
+      estructuras.push(...usadas);
+      tamano = ejecutarJavaScript(sim, codigo, estructuras);
+    } else {
+      return 'no tiene solucion de referencia';
+    }
+  } catch (e) {
+    return `la solucion de referencia falla: ${(e as Error).message}`;
+  }
+
+  const acciones = [...sim.accionesEjecutadas];
+  const resultado = evaluarObjetivos(opciones, acciones, cfg.objetivos, cfg.items);
+
+  if (!resultado.valida) {
+    return 'la solucion de referencia no se pudo reproducir sobre el tablero';
+  }
+
+  const estrellas = calcularEstrellas(cfg.criteriosEstrella, resultado.cumplidos, {
+    tamanoPrograma: tamano,
+    instruccionesEjecutadas: acciones.length,
+    estructurasUsadas: estructuras,
+  });
+
+  if (estrellas < 3) {
+    const faltan = Object.entries(resultado.cumplidos)
+      .filter(([, ok]) => !ok)
+      .map(([id]) => id);
+    return (
+      `la solucion de referencia solo consigue ${estrellas} estrella(s)` +
+      (faltan.length > 0 ? ` (objetivos sin cumplir: ${faltan.join(', ')})` : '') +
+      ` con ${tamano} instruccion(es) escritas y ${acciones.length} ejecutadas`
+    );
+  }
+
+  return null;
+}
+
+/** Ejecuta una solucion escrita como fichas y devuelve su tamano. */
+function ejecutarComandos(
+  sim: GridSimulator,
+  pasos: readonly PasoPrograma[],
+  estructuras: string[],
+): number {
+  let tamano = 0;
+
+  for (const paso of pasos) {
+    tamano += 1;
+
+    switch (paso.cmd) {
+      case 'repetir': {
+        estructuras.push('repetir');
+        const veces = paso.veces ?? 1;
+        for (let i = 0; i < veces; i++) {
+          tamano += ejecutarComandos(sim, paso.hijos ?? [], estructuras);
+        }
+        // El cuerpo se cuenta una sola vez, aunque se ejecute varias.
+        tamano -= (veces - 1) * contarPasos(paso.hijos ?? []);
+        break;
+      }
+      case 'derecha':
+      case 'izquierda':
+      case 'arriba':
+      case 'abajo':
+        sim.mover(paso.cmd);
+        break;
+      case 'avanzar':
+        sim.avanzar();
+        break;
+      case 'girarDerecha':
+        sim.girarDerecha();
+        break;
+      case 'girarIzquierda':
+        sim.girarIzquierda();
+        break;
+      case 'saltar':
+        sim.saltar();
+        break;
+      case 'recoger':
+        sim.recoger();
+        break;
+      default:
+        throw new Error(`comando desconocido en la solucion: ${paso.cmd}`);
+    }
+  }
+
+  return tamano;
+}
+
+function contarPasos(pasos: readonly PasoPrograma[]): number {
+  return pasos.reduce((t, p) => t + 1 + contarPasos(p.hijos ?? []), 0);
+}
+
+/** Ejecuta una solucion escrita en JavaScript contra el simulador. */
+function ejecutarJavaScript(
+  sim: GridSimulator,
+  codigo: string,
+  estructuras: string[],
+): number {
+  const fuzz = {
+    derecha: () => sim.mover('derecha'),
+    izquierda: () => sim.mover('izquierda'),
+    arriba: () => sim.mover('arriba'),
+    abajo: () => sim.mover('abajo'),
+    avanzar: () => sim.avanzar(),
+    girarDerecha: () => sim.girarDerecha(),
+    girarIzquierda: () => sim.girarIzquierda(),
+    saltar: () => sim.saltar(),
+    recoger: () => sim.recoger(),
+    puedeAvanzar: () => sim.puedeAvanzar(),
+    colorCasilla: () => sim.colorCasilla(),
+    hayObstaculo: () => sim.hayObstaculo(),
+  };
+
+  const repetir = (veces: number, cuerpo: () => void): void => {
+    for (let i = 0; i < veces; i++) cuerpo();
+  };
+
+  if (/repetir\s*\(|for\s*\(/.test(codigo)) estructuras.push('repetir');
+  if (/while\s*\(/.test(codigo)) estructuras.push('mientras');
+  if (/if\s*\(/.test(codigo)) estructuras.push('si');
+  if (/function/.test(codigo)) estructuras.push('funcion');
+
+  new Function('fuzz', 'repetir', codigo)(fuzz, repetir);
+
+  // El tamano del programa escrito: lineas con contenido real.
+  return codigo
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0 && !l.startsWith('//') && l !== '}' && l !== '{').length;
 }
 
 async function main(): Promise<void> {
@@ -228,7 +396,7 @@ async function main(): Promise<void> {
   if (soloEsquema) {
     console.log('Nota: no se simularon las soluciones de referencia (--schema-only).');
   } else {
-    console.log('Nota: la simulacion de soluciones llegara con GridSimulator (fase 1.5).');
+    console.log('Cada solucion de referencia se simulo y otorga las 3 estrellas.');
   }
 }
 

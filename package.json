@@ -28,7 +28,9 @@
     "build": "tsc -b",
     "typecheck": "tsc -b --force",
     "test": "npm run test --workspaces --if-present",
-    "dev:backend": "npm run dev --workspace=@codenest/backend"
+    "dev:backend": "npm run dev --workspace=@codenest/backend",
+    "content:compile": "npm run compile --workspace=@codenest/content",
+    "metrics:rollup": "npm run metrics:rollup --workspace=@codenest/backend"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

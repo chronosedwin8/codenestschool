@@ -19,6 +19,7 @@ import { securityPlugin } from './plugins/security.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { curriculumRoutes } from './routes/curriculum.routes.js';
 import { sessionsRoutes } from './routes/sessions.routes.js';
+import { telemetryRoutes } from './routes/telemetry.routes.js';
 import { asegurarParticiones } from '../scripts/ensure-partitions.js';
 
 const RAIZ_REPO = resolve(import.meta.dirname, '..', '..', '..');
@@ -55,6 +56,7 @@ export async function construirServidor(): Promise<FastifyInstance> {
   await fastify.register(authRoutes, { prefix: '/api/auth' });
   await fastify.register(curriculumRoutes, { prefix: '/api/curriculo' });
   await fastify.register(sessionsRoutes, { prefix: '/api/sesiones' });
+  await fastify.register(telemetryRoutes, { prefix: '/api/telemetria' });
 
   fastify.get('/health', async () => ({
     estado: 'ok',
