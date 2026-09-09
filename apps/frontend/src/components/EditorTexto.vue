@@ -59,6 +59,10 @@ const DOCUMENTACION: Record<string, { firma: string; explicacion: string }> = {
   girarIzquierda: { firma: 'fuzz.girarIzquierda()', explicacion: 'Gira 90 grados a la izquierda.' },
   saltar: { firma: 'fuzz.saltar()', explicacion: 'Salta por encima de la casilla siguiente.' },
   recoger: { firma: 'fuzz.recoger()', explicacion: 'Recoge lo que haya en esta casilla.' },
+  repararPuente: {
+    firma: 'fuzz.repararPuente()',
+    explicacion: 'Arregla el puente roto que hay justo delante.',
+  },
   derecha: { firma: 'fuzz.derecha()', explicacion: 'Rueda hacia la derecha hasta que se acabe el camino.' },
   izquierda: { firma: 'fuzz.izquierda()', explicacion: 'Rueda hacia la izquierda hasta que se acabe el camino.' },
   arriba: { firma: 'fuzz.arriba()', explicacion: 'Rueda hacia arriba hasta que se acabe el camino.' },

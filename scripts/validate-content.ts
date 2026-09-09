@@ -233,7 +233,7 @@ function validarMundo(archivo: string, contenido: WorldContentFileInput): void {
     }
 
     if (!soloEsquema) {
-      const problema = comprobarSolucion(act);
+      const problema = comprobarSoluciones(act);
       if (problema) error(archivo, `${etiqueta}: ${problema}`);
 
       const roto = comprobarProgramaRoto(act);
@@ -243,13 +243,42 @@ function validarMundo(archivo: string, contenido: WorldContentFileInput): void {
 }
 
 /**
- * Ejecuta la solucion de referencia y exige que otorgue las tres estrellas.
+ * Comprueba TODAS las soluciones de referencia que trae la actividad.
+ *
+ * Una actividad de los Hackers puede venir en JavaScript y en Python, y las dos
+ * tienen que llegar a la meta: el nino elige el lenguaje. Comprobar solo la
+ * primera dejaba pasar una solucion de Python rota sin que nadie se enterara,
+ * porque el validador se paraba en el JavaScript.
+ */
+function comprobarSoluciones(act: ActivityDefinition): string | null {
+  const sol = act.solucionReferencia;
+  const lenguajes: ('comandos' | 'javascript' | 'python')[] = [];
+  if (sol.comandos) lenguajes.push('comandos');
+  if (sol.javascript) lenguajes.push('javascript');
+  if (sol.python) lenguajes.push('python');
+
+  if (lenguajes.length === 0) return 'no tiene solucion de referencia';
+
+  for (const lenguaje of lenguajes) {
+    const problema = comprobarSolucion(act, lenguaje);
+    if (problema) {
+      return lenguajes.length > 1 ? `en ${lenguaje}, ${problema}` : problema;
+    }
+  }
+  return null;
+}
+
+/**
+ * Ejecuta una solucion de referencia y exige que otorgue las tres estrellas.
  *
  * Es la comprobacion que de verdad importa: una actividad cuya solucion optima
  * no llega a tres estrellas es una actividad imposible de completar del todo, y
  * un nino que lo intente veinte veces no va a entender por que.
  */
-function comprobarSolucion(act: ActivityDefinition): string | null {
+function comprobarSolucion(
+  act: ActivityDefinition,
+  lenguaje: 'comandos' | 'javascript' | 'python',
+): string | null {
   const cfg = act.config;
   const opciones = {
     grid: cfg.grid,
@@ -265,24 +294,25 @@ function comprobarSolucion(act: ActivityDefinition): string | null {
   const estructuras: string[] = [];
 
   try {
-    if (act.solucionReferencia.comandos) {
+    if (lenguaje === 'comandos') {
       // El interprete vive en el paquete compartido: la misma semantica que usa el
       // juego, para que una actividad no pueda pasar la validacion y ser
       // imposible de completar (o al contrario).
-      const resultado = interpretarFichas(sim, act.solucionReferencia.comandos);
+      const resultado = interpretarFichas(sim, act.solucionReferencia.comandos!);
       tamano = resultado.tamano;
       estructuras.push(...resultado.estructuras);
-    } else if (act.solucionReferencia.javascript) {
-      const lineas = ejecutarJavaScript(sim, act.solucionReferencia.javascript, estructuras);
+    } else if (lenguaje === 'javascript') {
+      const lineas = ejecutarJavaScript(sim, act.solucionReferencia.javascript!, estructuras);
       // En los mundos de bloques manda el numero de bloques: es lo que cuenta el
       // editor del nino, y por tanto lo que compara la tercera estrella.
       tamano = act.solucionReferencia.bloques ?? lineas;
-    } else if (act.solucionReferencia.python) {
-      const { codigo, estructuras: usadas } = transpilarPython(act.solucionReferencia.python);
-      estructuras.push(...usadas);
-      tamano = ejecutarJavaScript(sim, codigo, estructuras);
     } else {
-      return 'no tiene solucion de referencia';
+      const { codigo, estructuras: usadas } = transpilarPython(act.solucionReferencia.python!);
+      estructuras.push(...usadas);
+      // Se cuentan las lineas de Python, no las del JavaScript traducido: es lo
+      // que el nino tiene delante.
+      tamano = lineasDeCodigo(act.solucionReferencia.python!);
+      ejecutarJavaScript(sim, codigo, estructuras);
     }
   } catch (e) {
     return `la solucion de referencia falla: ${(e as Error).message}`;
@@ -400,11 +430,22 @@ function ejecutarJavaScript(
 
   new Function('fuzz', 'repetir', codigo)(fuzz, repetir);
 
-  // El tamano del programa escrito: lineas con contenido real.
+  return lineasDeCodigo(codigo);
+}
+
+/**
+ * Lineas con contenido real: es lo que cuenta el editor de texto del nino.
+ *
+ * Se descartan los comentarios de los dos lenguajes y las llaves solas, que en
+ * JavaScript son puntuacion y no programa.
+ */
+function lineasDeCodigo(codigo: string): number {
   return codigo
     .split('\n')
     .map((l) => l.trim())
-    .filter((l) => l.length > 0 && !l.startsWith('//') && l !== '}' && l !== '{').length;
+    .filter(
+      (l) => l.length > 0 && !l.startsWith('//') && !l.startsWith('#') && l !== '}' && l !== '{',
+    ).length;
 }
 
 async function main(): Promise<void> {

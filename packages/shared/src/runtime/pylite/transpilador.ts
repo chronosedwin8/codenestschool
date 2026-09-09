@@ -9,8 +9,9 @@
  *
  * Lo que se admite, que es lo que piden los mundos 21 al 30:
  *   asignación, aritmética y comparaciones, and/or/not, listas e índices,
- *   for i in range(...), while, if/elif/else, def con parámetros y return,
- *   len(), llamadas a métodos del objeto del juego, break y continue.
+ *   diccionarios y acceso por clave, for i in range(...), for x in lista, while,
+ *   if/elif/else, def con parámetros y return, len(), llamadas a métodos del
+ *   objeto del juego, break y continue.
  *
  * Lo que no, y por qué: async/await (mundo 25) y try/except (mundo 27) tienen
  * semántica propia que no se traduce fielmente, así que esos dos mundos se
