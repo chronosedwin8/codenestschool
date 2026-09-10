@@ -14,7 +14,7 @@
  */
 import Phaser from 'phaser';
 
-import type { Accion, Grid, IRenderer, ItemNivel, Spawn, Tile } from '@codenest/shared';
+import type { Accion, Direccion, Grid, IRenderer, ItemNivel, Spawn, Tile } from '@codenest/shared';
 
 /** Mitad del ancho y del alto de una casilla: de aquí sale la proyección 2:1. */
 const MEDIO_ANCHO = 44;
@@ -65,6 +65,51 @@ const COLORES_CASILLA: Record<string, number> = {
 const DURACION_PASO = 260;
 /** El modo rodar recorre varias casillas: se anima algo más rápido por casilla. */
 const DURACION_RODAR_CASILLA = 130;
+/** Lo que tarda un giro. Se ve, asi que necesita durar lo justo para verse. */
+const DURACION_GIRO = 240;
+
+/**
+ * Angulo en pantalla al que apunta una direccion de la rejilla.
+ *
+ * Sale de derivar la propia proyeccion: avanzar una casilla en `x` mueve
+ * (+MEDIO_ANCHO, +MEDIO_ALTO) en pantalla y una en `y` mueve
+ * (-MEDIO_ANCHO, +MEDIO_ALTO). Por eso la flecha apunta de verdad a la casilla
+ * de delante y no a un norte imaginario que en isometrico no existe: en esta
+ * proyeccion "abajo" en la rejilla se dibuja hacia abajo y a la IZQUIERDA.
+ *
+ * Se exporta para poder comprobarlo: el angulo no se puede juzgar mirando una
+ * captura, y equivocarlo pondria al Fuzz mirando a cualquier parte.
+ */
+export function anguloDeDireccion(dir: Direccion): number {
+  const paso: Record<Direccion, { dx: number; dy: number }> = {
+    derecha: { dx: 1, dy: 0 },
+    izquierda: { dx: -1, dy: 0 },
+    abajo: { dx: 0, dy: 1 },
+    arriba: { dx: 0, dy: -1 },
+  };
+  const { dx, dy } = paso[dir];
+  return Math.atan2((dx + dy) * MEDIO_ALTO, (dx - dy) * MEDIO_ANCHO);
+}
+
+/**
+ * Direccion de un desplazamiento entre dos casillas.
+ *
+ * Devuelve null si no se movio o si el salto fue en diagonal, que no ocurre con
+ * los comandos del juego pero si podria llegar de una accion mal formada.
+ */
+export function direccionEntre(
+  desde: { readonly x: number; readonly y: number },
+  hasta: { readonly x: number; readonly y: number },
+): Direccion | null {
+  const dx = hasta.x - desde.x;
+  const dy = hasta.y - desde.y;
+  if (dx !== 0 && dy !== 0) return null;
+  if (dx > 0) return 'derecha';
+  if (dx < 0) return 'izquierda';
+  if (dy > 0) return 'abajo';
+  if (dy < 0) return 'arriba';
+  return null;
+}
 
 export interface ConfiguracionEscena {
   readonly grid: Grid;
@@ -86,6 +131,11 @@ export class IsoScene extends Phaser.Scene {
   private capaItems!: Phaser.GameObjects.Container;
   private fuzz!: Phaser.GameObjects.Container;
   private cuerpoFuzz!: Phaser.GameObjects.Arc;
+  private mirada!: Phaser.GameObjects.Graphics;
+  private pupilaIzq!: Phaser.GameObjects.Arc;
+  private pupilaDer!: Phaser.GameObjects.Arc;
+  /** Hacia donde mira ahora mismo. */
+  private direccion: Direccion = 'derecha';
 
   private itemsVivos = new Map<string, Phaser.GameObjects.Container>();
   /** Grafico de cada puente roto, para poder repararlo en pantalla. */
@@ -360,10 +410,37 @@ export class IsoScene extends Phaser.Scene {
 
     const ojoIzq = this.add.circle(-7, -4, 6.5, 0xffffff);
     const ojoDer = this.add.circle(7, -4, 6.5, 0xffffff);
-    const pupilaIzq = this.add.circle(-6, -3, 3.2, 0x1e293b);
-    const pupilaDer = this.add.circle(8, -3, 3.2, 0x1e293b);
+    this.pupilaIzq = this.add.circle(-7, -4, 3.2, 0x1e293b);
+    this.pupilaDer = this.add.circle(7, -4, 3.2, 0x1e293b);
 
-    this.fuzz.add([sombra, pelaje, this.cuerpoFuzz, ojoIzq, ojoDer, pupilaIzq, pupilaDer]);
+    // Hacia donde mira. A partir del mundo 11 el niño programa giros, y hasta
+    // ahora el giro no se veia: ocurria en el simulador y en pantalla no pasaba
+    // nada, asi que girar parecia una orden rota. Esta flecha y la mirada de las
+    // pupilas son lo unico que cuenta si hace falta girar una vez o tres.
+    // Va detras del cuerpo y sobresale bien: el pelaje llega al radio 25, asi
+    // que una punta que acabase en 30 apenas asomaria y no serviria de nada.
+    this.mirada = this.add.graphics();
+    this.mirada.fillStyle(Phaser.Display.Color.ValueToColor(color).darken(45).color, 1);
+    this.mirada.beginPath();
+    this.mirada.moveTo(44, 0);
+    this.mirada.lineTo(20, -12);
+    this.mirada.lineTo(20, 12);
+    this.mirada.closePath();
+    this.mirada.fillPath();
+
+    this.fuzz.add([
+      sombra,
+      pelaje,
+      this.mirada,
+      this.cuerpoFuzz,
+      ojoIzq,
+      ojoDer,
+      this.pupilaIzq,
+      this.pupilaDer,
+    ]);
+
+    // El Fuzz empieza mirando a donde diga la actividad, no siempre igual.
+    this.colocarMirada(this.configuracion.spawn.dir ?? 'derecha');
 
     // Respiración: el personaje nunca está del todo quieto.
     this.tweens.add({
@@ -373,6 +450,47 @@ export class IsoScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut',
+    });
+  }
+
+  /** Pone la mirada en una direccion sin animarla (al crear o al reiniciar). */
+  private colocarMirada(dir: Direccion): void {
+    this.direccion = dir;
+    const angulo = anguloDeDireccion(dir);
+    this.mirada.setRotation(angulo);
+    this.pupilaIzq.setPosition(-7 + Math.cos(angulo) * 2.6, -4 + Math.sin(angulo) * 2.6);
+    this.pupilaDer.setPosition(7 + Math.cos(angulo) * 2.6, -4 + Math.sin(angulo) * 2.6);
+  }
+
+  /**
+   * Gira al Fuzz hasta mirar en la direccion dada.
+   *
+   * Se gira siempre por el lado corto: dar la vuelta larga para acabar en el
+   * mismo sitio se lee como dos giros y confunde la cuenta, que es justo lo que
+   * el niño esta intentando aprender.
+   */
+  async orientar(dir: Direccion, duracion = DURACION_GIRO): Promise<void> {
+    if (this.direccion === dir) {
+      await new Promise((r) => setTimeout(r, 90));
+      return;
+    }
+    this.direccion = dir;
+
+    const objetivo = this.mirada.rotation + Phaser.Math.Angle.Wrap(anguloDeDireccion(dir) - this.mirada.rotation);
+    const destinoIzq = { x: -7 + Math.cos(objetivo) * 2.6, y: -4 + Math.sin(objetivo) * 2.6 };
+    const destinoDer = { x: 7 + Math.cos(objetivo) * 2.6, y: -4 + Math.sin(objetivo) * 2.6 };
+
+    this.tweens.add({ targets: this.pupilaIzq, ...destinoIzq, duration: duracion, ease: 'Sine.easeInOut' });
+    this.tweens.add({ targets: this.pupilaDer, ...destinoDer, duration: duracion, ease: 'Sine.easeInOut' });
+
+    return new Promise((resolver) => {
+      this.tweens.add({
+        targets: this.mirada,
+        rotation: objetivo,
+        duration: duracion,
+        ease: 'Back.easeOut',
+        onComplete: () => resolver(),
+      });
     });
   }
 
@@ -511,6 +629,9 @@ export class IsoScene extends Phaser.Scene {
     this.fuzz.setPosition(px, py - 20);
     this.fuzz.setDepth(this.profundidad(spawn.x, spawn.y) + 8);
     this.cuerpoFuzz.setScale(1);
+    // Tambien la mirada vuelve a su sitio: reintentar con el Fuzz girado de la
+    // vez anterior haria que el mismo programa diera dos resultados distintos.
+    this.colocarMirada(spawn.dir ?? 'derecha');
 
     this.crearItems();
     this.tweens.add({
@@ -597,12 +718,23 @@ export class IsoRenderer implements IRenderer {
 
       case 'girarDerecha':
       case 'girarIzquierda':
-        // El giro no cambia de casilla: se marca con un pequeño rebote.
-        await new Promise((r) => setTimeout(r, 140));
+        // El giro no cambia de casilla, asi que si no se ve girar no se ve
+        // nada: para el nino la orden habria fallado. La accion trae ya la
+        // direccion resultante, calculada por el simulador.
+        if (accion.dir) await escena.orientar(accion.dir);
         break;
 
       default: {
         if (!destino) break;
+        // Se mira primero hacia donde se va. En los mundos de fichas no hay
+        // orden de girar, pero el Fuzz igualmente rueda en una direccion, y
+        // verlo mirar hacia alli antes de arrancar es lo que hace que el
+        // movimiento parezca suyo y no un empujon.
+        const desde = accion.desde;
+        const direccion =
+          accion.dir ?? (desde ? direccionEntre(desde, destino) : null);
+        if (direccion) await escena.orientar(direccion, DURACION_GIRO / 2);
+
         // En modo rodar se atraviesan varias casillas de una vez: se anima cada
         // una para que el niño vea el recorrido, no un salto instantáneo.
         const recorrido = accion.celdasRecorridas ?? [destino];
