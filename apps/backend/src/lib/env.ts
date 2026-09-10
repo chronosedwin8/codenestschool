@@ -18,6 +18,27 @@ const esquema = z.object({
   PUBLIC_BASE_URL: z.string().url().default('http://localhost:3001'),
   TZ: z.string().default('America/Bogota'),
 
+  /**
+   * Clave con la que se cifra la copia recuperable del PIN de los estudiantes.
+   *
+   * Es opcional: sin ella el juego funciona igual y el portal del docente
+   * muestra los PIN como "no disponible" en vez de fallar. Solo hace falta en un
+   * despliegue de colegio, donde el docente necesita poder consultarlos.
+   */
+  PIN_SECRET: z
+    .string()
+    .min(16, 'PIN_SECRET debe tener al menos 16 caracteres')
+    .optional(),
+
+  /**
+   * Sistema academico del colegio. Solo el servidor lo usa.
+   *
+   * El token abre el expediente de mas de mil menores, asi que no baja nunca al
+   * navegador: si falta, la importacion simplemente no aparece en el portal.
+   */
+  PHIDIAS_BASE_URL: z.string().url().optional(),
+  PHIDIAS_TOKEN: z.string().min(20).optional(),
+
   // Mercado Pago: opcionales en desarrollo, obligatorios para cobrar.
   MP_ACCESS_TOKEN: z.string().optional(),
   MP_PUBLIC_KEY: z.string().optional(),

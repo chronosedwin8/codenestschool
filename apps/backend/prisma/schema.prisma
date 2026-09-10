@@ -184,9 +184,27 @@ model User {
   passwordHash String? @map("password_hash") @db.VarChar(255)
   /// Hash del PIN de imagenes de los prelectores (bcrypt). Nunca en claro.
   pinHash      String? @map("pin_hash") @db.VarChar(255)
+  /// Copia recuperable del PIN, cifrada con AES-256-GCM (ver pin-visible.service).
+  ///
+  /// Existe por una necesidad real del aula: el docente reparte los PIN en clase
+  /// y los ninos de cinco anos los olvidan, asi que tiene que poder consultarlos.
+  /// Un hash no se puede leer ni siquiera desde el servidor, de ahi esta segunda
+  /// copia. NO sustituye al hash: el acceso se sigue verificando contra `pinHash`,
+  /// asi que quien robe esta columna no gana nada sin la clave del `.env`, y cada
+  /// consulta queda anotada en `auditoria_accesos`.
+  pinCifrado   String? @map("pin_cifrado") @db.VarChar(255)
 
   nombre String     @db.VarChar(150)
   rol    RolUsuario @default(nino)
+
+  /// De donde vino la cuenta si no se creo aqui: "phidias" y su id en ese sistema.
+  ///
+  /// Sirve para que importar al mismo estudiante dos veces no cree dos cuentas.
+  /// Un nino puede acabar en el grupo de su curso y en uno mixto de refuerzo, y
+  /// en los dos tiene que ser el mismo perfil: si se duplicara, perderia la
+  /// mitad de su progreso segun por donde entrase.
+  origenExterno   String? @map("origen_externo") @db.VarChar(30)
+  origenExternoId String? @map("origen_externo_id") @db.VarChar(60)
 
   grupoEdad       GrupoEdad?  @map("grupo_edad")
   editorPref      TipoEditor? @map("editor_pref")
@@ -230,6 +248,7 @@ model User {
   licencias         License[]
   perfilFacturacion BillingProfile?
 
+  @@unique([origenExterno, origenExternoId])
   @@index([rol])
   @@index([institucionId])
   @@map("usuarios")

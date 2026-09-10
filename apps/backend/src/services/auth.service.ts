@@ -80,10 +80,16 @@ export async function construirToken(
 /**
  * Genera un nombre de usuario libre a partir del nombre del nino.
  * Ejemplo: "Sofia Ramirez" -> "sofia.r", "sofia.r2", "sofia.r3"...
+ *
+ * `reservados` son los nombres ya repartidos en este mismo lote pero todavia sin
+ * crear. Hacen falta porque al dar de alta una clase entera hay dos "Ana Lopez"
+ * y ninguna de las dos existe aun en la base cuando se consulta: sin esto las
+ * dos pedirian el mismo nombre y el alta del grupo entero fallaria.
  */
 export async function generarUsuarioLibre(
   prisma: PrismaClient,
   nombreCompleto: string,
+  reservados: ReadonlySet<string> = new Set(),
 ): Promise<string> {
   const partes = nombreCompleto
     .normalize('NFD')
@@ -99,6 +105,7 @@ export async function generarUsuarioLibre(
 
   for (let intento = 0; intento < 200; intento++) {
     const candidato = intento === 0 ? base : `${base}${intento + 1}`;
+    if (reservados.has(candidato)) continue;
     const existe = await prisma.user.findUnique({ where: { usuario: candidato } });
     if (!existe) return candidato;
   }

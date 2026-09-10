@@ -19,6 +19,7 @@ import { securityPlugin } from './plugins/security.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { curriculumRoutes } from './routes/curriculum.routes.js';
 import { pagosRoutes } from './routes/pagos.routes.js';
+import { docenteRoutes } from './routes/docente.routes.js';
 import { portalRoutes } from './routes/portal.routes.js';
 import { sessionsRoutes } from './routes/sessions.routes.js';
 import { telemetryRoutes } from './routes/telemetry.routes.js';
@@ -61,6 +62,7 @@ export async function construirServidor(): Promise<FastifyInstance> {
   await fastify.register(telemetryRoutes, { prefix: '/api/telemetria' });
   await fastify.register(pagosRoutes, { prefix: '/api/pagos' });
   await fastify.register(portalRoutes, { prefix: '/api/portal' });
+  await fastify.register(docenteRoutes, { prefix: '/api/docente' });
 
   fastify.get('/health', async () => ({
     estado: 'ok',
