@@ -1,0 +1,162 @@
+# Construye la imagen y avisa a Coolify para que despliegue.
+#
+# La imagen se construye AQUI y no en el servidor a proposito. El servidor de
+# Coolify es una maquina modesta que ademas esta sirviendo el juego: una
+# compilacion de Vite con Monaco, Phaser y Blockly le comeria la memoria y
+# tumbaria lo que ya esta en produccion. Aqui se construye en frio y alli solo
+# se descarga y se arranca.
+name: Desplegar
+
+on:
+  push:
+    branches: [main]
+    # Cambiar solo documentacion no merece reconstruir 700 MB de imagen.
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+  workflow_dispatch:
+
+concurrency:
+  # Si se empujan dos commits seguidos, solo se despliega el ultimo.
+  group: desplegar-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGEN: ghcr.io/${{ github.repository }}
+
+jobs:
+  comprobar:
+    name: Pruebas
+    runs-on: ubuntu-latest
+    services:
+      # Las pruebas del backend hablan con una base de datos de verdad.
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: codenest
+          POSTGRES_PASSWORD: codenest
+          POSTGRES_DB: codenest_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+        # Sin LFS: las pruebas no necesitan los 110 MB de audio, y cada descarga
+        # consume cuota de ancho de banda de la cuenta.
+        with:
+          lfs: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # La migracion inicial ya crea las tres tablas particionadas por rango;
+      # `db:partitions` solo asegura que existan las particiones del mes.
+      - name: Migrar y sembrar
+        run: |
+          npm run prisma:deploy --workspace=@codenest/backend
+          npm run db:partitions
+          npm run db:seed
+        env:
+          DATABASE_URL: postgresql://codenest:codenest@localhost:5432/codenest_db
+
+      - name: Pruebas
+        run: npm test
+        env:
+          DATABASE_URL: postgresql://codenest:codenest@localhost:5432/codenest_db
+          JWT_SECRET: solo-para-las-pruebas-de-integracion-continua-0000
+          PIN_SECRET: solo-para-las-pruebas-0000
+
+  construir:
+    name: Imagen
+    needs: comprobar
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Aqui SI hace falta el audio: es contenido del juego y va en la imagen.
+          lfs: true
+
+      # El audio son 110 MB que no cambian casi nunca. Sin esta cache, cada
+      # despliegue se los descarga otra vez y el plan gratuito de LFS da 1 GB al
+      # mes: serian nueve despliegues y a esperar al mes siguiente.
+      - name: Cache de los objetos de LFS
+        uses: actions/cache@v4
+        with:
+          path: .git/lfs
+          key: lfs-${{ hashFiles('.lfs-assets-id') }}
+          restore-keys: lfs-
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Entrar en el registro
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construir y publicar
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGEN }}:latest
+            ${{ env.IMAGEN }}:${{ github.sha }}
+          # La cache de capas evita reinstalar dependencias en cada despliegue.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  desplegar:
+    name: Desplegar en Coolify
+    needs: construir
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pedir el despliegue
+        run: |
+          respuesta=$(curl -sS -w '\n%{http_code}' \
+            -X GET "${COOLIFY_URL}/api/v1/deploy?uuid=${COOLIFY_APP_UUID}&force=true" \
+            -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
+            -H 'Accept: application/json')
+          codigo=$(printf '%s' "$respuesta" | tail -n1)
+          cuerpo=$(printf '%s' "$respuesta" | sed '$d')
+          echo "$cuerpo"
+          if [ "$codigo" -ge 400 ]; then
+            echo "Coolify respondio $codigo" >&2
+            exit 1
+          fi
+        env:
+          COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          COOLIFY_APP_UUID: ${{ secrets.COOLIFY_APP_UUID }}
+
+      - name: Comprobar que responde
+        run: |
+          # Coolify descarga la imagen y arranca; se le da margen antes de
+          # dar el despliegue por bueno.
+          for intento in $(seq 1 40); do
+            if curl -fsS -m 5 "${URL_PUBLICA}/health" > /dev/null; then
+              echo "En pie tras $intento intentos."
+              curl -sS "${URL_PUBLICA}/api/curriculo/salud-curriculo"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "El sitio no respondio a /health en 10 minutos" >&2
+          exit 1
+        env:
+          URL_PUBLICA: ${{ secrets.URL_PUBLICA }}

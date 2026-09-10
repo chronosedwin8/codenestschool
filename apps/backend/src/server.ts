@@ -25,9 +25,23 @@ import { sessionsRoutes } from './routes/sessions.routes.js';
 import { telemetryRoutes } from './routes/telemetry.routes.js';
 import { asegurarParticiones } from '../scripts/ensure-partitions.js';
 
+/**
+ * Donde estan el juego compilado y el sitio publico.
+ *
+ * Se pueden fijar por entorno porque en produccion el servidor no vive dentro
+ * del repositorio: es un archivo empaquetado junto a sus estaticos, y contar
+ * carpetas hacia arriba desde el codigo daba una ruta distinta segun se
+ * ejecutara el fuente o el compilado. Eso hacia que en produccion el servidor
+ * arrancara sin encontrar ni el juego ni la portada, y sin decir nada, porque un
+ * estatico que no existe simplemente no se registra.
+ */
 const RAIZ_REPO = resolve(import.meta.dirname, '..', '..', '..');
-const DIR_APP = resolve(RAIZ_REPO, 'apps', 'frontend', 'dist');
-const DIR_HOMEPAGE = resolve(RAIZ_REPO, 'apps', 'homepage');
+const DIR_APP = process.env.DIR_APP
+  ? resolve(process.env.DIR_APP)
+  : resolve(RAIZ_REPO, 'apps', 'frontend', 'dist');
+const DIR_HOMEPAGE = process.env.DIR_HOMEPAGE
+  ? resolve(process.env.DIR_HOMEPAGE)
+  : resolve(RAIZ_REPO, 'apps', 'homepage');
 
 export async function construirServidor(): Promise<FastifyInstance> {
   const config = cargarConfig();

@@ -1,0 +1,26 @@
+# Lo que no debe entrar en la imagen ni viajar como contexto de construccion.
+node_modules
+**/node_modules
+.git
+.github
+
+# Compilados: se generan dentro de la imagen, y traer los de la maquina de
+# alguien es la forma mas facil de desplegar algo que nadie puede reproducir.
+apps/frontend/dist
+apps/backend/dist
+apps/backend/build
+packages/*/dist
+**/*.tsbuildinfo
+
+# Secretos. Aunque .env ya esta en .gitignore, el contexto de Docker no lo mira.
+.env
+.env.*
+!.env.example
+**/.env
+
+# Ruido
+.vscode
+.idea
+*.log
+scripts/.cache
+docs

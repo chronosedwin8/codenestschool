@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc -b",
-    "start": "node dist/server.js",
+    "start": "node build/server.mjs",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "prisma:format": "prisma format",
@@ -22,7 +22,8 @@
     "audio:sync": "tsx scripts/sync-audio.ts",
     "test": "vitest run",
     "postinstall": "prisma generate",
-    "metrics:rollup": "tsx scripts/rollup-metrics.ts"
+    "metrics:rollup": "tsx scripts/rollup-metrics.ts",
+    "build:server": "esbuild src/server.ts --bundle --platform=node --format=esm --target=node24 --external:@prisma/client --external:.prisma --external:bcrypt --external:pino-pretty --banner:js=\"import{createRequire as __cr}from'node:module';const require=__cr(import.meta.url);\" --outfile=build/server.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
