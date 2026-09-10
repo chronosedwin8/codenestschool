@@ -62,7 +62,11 @@ export const useAudioStore = defineStore('audio', () => {
   // Caché de sonidos ya cargados: un efecto no se descarga dos veces.
   const cache = new Map<string, Howl>();
   let vozActual: Howl | null = null;
+  /** Bioma pedido antes de que el navegador diera permiso para sonar. */
+  let musicaEnEspera: string | null = null;
   let musicaActual: Howl | null = null;
+  /** Bioma que suena ahora, para no reiniciar la pista al cambiar de actividad. */
+  let biomaActual: string | null = null;
   /** Narración pendiente mientras el navegador no da permiso. */
   let enEspera: { clave: string; texto: string } | null = null;
 
@@ -99,6 +103,15 @@ export const useAudioStore = defineStore('audio', () => {
       const pendiente = enEspera;
       enEspera = null;
       void narrar(pendiente.clave, pendiente.texto);
+    }
+    // La musica se pide al abrir la actividad, o sea antes de que el nino haya
+    // tocado nada, asi que la primera vez siempre llega sin permiso. Si no se
+    // guardara aqui, la primera actividad de cada sesion se jugaria en silencio
+    // y la musica no aparecería hasta la segunda.
+    if (musicaEnEspera) {
+      const bioma = musicaEnEspera;
+      musicaEnEspera = null;
+      musica(bioma);
     }
   }
 
@@ -200,24 +213,39 @@ export const useAudioStore = defineStore('audio', () => {
 
   /** Música de fondo del bioma, con transición suave entre mundos. */
   function musica(bioma: string): void {
+    // Si ya suena la de este bioma, se deja seguir. Las actividades se encadenan
+    // una detrás de otra dentro del mismo mundo, y sin esto la música volvería a
+    // empezar desde el principio cada minuto: se notaría mucho más que el propio
+    // bucle, y delataría que has cambiado de pantalla justo cuando lo que se
+    // busca es que no se note.
+    if (musicaActual && biomaActual === bioma && musicaActual.playing()) return;
+
     if (musicaActual) {
       musicaActual.fade(musicaActual.volume(), 0, 600);
       const anterior = musicaActual;
       setTimeout(() => anterior.stop(), 650);
     }
-    if (silenciado.value || !desbloqueado.value) return;
+
+    if (!desbloqueado.value) {
+      // Se guarda para arrancarla en cuanto el navegador de permiso.
+      musicaEnEspera = bioma;
+      return;
+    }
+    if (silenciado.value) return;
 
     const nueva = obtener(bioma, 'musica', '/musica');
     nueva.volume(0);
     nueva.play();
     nueva.fade(0, VOLUMEN.musica, 900);
     musicaActual = nueva;
+    biomaActual = bioma;
   }
 
   function detenerMusica(): void {
     musicaActual?.fade(musicaActual.volume(), 0, 400);
     const anterior = musicaActual;
     musicaActual = null;
+    biomaActual = null;
     setTimeout(() => anterior?.stop(), 450);
   }
 

@@ -477,8 +477,41 @@ function validarContinuidad(): void {
   }
 }
 
+/**
+ * Comprueba que cada mundo tiene su musica de fondo.
+ *
+ * La musica se pide por el nombre del bioma, asi que renombrar un bioma en el
+ * catalogo deja el mundo en silencio sin que nada mas se rompa. Es un aviso y
+ * no un error: se puede jugar sin musica, y en una instalacion recien clonada
+ * puede que aun no se haya generado.
+ */
+function validarMusica(): void {
+  const dirMusica = resolve(
+    import.meta.dirname,
+    '..',
+    'apps',
+    'frontend',
+    'public',
+    'static',
+    'audio',
+    'musica',
+  );
+  if (!existsSync(dirMusica)) return;
+
+  for (const mundo of MUNDOS) {
+    if (!existsSync(resolve(dirMusica, `${mundo.bioma}.mp3`))) {
+      aviso(
+        'apps/frontend/public/static/audio/musica',
+        `el mundo ${mundo.numero} suena en silencio: falta ${mundo.bioma}.mp3. ` +
+          `Ejecuta: npm run voice:music -- --worlds ${mundo.numero}`,
+      );
+    }
+  }
+}
+
 async function main(): Promise<void> {
   validarContinuidad();
+  validarMusica();
 
   if (!existsSync(DIR_MUNDOS)) {
     console.log(`No existe ${DIR_MUNDOS}. Nada que validar.`);

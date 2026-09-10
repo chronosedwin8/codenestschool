@@ -32,6 +32,7 @@ vi.mock('howler', () => {
     reproducido = false;
     src: string[];
     private vol: number;
+    private sonando = false;
 
     constructor(opciones: { src: string[]; volume: number }) {
       this.src = opciones.src;
@@ -47,8 +48,15 @@ vi.mock('howler', () => {
 
     play(): void {
       this.reproducido = true;
+      this.sonando = true;
     }
-    stop(): void {}
+    stop(): void {
+      this.sonando = false;
+    }
+    /** La música consulta esto para no reiniciarse a sí misma. */
+    playing(): boolean {
+      return this.sonando;
+    }
     volume(v?: number): number {
       if (v !== undefined) this.vol = v;
       return this.vol;
@@ -248,5 +256,91 @@ describe('efectos de sonido', () => {
     audio.efecto('ficha-colocada');
 
     expect(sonidos.at(-1)?.src[0]).toContain('/sfx/ficha-colocada.mp3');
+  });
+});
+
+describe('la musica de fondo acompaña, no interrumpe', () => {
+  it('no se reinicia al encadenar actividades del mismo mundo', async () => {
+    conManifest([]);
+    const audio = useAudioStore();
+    await audio.cargarManifest();
+    audio.desbloquear();
+
+    audio.musica('espacio-pastel');
+    const pista = sonidos.at(-1)!;
+    expect(pista.src[0]).toContain('musica/espacio-pastel.mp3');
+    expect(pista.reproducido).toBe(true);
+
+    // Segunda actividad del mismo mundo: la pista tiene que seguir donde iba.
+    // Volver a empezar cada minuto se notaria mas que el propio bucle.
+    pista.reproducido = false;
+    audio.musica('espacio-pastel');
+
+    expect(pista.reproducido).toBe(false);
+    expect(sonidos).toHaveLength(1);
+  });
+
+  it('cambia de pista al pasar al mundo siguiente', async () => {
+    conManifest([]);
+    const audio = useAudioStore();
+    await audio.cargarManifest();
+    audio.desbloquear();
+
+    audio.musica('espacio-pastel');
+    audio.musica('bosque-arcoiris');
+
+    expect(sonidos).toHaveLength(2);
+    expect(sonidos.at(-1)?.src[0]).toContain('musica/bosque-arcoiris.mp3');
+    expect(sonidos.at(-1)?.reproducido).toBe(true);
+  });
+
+  it('tras pararla, la del mismo bioma vuelve a sonar desde el principio', async () => {
+    conManifest([]);
+    const audio = useAudioStore();
+    await audio.cargarManifest();
+    audio.desbloquear();
+
+    audio.musica('pradera');
+    const pista = sonidos.at(-1)!;
+
+    audio.detenerMusica();
+    pista.reproducido = false;
+    audio.musica('pradera');
+
+    // Salir del juego y volver a entrar si arranca la musica otra vez: lo que se
+    // evita es el reinicio silencioso entre actividades, no este caso.
+    expect(pista.reproducido).toBe(true);
+  });
+});
+
+describe('la musica pedida antes del permiso no se pierde', () => {
+  it('arranca en cuanto el navegador deja sonar', async () => {
+    conManifest([]);
+    const audio = useAudioStore();
+    await audio.cargarManifest();
+
+    // Asi ocurre de verdad: la actividad pide su musica al abrirse, y eso pasa
+    // antes de que el nino haya tocado la pantalla.
+    audio.musica('espacio-pastel');
+    expect(sonidos).toHaveLength(0);
+
+    audio.desbloquear();
+
+    expect(sonidos).toHaveLength(1);
+    expect(sonidos.at(-1)?.src[0]).toContain('musica/espacio-pastel.mp3');
+    expect(sonidos.at(-1)?.reproducido).toBe(true);
+  });
+
+  it('solo espera la ultima pedida', async () => {
+    conManifest([]);
+    const audio = useAudioStore();
+    await audio.cargarManifest();
+
+    audio.musica('espacio-pastel');
+    audio.musica('bosque-arcoiris');
+    audio.desbloquear();
+
+    expect(sonidos).toHaveLength(1);
+    expect(sonidos.at(-1)?.src[0]).toContain('musica/bosque-arcoiris.mp3');
   });
 });

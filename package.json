@@ -22,6 +22,7 @@
     "db:partitions": "npm run partitions --workspace=@codenest/backend",
     "voice:generate": "tsx scripts/generate-voiceover.ts",
     "voice:sfx": "tsx scripts/generate-sfx.ts",
+    "voice:music": "tsx scripts/generate-music.ts",
     "voice:sync": "npm run audio:sync --workspace=@codenest/backend",
     "content:validate": "tsx scripts/validate-content.ts",
     "dev": "npm run dev --workspace=@codenest/backend",

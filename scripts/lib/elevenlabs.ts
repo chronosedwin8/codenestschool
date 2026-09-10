@@ -192,6 +192,36 @@ export async function consultarSuscripcion(apiKey: string): Promise<SuscripcionE
   };
 }
 
+/**
+ * Genera una pieza musical a partir de una descripcion en ingles.
+ *
+ * Se pide a 96 kbps y no a los 64 de la voz: la voz aguanta bien la compresion
+ * porque es una sola fuente en el centro, pero un acorde sostenido a 64 se
+ * ensucia de forma audible, y esta musica va sonando debajo de todo el rato.
+ *
+ * La espera es larga a proposito: componer un minuto tarda bastante mas que
+ * leer una frase.
+ */
+export async function generarMusica(opciones: {
+  readonly apiKey: string;
+  readonly descripcion: string;
+  readonly duracionMs: number;
+}): Promise<Buffer> {
+  const res = await fetch(`${API_BASE}/music?output_format=mp3_44100_96`, {
+    method: 'POST',
+    headers: cabeceras(opciones.apiKey, 'audio/mpeg'),
+    body: JSON.stringify({
+      prompt: opciones.descripcion,
+      music_length_ms: opciones.duracionMs,
+    }),
+    signal: AbortSignal.timeout(300_000),
+  });
+  if (!res.ok) {
+    throw new Error(`music ${res.status}: ${await detalleError(res)}`);
+  }
+  return Buffer.from(await res.arrayBuffer());
+}
+
 /** Genera un efecto de sonido a partir de una descripcion en ingles. */
 export async function generarSonido(opciones: {
   readonly apiKey: string;
