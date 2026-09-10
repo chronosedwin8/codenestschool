@@ -176,6 +176,21 @@ export const curriculumRoutes: FastifyPluginAsync = async (fastify: FastifyInsta
 
     if (!actividad?.activo) return reply.code(404).send({ error: 'Esa actividad no existe' });
 
+    // Cual viene despues. Va en la misma respuesta a proposito: al resolver, el
+    // juego tiene que poder encadenar sin volver al mapa ni esperar otra
+    // consulta, que es justo el momento en el que un nino se levanta y se va.
+    // El orden es el numero global, que ya recorre los treinta mundos seguidos.
+    const siguiente = await fastify.prisma.activity.findFirst({
+      where: { numeroGlobal: { gt: actividad.numeroGlobal }, activo: true },
+      orderBy: { numeroGlobal: 'asc' },
+      select: {
+        id: true,
+        numeroEnMundo: true,
+        nombre: true,
+        mundo: { select: { numero: true, nombre: true } },
+      },
+    });
+
     // La solucion de referencia nunca viaja al cliente.
     return reply.send({
       id: actividad.id,
@@ -188,6 +203,15 @@ export const curriculumRoutes: FastifyPluginAsync = async (fastify: FastifyInsta
       instruccionTexto: actividad.instruccionTexto,
       exitoTexto: actividad.exitoTexto,
       mundo: actividad.mundo,
+      siguiente: siguiente
+        ? {
+            id: siguiente.id,
+            numeroEnMundo: siguiente.numeroEnMundo,
+            nombre: siguiente.nombre,
+            mundo: siguiente.mundo,
+            cambiaDeMundo: siguiente.mundo.numero !== actividad.mundo.numero,
+          }
+        : null,
       audio: {
         instruccion: actividad.audioInstruccion?.rutaArchivo ?? null,
         exito: actividad.audioExito?.rutaArchivo ?? null,

@@ -12,3 +12,4 @@ export * from './voices.js';
 export * from './ui-phrases.js';
 export * from './generadores.js';
 export * from './historia.js';
+export * from './continuidad.js';

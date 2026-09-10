@@ -12,7 +12,7 @@
  *     Nunca aparece un mensaje de error en rojo, ni la palabra "incorrecto".
  *  4. Si acierta, primero ve a su Fuzz llegar, y después las estrellas.
  */
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import {
@@ -20,11 +20,16 @@ import {
   transpilarPython,
   type ActivityConfigV3,
 } from '@codenest/shared';
-import { FUZZ_POR_MUNDO, HISTORIA_POR_MUNDO } from '@codenest/content';
+import {
+  FUZZ_POR_MUNDO,
+  HISTORIA_POR_MUNDO,
+  TRANSICION_POR_MUNDO,
+  retoDeActividad,
+} from '@codenest/content';
 
 import BotonEscuchar from '@/components/BotonEscuchar.vue';
 import Cinematica from '@/components/Cinematica.vue';
-import { claveRescate, yaSeVio } from '@/composables/cinematicas';
+import { claveRescate, claveTransicion, yaSeVio } from '@/composables/cinematicas';
 import BotonJuguete from '@/components/BotonJuguete.vue';
 import PanelEditor, { type ProgramaListo } from '@/components/PanelEditor.vue';
 import PanelEstrellas from '@/components/PanelEstrellas.vue';
@@ -33,11 +38,22 @@ import { IsoRenderer } from '@/game/IsoRenderer';
 import { api } from '@/api/cliente';
 import { useAudioStore } from '@/stores/audio';
 
+/** Lo que viene despues de esta actividad, tal y como lo manda el servidor. */
+interface Siguiente {
+  readonly id: number;
+  readonly numeroEnMundo: number;
+  readonly nombre: string;
+  readonly mundo: { readonly numero: number; readonly nombre: string };
+  readonly cambiaDeMundo: boolean;
+}
+
 interface Actividad {
   readonly id: number;
+  readonly numeroGlobal: number;
   readonly nombre: string;
   readonly instruccionTexto: string;
   readonly exitoTexto: string;
+  readonly siguiente: Siguiente | null;
   readonly config: ActivityConfigV3;
   readonly mundo: {
     readonly numero: number;
@@ -64,17 +80,28 @@ const sesionId = ref<number | null>(null);
 const errorSintaxis = ref<{ linea: number; mensaje: string } | null>(null);
 
 /**
- * Cinematica de rescate.
+ * Cinematicas pendientes de ver, en orden.
  *
- * Se dispara al completar la ULTIMA actividad del mundo, no cada vez que se gana
- * una estrella: el rescate del Fuzz es el final del viaje por ese mundo, y si
- * apareciera antes perderia todo su peso.
+ * Al terminar el ultimo nivel de un mundo pueden encadenarse dos: el rescate del
+ * Fuzz, que cierra la historia de ese mundo, y el puente al mundo siguiente, que
+ * la abre. Se guardan en cola porque tienen que verse una detras de otra y solo
+ * al final se decide a donde va el niño.
+ *
+ * Se disparan al completar la ULTIMA actividad del mundo, nunca antes: si el
+ * rescate apareciera a mitad, perderia todo su peso.
  */
-const cinematicaRescate = ref<{
-  beats: readonly { escena: string; texto: string; audio: string; duracion: number }[];
-  clave: string;
-  colorFuzz: string;
-} | null>(null);
+interface CinematicaEnCola {
+  readonly beats: readonly { escena: string; texto: string; audio: string; duracion: number }[];
+  /** Con clave se recuerda y no se repite; sin ella se ve siempre. */
+  readonly clave: string | null;
+  readonly colorFuzz: string;
+}
+
+const colaCinematicas = ref<readonly CinematicaEnCola[]>([]);
+const cinematicaActual = computed<CinematicaEnCola | null>(() => colaCinematicas.value[0] ?? null);
+
+/** Cierto cuando la actividad recien resuelta era la ultima del mundo. */
+const mundoTerminado = ref(false);
 const panel = ref<InstanceType<typeof PanelEditor> | null>(null);
 const estrellas = ref(0);
 const completada = ref(false);
@@ -95,6 +122,14 @@ const disponibles = computed<readonly string[]>(() => {
 
 /** Lenguaje con el que se juega ahora mismo. */
 const lenguaje = computed(() => actividad.value?.config.lenguajes[0] ?? 'javascript');
+
+/**
+ * El pique de Nube al cerrar la actividad.
+ *
+ * Va ligado al numero de la actividad y no al azar, para que el nivel que un
+ * niño repite buscando la tercera estrella le diga siempre lo mismo.
+ */
+const reto = computed(() => (actividad.value ? retoDeActividad(actividad.value.numeroGlobal) : null));
 
 /** Codigo de partida que ve el Hacker al abrir la actividad. */
 const codigoInicial = computed(
@@ -119,6 +154,19 @@ const puedeJugar = computed(
 async function cargar(): Promise<void> {
   cargando.value = true;
   errorCarga.value = null;
+
+  // Se entra aqui tambien al encadenar con la actividad siguiente, sin salir de
+  // la pantalla. Sin limpiar, la nueva nacería celebrada, con las estrellas de
+  // la anterior y con el Phaser viejo todavia montado debajo del nuevo.
+  completada.value = false;
+  estrellas.value = 0;
+  monedasGanadas.value = 0;
+  pistaVisible.value = null;
+  errorSintaxis.value = null;
+  programa.value = { codigo: '', tamano: 0, estructuras: [], programa: null };
+  colaCinematicas.value = [];
+  mundoTerminado.value = false;
+  ejecutor.destruir();
 
   try {
     const id = Number(ruta.params.id);
@@ -218,17 +266,26 @@ async function jugar(): Promise<void> {
   if (resultado.estrellas > 0) {
     completada.value = true;
     await ejecutor.celebrar(resultado.estrellas, act.exitoTexto);
-    await comprobarRescate(act);
+
+    // Y justo detras del "muy bien", el pique de lo que viene. Es lo que hace
+    // que el dedo vaya al boton verde en vez de a la flecha de volver.
+    const pique = reto.value;
+    if (pique) void audio.narrar(pique.clave, pique.texto);
+
+    await comprobarFinDeMundo(act);
   }
 }
 
-/** Si esta era la ultima actividad del mundo, el Fuzz queda rescatado. */
-async function comprobarRescate(act: Actividad): Promise<void> {
-  const historia = HISTORIA_POR_MUNDO.get(act.mundo.numero);
-  const fuzz = FUZZ_POR_MUNDO.get(act.mundo.numero);
-  if (!historia || !fuzz) return;
-  if (yaSeVio(claveRescate(act.mundo.numero))) return;
-
+/**
+ * Si esta era la ultima actividad del mundo, se cierra el mundo y se abre el
+ * siguiente.
+ *
+ * Se encolan hasta dos cinematicas: el rescate del Fuzz, que solo existe en los
+ * diez primeros mundos y se ve una unica vez, y el puente al mundo que viene,
+ * que existe en los treinta. El puente tambien se recuerda: la primera vez es
+ * una invitacion y la quinta seria un peaje.
+ */
+async function comprobarFinDeMundo(act: Actividad): Promise<void> {
   // Se pregunta al servidor si ya estan todas: el cliente no lleva esa cuenta.
   const datos = await api.get<{ actividades: { completada: boolean }[] }>(
     `/curriculo/mundos/${act.mundo.numero}/actividades`,
@@ -236,11 +293,52 @@ async function comprobarRescate(act: Actividad): Promise<void> {
   const todas = datos.actividades.length > 0 && datos.actividades.every((a) => a.completada);
   if (!todas) return;
 
-  cinematicaRescate.value = {
-    beats: historia.rescate,
-    clave: claveRescate(act.mundo.numero),
-    colorFuzz: fuzz.color,
-  };
+  mundoTerminado.value = true;
+
+  const fuzz = FUZZ_POR_MUNDO.get(act.mundo.numero);
+  const cola: CinematicaEnCola[] = [];
+
+  const historia = HISTORIA_POR_MUNDO.get(act.mundo.numero);
+  if (historia && fuzz && !yaSeVio(claveRescate(act.mundo.numero))) {
+    cola.push({
+      beats: historia.rescate,
+      clave: claveRescate(act.mundo.numero),
+      colorFuzz: fuzz.color,
+    });
+  }
+
+  const transicion = TRANSICION_POR_MUNDO.get(act.mundo.numero);
+  if (transicion && !yaSeVio(claveTransicion(act.mundo.numero))) {
+    cola.push({
+      beats: transicion.beats,
+      clave: claveTransicion(act.mundo.numero),
+      colorFuzz: fuzz?.color ?? '#29A9E0',
+    });
+  }
+
+  colaCinematicas.value = cola;
+}
+
+/**
+ * Va a la actividad siguiente sin pasar por el mapa.
+ *
+ * Encadenar es la diferencia entre un niño que juega una actividad y uno que
+ * juega diez: volver al mapa es una salida, y a los cinco años cualquier salida
+ * se toma. Si no hay siguiente, es que se acabaron las seiscientas.
+ */
+function irASiguiente(): void {
+  const sig = actividad.value?.siguiente;
+  if (!sig) {
+    volverAlMapa();
+    return;
+  }
+  void router.push(`/actividad/${sig.id}`);
+}
+
+/** Al acabar una cinematica se pasa a la siguiente; con la ultima, se avanza. */
+function alTerminarCinematica(): void {
+  colaCinematicas.value = colaCinematicas.value.slice(1);
+  if (colaCinematicas.value.length === 0) irASiguiente();
 }
 
 function reintentar(): void {
@@ -271,6 +369,16 @@ function volverAlMapa(): void {
 }
 
 onMounted(cargar);
+
+// Al encadenar con la siguiente actividad solo cambia el parametro de la ruta:
+// el componente no se vuelve a montar, asi que hay que recargar a mano.
+watch(
+  () => ruta.params.id,
+  (id) => {
+    if (id !== undefined) void cargar();
+  },
+);
+
 onBeforeUnmount(() => {
   ejecutor.destruir();
   audio.detenerMusica();
@@ -279,14 +387,19 @@ onBeforeUnmount(() => {
 
 <template>
   <main class="actividad">
-    <!-- El rescate del Fuzz: solo al terminar el mundo entero. -->
+    <!--
+      El rescate del Fuzz y el puente al mundo siguiente: solo al terminar el
+      mundo entero, y encadenados. Al acabar el ultimo, se entra ya en el mundo
+      que viene, sin pasar por el mapa.
+    -->
     <Cinematica
-      v-if="cinematicaRescate"
-      :beats="cinematicaRescate.beats"
-      :color-fuzz="cinematicaRescate.colorFuzz"
+      v-if="cinematicaActual"
+      :key="cinematicaActual.beats[0]?.audio ?? 'cine'"
+      :beats="cinematicaActual.beats"
+      :color-fuzz="cinematicaActual.colorFuzz"
       :rescatados="actividad ? actividad.mundo.numero : 1"
-      :recordar-como="cinematicaRescate.clave"
-      @terminada="volverAlMapa"
+      :recordar-como="cinematicaActual.clave"
+      @terminada="alTerminarCinematica"
     />
 
     <!-- Cabecera mínima: volver, oír otra vez, pedir pista -->
@@ -329,6 +442,7 @@ onBeforeUnmount(() => {
     <PanelEditor
       v-if="actividad"
       ref="panel"
+      :key="actividad.id"
       :editor="actividad.config.editor"
       :grupo="actividad.config.grupo"
       :lenguaje="lenguaje"
@@ -371,6 +485,10 @@ onBeforeUnmount(() => {
           <p v-if="monedasGanadas > 0" class="celebracion__monedas">
             <span aria-hidden="true">🪙</span> {{ monedasGanadas }}
           </p>
+
+          <!-- El pique de Nube: lo mismo que se acaba de oir, para quien lea. -->
+          <p v-if="reto && !mundoTerminado" class="celebracion__reto">{{ reto.texto }}</p>
+
           <div class="celebracion__botones">
             <BotonJuguete
               v-if="estrellas < 3"
@@ -378,7 +496,37 @@ onBeforeUnmount(() => {
               tono="amarillo"
               @pulsar="reintentar"
             />
-            <BotonJuguete etiqueta="Seguir" icono="→" tono="verde" tamano="lg" @pulsar="volverAlMapa" />
+            <!--
+              El boton grande lleva SIEMPRE hacia delante, y dice a donde va. Al
+              cambiar de mundo lo nombra: un destino con nombre tira mas que un
+              "siguiente".
+            -->
+            <BotonJuguete
+              v-if="actividad?.siguiente"
+              :etiqueta="
+                actividad.siguiente.cambiaDeMundo
+                  ? `Ir a ${actividad.siguiente.mundo.nombre}`
+                  : 'Siguiente reto'
+              "
+              icono="→"
+              tono="verde"
+              tamano="lg"
+              @pulsar="irASiguiente"
+            />
+            <BotonJuguete
+              v-else
+              etiqueta="Volver al mapa"
+              icono="🗺"
+              tono="verde"
+              tamano="lg"
+              @pulsar="volverAlMapa"
+            />
+            <BotonJuguete
+              v-if="actividad?.siguiente"
+              etiqueta="Al mapa"
+              tono="neutro"
+              @pulsar="volverAlMapa"
+            />
           </div>
         </div>
       </div>
@@ -484,6 +632,16 @@ onBeforeUnmount(() => {
   font-family: var(--fuente-titulo);
   font-size: var(--texto-2xl);
   color: var(--naranja-oscuro);
+}
+
+/* El pique va en segundo plano respecto al "lo lograste": complementa, no compite. */
+.celebracion__reto {
+  margin: 0;
+  max-width: 34ch;
+  font-size: var(--texto-lg);
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--tinta-suave, #5b6472);
 }
 
 .celebracion__botones {

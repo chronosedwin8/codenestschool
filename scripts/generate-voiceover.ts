@@ -56,6 +56,7 @@ import {
   CELEBRACIONES,
   FRASES_UI,
   VOZ_UI,
+  textosDeContinuidad,
   textosDeHistoria,
   vozPara,
   type PerfilVoz,
@@ -221,6 +222,20 @@ async function construirTrabajos(opciones: Opciones): Promise<Trabajo[]> {
         texto: normalizar(texto),
         voz: VOZ_UI,
         origen: 'packages/content/src/historia.ts',
+      });
+    }
+  }
+
+  // Lo que se dice al terminar: el reto de la siguiente actividad y el puente
+  // al mundo que viene. Misma voz, porque sigue siendo Nube quien habla.
+  if (quiere(TIPO_AUDIO.ui)) {
+    for (const { clave, texto } of textosDeContinuidad()) {
+      trabajos.push({
+        clave,
+        tipo: TIPO_AUDIO.ui,
+        texto: normalizar(texto),
+        voz: VOZ_UI,
+        origen: 'packages/content/src/continuidad.ts',
       });
     }
   }

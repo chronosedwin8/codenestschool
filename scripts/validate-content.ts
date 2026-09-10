@@ -31,6 +31,11 @@ import {
 } from '@codenest/shared';
 
 import {
+  TRANSICION_POR_MUNDO,
+  retoDeActividad,
+  textosDeContinuidad,
+} from '@codenest/content';
+import {
   ACTIVIDADES_POR_MUNDO,
   MUNDOS,
   claveInstruccion,
@@ -434,7 +439,47 @@ function ejecutarJavaScript(
   return lineasDeCodigo(codigo);
 }
 
+/**
+ * Comprueba lo que sostiene la continuidad entre actividades y entre mundos.
+ *
+ * Va aqui y no en una prueba unitaria porque es contenido, y el contenido se
+ * rompe igual que el resto: en silencio. Un mundo sin puente deja al niño en el
+ * mapa al terminarlo, y una clave sin MP3 deja una cinematica muda, que sin
+ * respaldo de voz del navegador es una pantalla que no dice nada.
+ */
+function validarContinuidad(): void {
+  const archivo = 'packages/content/src/continuidad.ts';
+
+  for (const mundo of MUNDOS) {
+    if (!TRANSICION_POR_MUNDO.has(mundo.numero)) {
+      error(archivo, `el mundo ${mundo.numero} no tiene puente al siguiente`);
+    }
+  }
+
+  // El reto se elige por el numero de actividad: dos seguidas nunca deben
+  // repetirlo, que es justo lo que lo hace sonar a persona y no a cartel.
+  for (let n = 1; n < ACTIVIDADES_POR_MUNDO * MUNDOS.length; n++) {
+    if (retoDeActividad(n).clave === retoDeActividad(n + 1).clave) {
+      error(archivo, `las actividades ${n} y ${n + 1} repiten el mismo reto`);
+    }
+  }
+
+  const vistas = new Set<string>();
+  for (const { clave, texto } of textosDeContinuidad()) {
+    if (vistas.has(clave)) error(archivo, `la clave de audio "${clave}" esta repetida`);
+    vistas.add(clave);
+
+    if (texto.trim().length === 0) error(archivo, `la clave "${clave}" no tiene texto`);
+
+    if (clavesGeneradas && !clavesGeneradas.has(clave)) {
+      error(archivo, `falta el MP3 de "${clave}": esa narracion seria muda`);
+    }
+  }
+}
+
 async function main(): Promise<void> {
+  validarContinuidad();
+
   if (!existsSync(DIR_MUNDOS)) {
     console.log(`No existe ${DIR_MUNDOS}. Nada que validar.`);
     return;

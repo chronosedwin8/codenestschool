@@ -49,5 +49,7 @@ export function olvidarCinematicas(): void {
 export const claveEntrada = (mundo: number): string => `mundo-${mundo}-entrada`;
 /** Clave de la cinematica de rescate al completar un mundo. */
 export const claveRescate = (mundo: number): string => `mundo-${mundo}-rescate`;
+/** Clave del puente al mundo siguiente, que se ve al terminar el mundo `mundo`. */
+export const claveTransicion = (mundo: number): string => `mundo-${mundo}-paso`;
 /** Clave de la apertura general. */
 export const CLAVE_APERTURA = 'apertura';
