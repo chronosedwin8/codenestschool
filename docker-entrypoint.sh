@@ -28,5 +28,12 @@ else
   exit 1
 fi
 
+# La cuenta de administrador, si el entorno la pide. Nunca sobrescribe una que
+# ya exista, asi que estas variables se pueden borrar una vez creada.
+if [ -n "${ADMIN_EMAIL:-}" ] && [ -n "${ADMIN_PASSWORD:-}" ]; then
+  echo "[arranque] comprobando la cuenta de administrador..."
+  node ./seed.mjs --asegurar-admin
+fi
+
 echo "[arranque] levantando el servidor"
 exec "$@"

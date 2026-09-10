@@ -20,6 +20,8 @@ import { createHash } from 'node:crypto';
 
 import { PrismaClient, type Prisma } from '@prisma/client';
 
+import { hashPassword } from '../src/services/auth.service.js';
+
 import {
   CELEBRACIONES,
   FRASES_UI,
@@ -369,7 +371,55 @@ async function verificarCoherencia(): Promise<void> {
   console.log(`  coherencia de numero_global verificada en ${actividades.length} actividades`);
 }
 
+/**
+ * Crea la cuenta de administrador si no existe.
+ *
+ * No hay ruta publica para dar de alta un administrador, y con razon, asi que un
+ * despliegue nuevo se quedaria sin nadie que pueda entrar. Se toma de
+ * `ADMIN_EMAIL` y `ADMIN_PASSWORD`.
+ *
+ * NUNCA sobrescribe una cuenta que ya existe. Asi la contrasena se puede cambiar
+ * despues desde el portal sin que el siguiente reinicio la devuelva al valor del
+ * entorno, y esas dos variables se pueden borrar en cuanto la cuenta este creada.
+ */
+async function asegurarAdministrador(): Promise<void> {
+  const email = process.env.ADMIN_EMAIL?.trim();
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email || !password) {
+    console.log('Sin ADMIN_EMAIL/ADMIN_PASSWORD: no se toca ninguna cuenta.');
+    return;
+  }
+
+  const existente = await prisma.user.findFirst({
+    where: { OR: [{ email }, { usuario: email }] },
+    select: { id: true, rol: true },
+  });
+
+  if (existente) {
+    console.log(`La cuenta ${email} ya existe (rol ${existente.rol}): no se toca.`);
+    return;
+  }
+
+  await prisma.user.create({
+    data: {
+      usuario: email,
+      email,
+      nombre: process.env.ADMIN_NOMBRE?.trim() || 'Administrador',
+      rol: 'admin',
+      passwordHash: await hashPassword(password),
+      activo: true,
+    },
+  });
+  console.log(`Administrador creado: ${email}`);
+}
+
 async function main(): Promise<void> {
+  // Paso suelto para el arranque del contenedor: es barato y corre siempre.
+  if (process.argv.includes('--asegurar-admin')) {
+    await asegurarAdministrador();
+    return;
+  }
+
   /**
    * En el arranque de un contenedor solo interesa sembrar una base recien
    * creada. Todo aqui son upserts, asi que repetirlo no rompe nada, pero
