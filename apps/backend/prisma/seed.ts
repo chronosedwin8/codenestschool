@@ -370,6 +370,21 @@ async function verificarCoherencia(): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  /**
+   * En el arranque de un contenedor solo interesa sembrar una base recien
+   * creada. Todo aqui son upserts, asi que repetirlo no rompe nada, pero
+   * recorrer seiscientas actividades en cada reinicio son casi dos minutos de
+   * arranque que no hacen falta.
+   */
+  if (process.argv.includes('--solo-si-vacio')) {
+    const mundos = await prisma.world.count();
+    if (mundos > 0) {
+      console.log(`Ya hay ${mundos} mundos sembrados: no se toca nada.`);
+      return;
+    }
+    console.log('Base vacia: se siembra el curriculo completo.\n');
+  }
+
   console.log('Sembrando CodeNest School\n');
 
   console.log('Planes comerciales:');

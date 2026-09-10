@@ -129,7 +129,7 @@ jobs:
       - name: Pedir el despliegue
         run: |
           respuesta=$(curl -sS -w '\n%{http_code}' \
-            -X GET "${COOLIFY_URL}/api/v1/deploy?uuid=${COOLIFY_APP_UUID}&force=true" \
+            -X POST "${COOLIFY_URL}/api/v1/deploy?uuid=${COOLIFY_APP_UUID}&force=true" \
             -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
             -H 'Accept: application/json')
           codigo=$(printf '%s' "$respuesta" | tail -n1)

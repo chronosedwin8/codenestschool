@@ -46,9 +46,10 @@ RUN npm ci
 
 COPY . .
 
-# El juego, el paquete compartido y el servidor empaquetado.
+# El juego, el paquete compartido, el servidor y el sembrado, empaquetados.
 RUN npm run build --workspace=@codenest/frontend \
-  && npm run build:server --workspace=@codenest/backend
+  && npm run build:server --workspace=@codenest/backend \
+  && npm run build:seed --workspace=@codenest/backend
 
 # ─────────────────────────────── Ejecucion ───────────────────────────────────
 FROM node:24-slim AS runtime
@@ -63,13 +64,17 @@ ENV NODE_ENV=production \
     PORT=3001 \
     TZ=America/Bogota \
     DIR_APP=/app/publico/app \
-    DIR_HOMEPAGE=/app/publico/inicio
+    DIR_HOMEPAGE=/app/publico/inicio \
+    DIR_MUNDOS=/app/contenido/worlds
 
 # Solo lo que hace falta para ejecutar. El servidor va empaquetado, asi que de
 # `node_modules` unicamente sobreviven las dependencias que quedaron fuera del
 # paquete por ser nativas, y la linea de ordenes de Prisma para migrar.
 COPY --chown=node:node --from=build /repo/apps/backend/build/server.mjs ./server.mjs
+COPY --chown=node:node --from=build /repo/apps/backend/build/seed.mjs ./seed.mjs
 COPY --chown=node:node --from=build /repo/apps/backend/prisma ./prisma
+# El currículo: treinta archivos que el sembrado necesita en el primer arranque.
+COPY --chown=node:node --from=build /repo/packages/content/worlds ./contenido/worlds
 COPY --chown=node:node --from=build /repo/apps/frontend/dist ./publico/app
 COPY --chown=node:node --from=build /repo/apps/homepage ./publico/inicio
 COPY --chown=node:node --from=build /repo/node_modules/@prisma ./node_modules/@prisma

@@ -11,7 +11,17 @@ import { join, resolve } from 'node:path';
 import { worldContentFileSchema, type WorldContentFileInput } from '@codenest/shared/zod';
 
 /** Carpeta con los JSON de mundo (m01-....json ... m30-....json). */
-export const DIR_MUNDOS = resolve(import.meta.dirname, '..', 'worlds');
+/**
+ * Carpeta con los treinta archivos de mundo.
+ *
+ * Se puede fijar por entorno porque en produccion el sembrado va empaquetado en
+ * un solo archivo y `import.meta.dirname` ya no apunta a `packages/content`:
+ * apuntaria a la carpeta del paquete y no encontraria ni un mundo, sembrando una
+ * base vacia sin quejarse.
+ */
+export const DIR_MUNDOS = process.env.DIR_MUNDOS
+  ? resolve(process.env.DIR_MUNDOS)
+  : resolve(import.meta.dirname, '..', 'worlds');
 
 export interface ArchivoMundo {
   readonly archivo: string;
