@@ -39,9 +39,9 @@ interface EfectoSonido {
 }
 
 const EFECTOS: readonly EfectoSonido[] = [
-  { clave: 'ficha-colocada', descripcion: 'soft playful pop, placing a wooden toy block, short and clean', duracion: 0.4 },
-  { clave: 'ficha-quitada', descripcion: 'soft reverse pop, removing a toy block, very short', duracion: 0.3 },
-  { clave: 'boton', descripcion: 'friendly UI button click for a kids game, bright and short', duracion: 0.3 },
+  { clave: 'ficha-colocada', descripcion: 'soft playful pop, placing a wooden toy block, short and clean', duracion: 0.5 },
+  { clave: 'ficha-quitada', descripcion: 'soft reverse pop, removing a toy block, very short', duracion: 0.5 },
+  { clave: 'boton', descripcion: 'friendly UI button click for a kids game, bright and short', duracion: 0.5 },
   { clave: 'rodar', descripcion: 'fuzzy ball rolling on a wooden track, soft continuous whoosh', duracion: 0.8 },
   { clave: 'salto', descripcion: 'cartoon boing spring jump, bouncy and funny', duracion: 0.6 },
   { clave: 'choque', descripcion: 'funny cartoon bump, soft comedic thud, not scary for children', duracion: 0.7 },

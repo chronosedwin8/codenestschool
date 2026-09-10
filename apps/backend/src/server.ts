@@ -74,13 +74,20 @@ export async function construirServidor(): Promise<FastifyInstance> {
   // @fastify/static lanza si se registra dos veces, pero si ninguno la decora,
   // el reenvio del enrutador del cliente falla con un 500. Decora el primero
   // que exista y los siguientes pasan la raiz explicitamente al usarlo.
+  //
+  // El comodin se deja activado a proposito. Con `wildcard: false` la libreria
+  // recorre la carpeta al arrancar y registra una ruta por archivo, asi que
+  // cualquier compilacion posterior del frontend queda invisible hasta reiniciar
+  // el servidor: los assets nuevos caian en el reenvio de la SPA y el navegador
+  // recibia HTML donde esperaba un modulo, con la pantalla en blanco y sin un
+  // solo error legible. Con el comodin, un archivo que no existe llama al
+  // manejador de "no encontrado", que es justo donde vive el reenvio.
   let sendFileDisponible = false;
 
   if (existsSync(DIR_APP)) {
     await fastify.register(fastifyStatic, {
       root: DIR_APP,
       prefix: '/app/',
-      wildcard: false,
       decorateReply: true,
     });
     sendFileDisponible = true;
@@ -90,11 +97,22 @@ export async function construirServidor(): Promise<FastifyInstance> {
     await fastify.register(fastifyStatic, {
       root: DIR_HOMEPAGE,
       prefix: '/',
-      wildcard: false,
       decorateReply: !sendFileDisponible,
     });
     sendFileDisponible = true;
   }
+
+  /**
+   * Distingue una ruta del enrutador del cliente de una peticion de archivo.
+   *
+   * `/app/actividad/1` es una pantalla y debe devolver el index; `/app/assets/x.js`
+   * o `/app/static/audio/y.mp3` son archivos, y si no estan, devolver el index
+   * con un 200 solo sirve para esconder el fallo.
+   */
+  const pareceArchivo = (url: string): boolean => {
+    const ruta = url.split('?')[0] ?? '';
+    return /\.[a-z0-9]{2,5}$/i.test(ruta);
+  };
 
   // Rutas no encontradas: la API responde JSON; el navegador recibe la pagina
   // que corresponda para que el enrutador del cliente tome el control.
@@ -102,7 +120,7 @@ export async function construirServidor(): Promise<FastifyInstance> {
     if (request.url.startsWith('/api')) {
       return reply.code(404).send({ error: 'Ruta no encontrada' });
     }
-    if (request.method === 'GET' && sendFileDisponible) {
+    if (request.method === 'GET' && sendFileDisponible && !pareceArchivo(request.url)) {
       // Rutas internas del juego y del portal: las resuelve el enrutador del
       // cliente, asi que se devuelve su index.
       if (request.url.startsWith('/app') && existsSync(DIR_APP)) {

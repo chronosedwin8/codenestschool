@@ -93,7 +93,14 @@ export class IsoScene extends Phaser.Scene {
   private origen = { x: 0, y: 0 };
 
   constructor() {
-    super({ key: 'iso' });
+    // `active: false` no es un detalle: Phaser arranca por su cuenta la escena
+    // que se le declara en la configuración, y lo hace durante el arranque del
+    // juego, o sea antes de que `cargarNivel` pueda entregarle el nivel. La
+    // escena se creaba entonces sin datos y `create` moría al leer la rejilla,
+    // dentro del propio arranque de Phaser: el juego no llegaba a `postBoot`,
+    // la promesa de `cargarNivel` no se resolvía nunca y la actividad se
+    // quedaba con el tablero en blanco y el botón de jugar apagado.
+    super({ key: 'iso', active: false });
   }
 
   /** Recibe la configuración antes de arrancar la escena. */
@@ -103,6 +110,10 @@ export class IsoScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Red de seguridad para lo anterior: si algo vuelve a arrancar la escena
+    // sin nivel, el tablero se queda vacío pero el juego sigue en pie.
+    if (!this.configuracion?.grid) return;
+
     this.cameras.main.setBackgroundColor(this.paleta.fondo);
     this.capaSuelo = this.add.container(0, 0);
     this.capaItems = this.add.container(0, 0);
@@ -551,9 +562,12 @@ export class IsoRenderer implements IRenderer {
         scene: IsoScene,
         callbacks: {
           postBoot: (juego) => {
+            const escena = juego.scene.getScene('iso') as IsoScene;
+            this.escena = escena;
+            // Se espera a que la escena haya dibujado de verdad. Resolver antes
+            // devolvería un renderizador que todavía no puede animar nada.
+            escena.events.once(Phaser.Scenes.Events.CREATE, () => resolver());
             juego.scene.start('iso', datos);
-            this.escena = juego.scene.getScene('iso') as IsoScene;
-            resolver();
           },
         },
       });

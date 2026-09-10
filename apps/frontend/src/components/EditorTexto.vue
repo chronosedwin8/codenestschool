@@ -14,6 +14,15 @@
  *  - Sin minimapa ni pliegues: menos cosas que distraigan.
  */
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+// `editor.api` es solo la interfaz: no trae ni una sola función del editor ni
+// ningún lenguaje. Sin estas tres importaciones no hay autocompletado que
+// mostrar, `monaco.languages.typescript` no existe y el editor moría al
+// montarse, así que los mundos 21 al 30 se quedaban sin dónde escribir. Se
+// piden una a una en vez de `editor.main` para no arrastrar los ochenta y pico
+// lenguajes que este juego no usa.
+import 'monaco-editor/esm/vs/editor/editor.all.js';
+import 'monaco-editor/esm/vs/language/typescript/monaco.contribution';
+import 'monaco-editor/esm/vs/basic-languages/python/python.contribution';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
@@ -233,7 +242,7 @@ onMounted(() => {
 
   editor.value = instancia;
 
-  instancia.onDidChangeModelContent(() => {
+  const avisarDelPrograma = (): void => {
     const codigo = instancia.getValue();
     emit('cambio', {
       codigo,
@@ -242,7 +251,14 @@ onMounted(() => {
       // programa de JavaScript cabia en el limite de su propia actividad.
       lineas: lineasDeCodigo(codigo),
     });
-  });
+  };
+
+  // Se avisa ya del programa de partida, sin esperar a que el nino escriba. Las
+  // actividades de depurar entregan un programa hecho y lo primero que se hace
+  // con el es ejecutarlo para ver que falla; sin este aviso el boton de jugar
+  // nacia apagado y solo se encendia tocando el codigo.
+  avisarDelPrograma();
+  instancia.onDidChangeModelContent(avisarDelPrograma);
 });
 
 /** Marca el error en su línea tras un intento fallido. */
