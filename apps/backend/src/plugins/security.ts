@@ -78,6 +78,19 @@ export function identificarSolicitante(peticion: FastifyRequest): string {
   return `ip:${peticion.ip}`;
 }
 
+/**
+ * Cierto si la peticion es de un archivo de trabajador web.
+ *
+ * Vite los nombra `<algo>.worker-<hash>.js`. Son tres: el sandbox del juego y
+ * los dos de Monaco. Se comprueba aparte para poder probarlo: de este patron
+ * depende que el juego se pueda jugar, y si dejara de acertar el sintoma seria
+ * que todas las actividades fallan como si el nino se equivocara.
+ */
+export function esArchivoDeTrabajador(url: string): boolean {
+  const ruta = url.split('?')[0] ?? '';
+  return /\.worker-[^/]*\.js$/.test(ruta);
+}
+
 async function plugin(fastify: FastifyInstance): Promise<void> {
   const config = cargarConfig();
   const enProduccion = config.NODE_ENV === 'production';
@@ -102,6 +115,33 @@ async function plugin(fastify: FastifyInstance): Promise<void> {
         }
       : false,
     crossOriginEmbedderPolicy: false,
+  });
+
+  /**
+   * El sandbox necesita `unsafe-eval`, y solo el sandbox.
+   *
+   * El juego ejecuta el programa que escribe el nino con `new Function` dentro
+   * de un trabajador web. Sin `unsafe-eval` la politica lo bloquea, y el
+   * sintoma no dice nada de esto: el trabajador devuelve un error generico con
+   * cero instrucciones ejecutadas y el juego lo muestra como un choque. La
+   * primera actividad del primer mundo, con su unica flecha puesta donde toca,
+   * respondia "casi lo logras". Todas las demas, igual: el juego entero era
+   * injugable en produccion y funcionaba en local, donde no hay politica.
+   *
+   * La excepcion se da SOLO a los archivos de los trabajadores. Un trabajador
+   * dedicado usa la politica con la que se sirve su propio archivo, asi que la
+   * pagina conserva la politica estricta: si alguien logra inyectar algo en
+   * ella, sigue sin poder evaluar codigo. Y dentro del trabajador lo unico
+   * accesible es la API del Fuzz, detras de un Proxy que rechaza todo lo demas.
+   */
+  fastify.addHook('onSend', async (request, reply) => {
+    if (!enProduccion) return;
+    if (!esArchivoDeTrabajador(request.url)) return;
+
+    reply.header(
+      'content-security-policy',
+      "default-src 'self'; script-src 'self' 'unsafe-eval'; connect-src 'self'; object-src 'none'",
+    );
   });
 
   await fastify.register(fastifyCors, {
