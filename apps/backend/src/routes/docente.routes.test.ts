@@ -388,3 +388,118 @@ describe('mover estudiantes entre grupos', () => {
     await app.prisma.classroom.delete({ where: { id: destinoId } });
   });
 });
+
+/**
+ * Jugar es de los estudiantes.
+ *
+ * Un adulto que abre una sesion y envia un programa no comete una travesura: se
+ * crea progreso, estrellas y monedas en SU cuenta, y ese ruido acaba en los
+ * agregados del aula, que es justo lo que el docente mira para decidir a quien
+ * se sienta al lado.
+ *
+ * Se comprueba con un administrador a proposito. `exigirRol` deja pasar siempre
+ * al admin —y para las rutas administrativas esta bien— asi que si estas rutas
+ * usaran esa guarda, la prueba lo cazaria.
+ */
+describe('las actividades son para las cuentas de estudiante', () => {
+  it('un docente no puede abrir una sesion de juego', async () => {
+    const actividad = await app.prisma.activity.findFirst({
+      where: { numeroGlobal: 1 },
+      select: { id: true },
+    });
+
+    const respuesta = await app.inject({
+      method: 'POST',
+      url: '/api/sesiones',
+      headers: como(docente.token),
+      payload: { actividadId: actividad!.id, editor: 'comandos', lenguaje: 'comandos' },
+    });
+
+    expect(respuesta.statusCode).toBe(403);
+  });
+
+  it('ni siquiera un administrador de la plataforma', async () => {
+    const admin = await app.inject({
+      method: 'POST',
+      url: '/api/auth/registro',
+      payload: {
+        nombre: 'Admin Prueba',
+        email: `admin.${marca}@prueba.local`,
+        password: PASSWORD,
+        rol: 'tutor',
+      },
+    });
+    const datos = admin.json() as { usuario: { id: number } };
+    creados.push(datos.usuario.id);
+    // Se asciende a admin por la base: no hay ruta publica para crear uno.
+    await app.prisma.user.update({ where: { id: datos.usuario.id }, data: { rol: 'admin' } });
+
+    const acceso = await app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: { email: `admin.${marca}@prueba.local`, password: PASSWORD },
+    });
+    const tokenAdmin = (acceso.json() as { token: string }).token;
+
+    const actividad = await app.prisma.activity.findFirst({
+      where: { numeroGlobal: 1 },
+      select: { id: true },
+    });
+    const sesion = await app.inject({
+      method: 'POST',
+      url: '/api/sesiones',
+      headers: como(tokenAdmin),
+      payload: { actividadId: actividad!.id, editor: 'comandos', lenguaje: 'comandos' },
+    });
+
+    expect(sesion.statusCode).toBe(403);
+
+    // Y tampoco puede mandar telemetria de juego.
+    const telemetria = await app.inject({
+      method: 'POST',
+      url: '/api/telemetria/eventos',
+      headers: como(tokenAdmin),
+      payload: { eventos: [{ evento: 'actividad_iniciada', datos: {} }] },
+    });
+    expect(telemetria.statusCode).toBe(403);
+  });
+
+  it('pero un estudiante si', async () => {
+    const lista = await app.inject({
+      method: 'GET',
+      url: `/api/docente/aulas/${aulaId}/estudiantes`,
+      headers: como(docente.token),
+    });
+    const alumno = (lista.json() as { estudiantes: { usuario: string }[] }).estudiantes[0]!;
+
+    // El PIN de este grupo se cambio al azar en una prueba anterior; se lee el
+    // que tiene ahora mismo por la ruta de credenciales.
+    const credenciales = await app.inject({
+      method: 'GET',
+      url: `/api/docente/aulas/${aulaId}/credenciales`,
+      headers: como(docente.token),
+    });
+    const suyas = (credenciales.json() as { credenciales: { usuario: string; pin: string[] | null }[] })
+      .credenciales.find((c) => c.usuario === alumno.usuario)!;
+
+    const acceso = await app.inject({
+      method: 'POST',
+      url: '/api/auth/login-nino',
+      payload: { usuario: suyas.usuario, pin: suyas.pin },
+    });
+    const tokenNino = (acceso.json() as { token: string }).token;
+
+    const actividad = await app.prisma.activity.findFirst({
+      where: { numeroGlobal: 1 },
+      select: { id: true },
+    });
+    const sesion = await app.inject({
+      method: 'POST',
+      url: '/api/sesiones',
+      headers: como(tokenNino),
+      payload: { actividadId: actividad!.id, editor: 'comandos', lenguaje: 'comandos' },
+    });
+
+    expect(sesion.statusCode).toBe(201);
+  });
+});

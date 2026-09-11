@@ -41,6 +41,15 @@ declare module 'fastify' {
     exigirRol: (
       ...roles: TokenUsuario['rol'][]
     ) => (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    /**
+     * Exige que quien llama sea un nino, sin excepcion para el administrador.
+     *
+     * `exigirRol` deja pasar siempre al admin, y para las rutas administrativas
+     * esta bien. Para jugar no: un adulto que abre una sesion y envia un
+     * programa crea progreso, estrellas y monedas en su propia cuenta, y ese
+     * ruido acaba en los agregados del aula. Jugar es de los ninos.
+     */
+    exigirJugador: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
     /** Exige que el usuario pueda ver los datos del nino de la ruta. */
     exigirAccesoANino: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
@@ -62,6 +71,23 @@ async function plugin(fastify: FastifyInstance): Promise<void> {
       await request.jwtVerify();
     } catch {
       await reply.code(401).send({ error: 'No autenticado', mensaje: 'Inicia sesion para continuar' });
+    }
+  });
+
+  fastify.decorate('exigirJugador', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      await request.jwtVerify();
+    } catch {
+      await reply.code(401).send({ error: 'No autenticado' });
+      return;
+    }
+    // Sin excepcion para el admin, a diferencia de `exigirRol`: el objetivo aqui
+    // no es el permiso sino que el progreso pertenezca a quien juega de verdad.
+    if (request.user.rol !== 'nino') {
+      await reply.code(403).send({
+        error: 'Sin permiso',
+        mensaje: 'Las actividades son para las cuentas de estudiante',
+      });
     }
   });
 

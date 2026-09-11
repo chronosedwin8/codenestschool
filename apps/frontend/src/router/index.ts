@@ -20,25 +20,25 @@ export const router = createRouter({
       path: '/mapa',
       name: 'mapa',
       component: () => import('@/views/MapaView.vue'),
-      meta: { requiereSesion: true },
+      meta: { requiereSesion: true, soloEstudiantes: true },
     },
     {
       path: '/actividad/:id',
       name: 'actividad',
       component: () => import('@/views/ActividadView.vue'),
-      meta: { requiereSesion: true },
+      meta: { requiereSesion: true, soloEstudiantes: true },
     },
     {
       path: '/portal',
       name: 'portal',
       component: () => import('@/views/PortalView.vue'),
-      meta: { requiereSesion: true },
+      meta: { requiereSesion: true, soloAdultos: true },
     },
     {
       path: '/portal/docente',
       name: 'docente',
       component: () => import('@/views/DocenteView.vue'),
-      meta: { requiereSesion: true },
+      meta: { requiereSesion: true, soloAdultos: true },
     },
     {
       path: '/diseno',
@@ -49,10 +49,55 @@ export const router = createRouter({
   ],
 });
 
-/** Sin sesion no se puede jugar: se vuelve a la pantalla de entrada. */
+/**
+ * Cada rol en su sitio.
+ *
+ * El juego es de los estudiantes y el panel es de los adultos. No es solo una
+ * cuestion de orden: un adulto que abre una actividad y la resuelve genera
+ * progreso, estrellas y monedas en su propia cuenta, y ese ruido acaba en los
+ * agregados del aula. La puerta de verdad esta en el servidor (`exigirJugador`);
+ * esto evita que alguien llegue a una pantalla que no le va a funcionar.
+ */
+const ROLES_ADULTOS = ['tutor', 'docente', 'admin_escuela', 'admin'];
+
+/**
+ * Lee el rol del token sin verificarlo.
+ *
+ * Aqui no hace falta verificar nada: esto decide a que pantalla se navega, no a
+ * que datos se accede. Manipular el token solo consigue llegar a una vista que
+ * el servidor va a rechazar igual.
+ */
+function rolDelToken(): string | null {
+  const token = leerToken();
+  if (!token) return null;
+  try {
+    const carga = token.split('.')[1];
+    if (!carga) return null;
+    const json = atob(carga.replace(/-/g, '+').replace(/_/g, '/'));
+    return (JSON.parse(json) as { rol?: string }).rol ?? null;
+  } catch {
+    return null;
+  }
+}
+
 router.beforeEach((destino) => {
   if (destino.meta.requiereSesion && !leerToken()) {
     return { name: 'entrar', query: { volverA: destino.fullPath } };
   }
+
+  const rol = rolDelToken();
+  if (!rol) return true;
+
+  const esAdulto = ROLES_ADULTOS.includes(rol);
+
+  // Un adulto que pide el juego va a su panel; un estudiante que pide el panel
+  // vuelve a su mapa. En los dos casos a algo util, no a un error.
+  if (destino.meta.soloEstudiantes && esAdulto) {
+    return { name: rol === 'tutor' ? 'portal' : 'docente' };
+  }
+  if (destino.meta.soloAdultos && !esAdulto) {
+    return { name: 'mapa' };
+  }
+
   return true;
 });

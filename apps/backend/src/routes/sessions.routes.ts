@@ -50,7 +50,7 @@ const paramsSesion = z.object({ id: z.coerce.number().int().positive() });
 
 export const sessionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   /** Abre o reanuda la sesion de una actividad. */
-  fastify.post('/', { preHandler: fastify.autenticar }, async (request, reply) => {
+  fastify.post('/', { preHandler: fastify.exigirJugador }, async (request, reply) => {
     const datos = abrirSesionSchema.safeParse(request.body);
     if (!datos.success) {
       return reply.code(400).send({ error: 'Datos invalidos', detalles: datos.error.flatten() });
@@ -93,7 +93,7 @@ export const sessionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstanc
   });
 
   /** Envia un intento: el servidor lo verifica y concede las estrellas. */
-  fastify.post('/:id/envio', { preHandler: fastify.autenticar }, async (request, reply) => {
+  fastify.post('/:id/envio', { preHandler: fastify.exigirJugador }, async (request, reply) => {
     const params = paramsSesion.safeParse(request.params);
     if (!params.success) return reply.code(400).send({ error: 'Sesion invalida' });
 

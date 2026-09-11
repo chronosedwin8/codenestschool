@@ -42,7 +42,7 @@ const loteSchema = z.object({
 
 export const telemetryRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   /** Registra un lote de eventos del niño que está jugando. */
-  fastify.post('/eventos', { preHandler: fastify.autenticar }, async (request, reply) => {
+  fastify.post('/eventos', { preHandler: fastify.exigirJugador }, async (request, reply) => {
     const datos = loteSchema.safeParse(request.body);
     if (!datos.success) {
       return reply.code(400).send({ error: 'Datos invalidos', detalles: datos.error.flatten() });
