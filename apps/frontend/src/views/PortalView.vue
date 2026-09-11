@@ -132,6 +132,11 @@ async function cargarReporte(ninoId: number): Promise<void> {
   reporte.value = await api.get<Reporte>(`/telemetria/reporte/${ninoId}`);
 }
 
+/** Los roles que mandan en un aula ven el acceso a su zona. */
+const esDocente = computed(() =>
+  ['docente', 'admin_escuela', 'admin'].includes(perfil.value?.rol ?? ''),
+);
+
 function salir(): void {
   borrarToken();
   void router.push('/');
@@ -157,7 +162,16 @@ onMounted(cargar);
           {{ perfil.nombre }} · {{ perfil.email }}
         </p>
       </div>
-      <button type="button" class="salir" @click="salir">Cerrar sesion</button>
+      <div class="portal__acciones">
+        <!--
+          Sin este enlace la zona de docentes existia y no habia forma de llegar
+          a ella salvo escribiendo la direccion a mano.
+        -->
+        <RouterLink v-if="esDocente" class="enlace enlace--boton" to="/portal/docente">
+          Mis grupos
+        </RouterLink>
+        <button type="button" class="salir" @click="salir">Cerrar sesion</button>
+      </div>
     </header>
 
     <p v-if="error" class="aviso aviso--grave">{{ error }}</p>
@@ -389,6 +403,22 @@ onMounted(cargar);
 .portal__usuario {
   margin: 0.25rem 0 0;
   color: var(--gris-oscuro);
+}
+
+.portal__acciones {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.enlace--boton {
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: #1fa2ff;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .salir {

@@ -116,9 +116,12 @@ export function useEjecutor() {
 
       await render.reproducirAccion(accion);
 
-      // Recoger un objeto suena aunque no haya ficha de recoger: en modo rodar
-      // los objetos se recogen al pasar por encima.
-      if (accion.celdasRecorridas && accion.celdasRecorridas.length > 1) {
+      // Recoger suena aunque no haya ficha de recoger: rodando y saltando se
+      // recoge al pasar por encima. Antes esto se disparaba con cualquier
+      // recorrido de dos o mas casillas, asi que sonaba sin haber recogido nada
+      // y callaba al recoger avanzando una sola. Ahora suena por lo que de
+      // verdad se recogio.
+      if (accion.cmd !== 'recoger' && (accion.itemsRecogidos?.length ?? 0) > 0) {
         audio.efecto('estrella');
       }
     }

@@ -83,6 +83,20 @@ export interface Spawn extends Celda {
  * `desde`/`hasta`/`celdasRecorridas` son necesarios para el modo `rodar`,
  * donde una sola ficha puede atravesar varias casillas.
  */
+/**
+ * Un objeto recogido durante una accion, con la casilla donde estaba.
+ *
+ * Lleva la casilla y no solo el identificador porque al rodar se atraviesan
+ * varias de una vez: sin saber donde estaba cada estrella, el renderizador no
+ * puede hacerla desaparecer en el momento en que el Fuzz pasa por encima, que es
+ * justo lo que convierte el recorrido en algo que se entiende.
+ */
+export interface ItemRecogido {
+  readonly id: string;
+  readonly x: number;
+  readonly y: number;
+}
+
 export interface Accion {
   readonly cmd: ComandoFuzz | string;
   readonly desde?: Celda;
@@ -90,6 +104,15 @@ export interface Accion {
   readonly celdasRecorridas?: readonly Celda[];
   readonly dir?: Direccion;
   readonly itemId?: string;
+  /**
+   * Lo que se recogio al pasar, sin ficha de recoger de por medio.
+   *
+   * Antes se descartaba: el simulador apuntaba la estrella como recogida y
+   * devolvia su identificador, pero quien lo llamaba tiraba el valor. El
+   * resultado era que la actividad se superaba y en pantalla la estrella seguia
+   * ahi, sin desaparecer ni sonar. En 177 de las 600 actividades.
+   */
+  readonly itemsRecogidos?: readonly ItemRecogido[];
   readonly exito?: boolean;
   readonly datos?: Readonly<Record<string, unknown>>;
 }

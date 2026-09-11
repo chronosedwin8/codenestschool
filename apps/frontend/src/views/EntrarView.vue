@@ -114,6 +114,19 @@ async function entrarComoNino(): Promise<void> {
   }
 }
 
+/**
+ * Donde aterriza cada adulto al entrar.
+ *
+ * Antes todos caian en el mapa del juego, que es la pantalla de un niño: un
+ * docente entraba y se encontraba treinta mundos que no puede jugar, sin una
+ * sola pista de que existiera una zona para el. La zona estaba construida y no
+ * habia forma de llegar salvo escribiendo la direccion a mano.
+ */
+function inicioSegunRol(rol: string | undefined): string {
+  if (rol === 'docente' || rol === 'admin_escuela' || rol === 'admin') return '/portal/docente';
+  return '/portal';
+}
+
 async function entrarComoAdulto(): Promise<void> {
   if (!email.value || !password.value || enviando.value) return;
 
@@ -121,12 +134,12 @@ async function entrarComoAdulto(): Promise<void> {
   error.value = null;
 
   try {
-    const respuesta = await api.post<{ token: string }>('/auth/login', {
+    const respuesta = await api.post<{ token: string; usuario: { rol: string } }>('/auth/login', {
       email: email.value,
       password: password.value,
     });
     guardarToken(respuesta.token);
-    await router.push((ruta.query.volverA as string) || '/mapa');
+    await router.push((ruta.query.volverA as string) || inicioSegunRol(respuesta.usuario?.rol));
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'No se pudo entrar';
   } finally {

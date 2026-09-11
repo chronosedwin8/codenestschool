@@ -363,3 +363,88 @@ describe('puentes rotos (mundo 13)', () => {
     expect(reproducirAcciones(opciones, acciones).valida).toBe(false);
   });
 });
+
+/**
+ * Lo que se recoge al pasar por encima.
+ *
+ * Existe por un fallo que afectaba a 177 de las 600 actividades. El simulador
+ * apuntaba la estrella como recogida y devolvia su identificador, pero quien lo
+ * llamaba tiraba ese valor: la accion que llegaba al renderizador no decia que
+ * se hubiera recogido nada. El resultado era que la actividad se superaba, el
+ * servidor daba las estrellas, y en pantalla la estrella seguia dibujada en su
+ * sitio sin desaparecer ni sonar.
+ *
+ * Se comprueba en las tres formas de recoger sin ficha de recoger: rodando,
+ * avanzando y saltando.
+ */
+describe('estrellas recogidas al pasar', () => {
+  /** Pasillo recto de una fila con estrellas donde se pidan. */
+  const pasillo = (largo: number, estrellas: { x: number; id: string }[]) => ({
+    grid: {
+      cols: largo,
+      rows: 1,
+      tiles: [Array.from({ length: largo }, () => ({ t: 'camino' as const }))],
+    },
+    spawn: { x: 0, y: 0, dir: 'derecha' as const },
+    items: estrellas.map((e) => ({ id: e.id, tipo: 'estrella' as const, x: e.x, y: 0 })),
+    comandosPermitidos: ['derecha', 'izquierda', 'avanzar', 'saltar', 'recoger', 'girarIzquierda'],
+    topeEjecucion: 500,
+  });
+
+  it('rodando dice cuales recogio y en que casilla estaba cada una', () => {
+    const sim = new GridSimulator({
+      ...pasillo(6, [
+        { x: 2, id: 'estrella1' },
+        { x: 4, id: 'estrella2' },
+      ]),
+      modo: 'rodar',
+    });
+
+    const accion = sim.mover('derecha');
+
+    // La casilla importa: rodando se atraviesan varias de una vez, y sin ella el
+    // renderizador no puede apagar cada estrella en el momento de pasar.
+    expect(accion.itemsRecogidos).toEqual([
+      { id: 'estrella1', x: 2, y: 0 },
+      { id: 'estrella2', x: 4, y: 0 },
+    ]);
+  });
+
+  it('avanzando de una en una tambien', () => {
+    const sim = new GridSimulator({ ...pasillo(4, [{ x: 1, id: 'unica' }]), modo: 'paso' });
+
+    const primera = sim.avanzar();
+    const segunda = sim.avanzar();
+
+    expect(primera.itemsRecogidos).toEqual([{ id: 'unica', x: 1, y: 0 }]);
+    // Y la siguiente casilla no inventa ninguna.
+    expect(segunda.itemsRecogidos).toBeUndefined();
+  });
+
+  it('saltando encima de una', () => {
+    const sim = new GridSimulator({ ...pasillo(5, [{ x: 2, id: 'saltada' }]), modo: 'paso' });
+
+    const accion = sim.saltar();
+
+    expect(accion.itemsRecogidos).toEqual([{ id: 'saltada', x: 2, y: 0 }]);
+  });
+
+  it('no la recoge dos veces si se vuelve a pasar', () => {
+    const sim = new GridSimulator({ ...pasillo(4, [{ x: 1, id: 'unica' }]), modo: 'paso' });
+
+    sim.avanzar();
+    sim.girarIzquierda();
+    sim.girarIzquierda();
+    const vuelta = sim.avanzar();
+
+    expect(vuelta.itemsRecogidos).toBeUndefined();
+  });
+
+  it('un camino sin estrellas no las anuncia', () => {
+    const sim = new GridSimulator({ ...pasillo(5, []), modo: 'rodar' });
+
+    // Esto es lo que hacia sonar el tilin sin haber recogido nada: el sonido se
+    // disparaba con cualquier recorrido largo en vez de con lo recogido.
+    expect(sim.mover('derecha').itemsRecogidos).toBeUndefined();
+  });
+});

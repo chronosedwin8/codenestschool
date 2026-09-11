@@ -111,6 +111,19 @@ export function direccionEntre(
   return null;
 }
 
+/**
+ * Hace desaparecer las estrellas que la accion recogio en esa casilla.
+ *
+ * Existe porque recoger no siempre lleva una ficha de recoger: rodando o
+ * saltando se recogen al pasar por encima, y esos casos se quedaban sin efecto
+ * en pantalla. La actividad se superaba y la estrella seguia ahi dibujada.
+ */
+function recogerEn(escena: IsoScene, accion: Accion, celda: { x: number; y: number }): void {
+  for (const item of accion.itemsRecogidos ?? []) {
+    if (item.x === celda.x && item.y === celda.y) escena.recogerItem(item.id);
+  }
+}
+
 export interface ConfiguracionEscena {
   readonly grid: Grid;
   readonly spawn: Spawn;
@@ -704,7 +717,10 @@ export class IsoRenderer implements IRenderer {
 
     switch (accion.cmd) {
       case 'saltar':
-        if (destino) await escena.saltarA(destino.x, destino.y);
+        if (destino) {
+          await escena.saltarA(destino.x, destino.y);
+          recogerEn(escena, accion, destino);
+        }
         break;
 
       case 'recoger':
@@ -744,6 +760,11 @@ export class IsoRenderer implements IRenderer {
             celda.y,
             recorrido.length > 1 ? DURACION_RODAR_CASILLA : DURACION_PASO,
           );
+          // La estrella desaparece en la casilla donde estaba, no al final del
+          // recorrido: rodando se atraviesan varias de una vez, y ver cada una
+          // apagarse al pasar por encima es lo que explica lo que acaba de
+          // ocurrir. Antes no desaparecia ninguna.
+          recogerEn(escena, accion, celda);
         }
         break;
       }

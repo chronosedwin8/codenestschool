@@ -26,6 +26,7 @@ import {
   fichaDeEstudiante,
   importarEstudiantes,
   listaDeAula,
+  panoramaDeAula,
   pinAleatorio,
   prepararPin,
   type Actor,
@@ -718,11 +719,17 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
 
     return responder(reply, async () => {
       const aula = await aulaPermitida(fastify.prisma, aulaId, actorDe(request));
-      const [mundos, estudiantes] = await Promise.all([
+      const [mundos, estudiantes, panorama] = await Promise.all([
         avancePorMundo(fastify.prisma, aulaId),
         listaDeAula(fastify.prisma, aulaId),
+        panoramaDeAula(fastify.prisma, aulaId),
       ]);
-      return reply.send({ aula: { id: aula.id, nombre: aula.nombre }, mundos, estudiantes });
+      return reply.send({
+        aula: { id: aula.id, nombre: aula.nombre },
+        mundos,
+        estudiantes,
+        ...panorama,
+      });
     });
   });
 

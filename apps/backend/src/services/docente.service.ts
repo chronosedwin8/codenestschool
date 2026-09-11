@@ -618,3 +618,137 @@ export async function importarEstudiantes(
 
   return { creados, reutilizados, yaEnElGrupo, omitidos };
 }
+
+// ────────────────────────── Panorama del aula ───────────────────────────────
+
+export interface PanoramaAula {
+  /** Quien lleva mas tiempo sin resolver y acumula intentos. */
+  readonly necesitanApoyo: {
+    id: number;
+    nombre: string;
+    atascos: number;
+    intentosPerdidos: number;
+    completadas: number;
+  }[];
+  /** Quien va por delante. Sirve para apoyarse en ellos, no para premiar. */
+  readonly destacados: { id: number; nombre: string; completadas: number; estrellas: number }[];
+  /** Las actividades que mas cuestan al grupo entero. */
+  readonly actividadesDificiles: {
+    mundo: number;
+    actividad: number;
+    nombre: string;
+    intentos: number;
+    estudiantes: number;
+    sinResolver: number;
+  }[];
+}
+
+/**
+ * La mirada de conjunto que un docente necesita antes de entrar a clase.
+ *
+ * Responde a tres preguntas que no se ven en una tabla de estrellas: a quien hay
+ * que sentarse al lado, en quien apoyarse, y que actividad hay que explicar en
+ * la pizarra porque se le ha atragantado a media clase.
+ *
+ * "Atasco" son cuatro intentos o mas en la misma actividad. Es la senal honesta:
+ * una actividad sin completar puede ser simplemente una a la que no se ha
+ * llegado, pero nueve intentos son una conversacion pendiente.
+ */
+export async function panoramaDeAula(
+  prisma: PrismaClient,
+  aulaId: number,
+): Promise<PanoramaAula> {
+  const inscritos = await prisma.enrollment.findMany({
+    where: { aulaId },
+    select: { nino: { select: { id: true, nombre: true, estrellasTotales: true } } },
+  });
+  const ids = inscritos.map((i) => i.nino.id);
+  if (ids.length === 0) {
+    return { necesitanApoyo: [], destacados: [], actividadesDificiles: [] };
+  }
+
+  const progreso = await prisma.userActivityProgress.findMany({
+    where: { usuarioId: { in: ids } },
+    select: {
+      usuarioId: true,
+      completada: true,
+      intentosTotales: true,
+      actividad: {
+        select: { id: true, nombre: true, numeroEnMundo: true, mundo: { select: { numero: true } } },
+      },
+    },
+  });
+
+  const porNino = new Map<number, { atascos: number; intentosPerdidos: number; completadas: number }>();
+  for (const id of ids) porNino.set(id, { atascos: 0, intentosPerdidos: 0, completadas: 0 });
+
+  const porActividad = new Map<
+    number,
+    { mundo: number; actividad: number; nombre: string; intentos: number; estudiantes: Set<number>; sinResolver: number }
+  >();
+
+  for (const p of progreso) {
+    const nino = porNino.get(p.usuarioId);
+    if (nino) {
+      if (p.completada) nino.completadas += 1;
+      if (p.intentosTotales >= 4) {
+        nino.atascos += 1;
+        // Los intentos de mas: lo que costo por encima de lo normal.
+        nino.intentosPerdidos += p.intentosTotales - 1;
+      }
+    }
+
+    const a = p.actividad;
+    const fila =
+      porActividad.get(a.id) ??
+      {
+        mundo: a.mundo.numero,
+        actividad: a.numeroEnMundo,
+        nombre: a.nombre,
+        intentos: 0,
+        estudiantes: new Set<number>(),
+        sinResolver: 0,
+      };
+    fila.intentos += p.intentosTotales;
+    fila.estudiantes.add(p.usuarioId);
+    if (!p.completada) fila.sinResolver += 1;
+    porActividad.set(a.id, fila);
+  }
+
+  const nombre = new Map(inscritos.map((i) => [i.nino.id, i.nino.nombre]));
+  const estrellas = new Map(inscritos.map((i) => [i.nino.id, i.nino.estrellasTotales]));
+
+  const necesitanApoyo = [...porNino.entries()]
+    .map(([id, d]) => ({ id, nombre: nombre.get(id) ?? '', ...d }))
+    .filter((n) => n.atascos > 0)
+    .sort((a, b) => b.intentosPerdidos - a.intentosPerdidos || a.completadas - b.completadas)
+    .slice(0, 6);
+
+  const destacados = [...porNino.entries()]
+    .map(([id, d]) => ({
+      id,
+      nombre: nombre.get(id) ?? '',
+      completadas: d.completadas,
+      estrellas: estrellas.get(id) ?? 0,
+    }))
+    .filter((n) => n.completadas > 0)
+    .sort((a, b) => b.completadas - a.completadas || b.estrellas - a.estrellas)
+    .slice(0, 6);
+
+  const actividadesDificiles = [...porActividad.values()]
+    .map((f) => ({
+      mundo: f.mundo,
+      actividad: f.actividad,
+      nombre: f.nombre,
+      intentos: f.intentos,
+      estudiantes: f.estudiantes.size,
+      sinResolver: f.sinResolver,
+    }))
+    // Solo las que le costaron a mas de uno: con un solo caso no hay patron que
+    // explicar en la pizarra.
+    .filter((f) => f.estudiantes >= 2 && f.intentos / f.estudiantes >= 2.5)
+    .sort((a, b) => b.intentos / b.estudiantes - a.intentos / a.estudiantes)
+    .slice(0, 8);
+
+  return { necesitanApoyo, destacados, actividadesDificiles };
+}

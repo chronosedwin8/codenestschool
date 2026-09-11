@@ -60,6 +60,13 @@ interface Ficha {
   }[];
 }
 
+interface Panorama {
+  readonly necesitanApoyo: readonly { id: number; nombre: string; atascos: number; intentosPerdidos: number; completadas: number }[];
+  readonly destacados: readonly { id: number; nombre: string; completadas: number; estrellas: number }[];
+  readonly actividadesDificiles: readonly { mundo: number; actividad: number; nombre: string; intentos: number; estudiantes: number; sinResolver: number }[];
+}
+
+const panorama = ref<Panorama>({ necesitanApoyo: [], destacados: [], actividadesDificiles: [] });
 const mundos = ref<readonly FilaMundo[]>([]);
 const estudiantes = ref<readonly FilaEstudiante[]>([]);
 const ficha = ref<Ficha | null>(null);
@@ -73,9 +80,14 @@ async function cargar(): Promise<void> {
   ficha.value = null;
   elegido.value = null;
   try {
-    const datos = await api.get<{ mundos: FilaMundo[]; estudiantes: FilaEstudiante[] }>(
+    const datos = await api.get<{ mundos: FilaMundo[]; estudiantes: FilaEstudiante[] } & Panorama>(
       `/docente/aulas/${props.aula.id}/avance`,
     );
+    panorama.value = {
+      necesitanApoyo: datos.necesitanApoyo ?? [],
+      destacados: datos.destacados ?? [],
+      actividadesDificiles: datos.actividadesDificiles ?? [],
+    };
     // Solo los mundos que el grupo ha tocado: treinta filas vacias no informan.
     mundos.value = datos.mundos.filter((m) => m.completadasTotales > 0);
     estudiantes.value = datos.estudiantes;
@@ -110,6 +122,60 @@ onMounted(() => void cargar());
 <template>
   <div>
     <p v-if="error" class="aviso aviso--grave">{{ error }}</p>
+
+    <!--
+      Lo primero que ve el docente no es una tabla de estrellas sino las tres
+      preguntas que se hace antes de entrar a clase: a quien hay que sentarse al
+      lado, en quien apoyarse, y que actividad hay que explicar en la pizarra.
+    -->
+    <section
+      v-if="panorama.necesitanApoyo.length || panorama.destacados.length || panorama.actividadesDificiles.length"
+      class="panel"
+    >
+      <h2>De un vistazo</h2>
+      <div class="panorama">
+        <div>
+          <h3>Necesitan apoyo</h3>
+          <p v-if="panorama.necesitanApoyo.length === 0" class="vacio">Nadie se esta atascando.</p>
+          <ul v-else class="lista">
+            <li v-for="n in panorama.necesitanApoyo" :key="n.id" class="lista--simple">
+              <span>{{ n.nombre }}</span>
+              <span class="lista__num">{{ n.atascos }} atascos</span>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>Van por delante</h3>
+          <p v-if="panorama.destacados.length === 0" class="vacio">Aun no hay datos.</p>
+          <ul v-else class="lista">
+            <li v-for="d in panorama.destacados" :key="d.id" class="lista--simple">
+              <span>{{ d.nombre }}</span>
+              <span class="lista__num">{{ d.completadas }} actividades</span>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>Se les atraganto a varios</h3>
+          <p v-if="panorama.actividadesDificiles.length === 0" class="vacio">
+            Ninguna actividad esta costando de mas.
+          </p>
+          <ul v-else class="lista">
+            <li
+              v-for="a in panorama.actividadesDificiles"
+              :key="`${a.mundo}-${a.actividad}`"
+              class="lista--simple"
+            >
+              <span>M{{ a.mundo }}·A{{ a.actividad }} {{ a.nombre }}</span>
+              <span class="lista__num">
+                {{ (a.intentos / a.estudiantes).toFixed(1) }} intentos de media
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
 
     <section class="panel">
       <h2>El grupo, mundo a mundo</h2>
@@ -252,6 +318,24 @@ onMounted(() => void cargar());
 }
 
 .lista { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+
+.panorama {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 20px;
+}
+
+.panorama h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.lista--simple {
+  grid-template-columns: 1fr auto !important;
+}
 
 .lista li {
   display: grid;

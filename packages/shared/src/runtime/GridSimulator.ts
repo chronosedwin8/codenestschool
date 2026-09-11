@@ -22,6 +22,7 @@ import type {
   ErrorEjecucion,
   Grid,
   ItemNivel,
+  ItemRecogido,
   ModoMovimiento,
   Spawn,
   Tile,
@@ -209,6 +210,9 @@ export class GridSimulator {
         : 1;
 
     let avanzo = false;
+    // Lo que se recoge al pasar. Antes se descartaba y la estrella se quedaba
+    // dibujada en el tablero aunque la actividad se diera por superada.
+    const itemsRecogidos: ItemRecogido[] = [];
 
     for (let paso = 0; paso < pasosMaximos; paso++) {
       const nx = this.x + dx;
@@ -223,7 +227,8 @@ export class GridSimulator {
       this.y = ny;
       avanzo = true;
       recorridas.push({ x: nx, y: ny });
-      this.recogerAqui();
+      const recogido = this.recogerAqui();
+      if (recogido) itemsRecogidos.push({ id: recogido, x: nx, y: ny });
 
       // En modo paso solo se avanza una casilla.
       if (this.opciones.modo === 'paso') break;
@@ -242,6 +247,7 @@ export class GridSimulator {
       hasta: { x: this.x, y: this.y },
       celdasRecorridas: recorridas,
       dir,
+      ...(itemsRecogidos.length > 0 ? { itemsRecogidos } : {}),
     };
     this.acciones.push(accion);
     return accion;
@@ -262,7 +268,7 @@ export class GridSimulator {
 
     this.x = nx;
     this.y = ny;
-    this.recogerAqui();
+    const recogidoAlAvanzar = this.recogerAqui();
 
     const accion: Accion = {
       cmd: 'avanzar',
@@ -270,6 +276,9 @@ export class GridSimulator {
       hasta: { x: nx, y: ny },
       celdasRecorridas: [{ x: nx, y: ny }],
       dir: this.dir,
+      ...(recogidoAlAvanzar
+        ? { itemsRecogidos: [{ id: recogidoAlAvanzar, x: nx, y: ny }] }
+        : {}),
     };
     this.acciones.push(accion);
     return accion;
@@ -311,10 +320,13 @@ export class GridSimulator {
 
     this.x = destinoX;
     this.y = destinoY;
-    this.recogerAqui();
+    const recogidoAlSaltar = this.recogerAqui();
 
     const accion: Accion = {
       cmd: 'saltar',
+      ...(recogidoAlSaltar
+        ? { itemsRecogidos: [{ id: recogidoAlSaltar, x: destinoX, y: destinoY }] }
+        : {}),
       desde,
       hasta: { x: destinoX, y: destinoY },
       celdasRecorridas: [{ x: destinoX, y: destinoY }],
