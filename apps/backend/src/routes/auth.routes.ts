@@ -12,6 +12,7 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 
+import { cargarConfig, ssoConfigurado } from '../lib/env.js';
 import { LIMITE_ACCESO } from '../plugins/security.js';
 import { comprobarAccesoANino } from '../services/guardian.service.js';
 import {
@@ -21,6 +22,7 @@ import {
   comprobarIntentosIp,
   olvidarFallos,
 } from '../services/intentos.service.js';
+import { esCorreoDelColegio } from '../services/sso.service.js';
 import {
   construirToken,
   generarUsuarioLibre,
@@ -63,6 +65,7 @@ const consentimientoSchema = z.object({
 });
 
 export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
+  const config = cargarConfig();
   /** Alta de un adulto responsable. */
   fastify.post('/registro', { config: LIMITE_ACCESO }, async (request, reply) => {
     const datos = registroAdultoSchema.safeParse(request.body);
@@ -70,6 +73,16 @@ export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
       return reply.code(400).send({ error: 'Datos invalidos', detalles: datos.error.flatten() });
     }
     const { nombre, email, password, rol } = datos.data;
+
+    // Un correo del colegio no se da de alta con contrasena cuando el SSO es
+    // obligatorio: seria una puerta paralela a la que el colegio quiso cerrar.
+    if (config.SSO_OBLIGATORIO && ssoConfigurado(config) && esCorreoDelColegio(config, email)) {
+      return reply.code(403).send({
+        error: 'Entra con la cuenta del colegio',
+        mensaje: 'Las cuentas del colegio entran con su correo de Microsoft.',
+        sso: true,
+      });
+    }
 
     const existe = await fastify.prisma.user.findUnique({ where: { email } });
     if (existe) {
@@ -98,6 +111,21 @@ export const authRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) =
     }
 
     const identificador = datos.data.email;
+
+    /**
+     * Con el SSO obligatorio, un correo del colegio no entra con contrasena.
+     *
+     * Se comprueba antes de mirar la contrasena y sin consultar la base: asi no
+     * se puede usar esta ruta para averiguar si un correo tiene cuenta aqui. El
+     * mensaje es el mismo para el docente que existe y para el que no.
+     */
+    if (config.SSO_OBLIGATORIO && ssoConfigurado(config) && esCorreoDelColegio(config, identificador)) {
+      return reply.code(403).send({
+        error: 'Entra con la cuenta del colegio',
+        mensaje: 'Las cuentas del colegio entran con su correo de Microsoft.',
+        sso: true,
+      });
+    }
 
     // Los docentes de un colegio tambien comparten la red, asi que aqui vale el
     // mismo criterio: se cuentan los fallos, no los accesos correctos.

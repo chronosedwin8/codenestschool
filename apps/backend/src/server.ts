@@ -23,6 +23,7 @@ import { docenteRoutes } from './routes/docente.routes.js';
 import { portalRoutes } from './routes/portal.routes.js';
 import { progresoRoutes } from './routes/progreso.routes.js';
 import { sessionsRoutes } from './routes/sessions.routes.js';
+import { ssoRoutes } from './routes/sso.routes.js';
 import { telemetryRoutes } from './routes/telemetry.routes.js';
 import { tiendaRoutes } from './routes/tienda.routes.js';
 import { asegurarParticiones } from '../scripts/ensure-partitions.js';
@@ -73,6 +74,7 @@ export async function construirServidor(): Promise<FastifyInstance> {
 
   // Rutas de la API.
   await fastify.register(authRoutes, { prefix: '/api/auth' });
+  await fastify.register(ssoRoutes, { prefix: '/api/auth/sso' });
   await fastify.register(curriculumRoutes, { prefix: '/api/curriculo' });
   await fastify.register(sessionsRoutes, { prefix: '/api/sesiones' });
   await fastify.register(telemetryRoutes, { prefix: '/api/telemetria' });

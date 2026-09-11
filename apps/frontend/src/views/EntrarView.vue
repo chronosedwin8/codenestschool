@@ -42,6 +42,12 @@ const router = useRouter();
 const audio = useAudioStore();
 
 const modo = ref<'nino' | 'adulto'>('nino');
+/** Si el colegio tiene montado el acceso con Microsoft. */
+const sso = ref<{ activo: boolean; obligatorio: boolean; dominios: string[] }>({
+  activo: false,
+  obligatorio: false,
+  dominios: [],
+});
 const usuario = ref('');
 const pin = ref<string[]>([]);
 const email = ref('');
@@ -147,8 +153,100 @@ async function entrarComoAdulto(): Promise<void> {
   }
 }
 
-onMounted(() => {
+/**
+ * Por que un correo del colegio no pudo entrar.
+ *
+ * Los codigos vienen del servidor y son cortos a proposito: un fallo de
+ * identidad no cuenta sus detalles en pantalla. Aqui se traducen a algo que un
+ * docente pueda leer y sepa que hacer con ello.
+ */
+const MOTIVOS_SSO: Record<string, string> = {
+  'sin-cuenta': 'Tu correo del colegio todavia no tiene cuenta aqui. Pidesela al administrador.',
+  dominio: 'Esa cuenta no es del colegio.',
+  inquilino: 'Esa cuenta no es del colegio.',
+  'sin-correo': 'Esa cuenta de Microsoft no tiene correo.',
+  inactiva: 'Tu cuenta esta desactivada. Habla con el administrador.',
+  cancelado: 'Se cancelo la entrada con Microsoft.',
+  state: 'La entrada tardo demasiado. Intentalo otra vez.',
+  nonce: 'La entrada no coincidio. Intentalo otra vez.',
+  'no-configurado': 'El acceso con la cuenta del colegio no esta activo.',
+};
+
+/** Lee el rol del token sin verificarlo: solo decide a que pantalla se va. */
+function rolDelToken(token: string): string | undefined {
+  try {
+    const carga = token.split('.')[1];
+    if (!carga) return undefined;
+    const json = atob(carga.replace(/-/g, '+').replace(/_/g, '/'));
+    return (JSON.parse(json) as { rol?: string }).rol;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Recoge la sesion que deja Microsoft en el fragmento de la URL.
+ *
+ * Viene en `#sso=...` y no en `?token=...` porque el fragmento no viaja al
+ * servidor ni queda en sus registros. Lo primero que se hace despues de leerlo
+ * es borrarlo de la barra de direcciones: un token en el historial del navegador
+ * de una sala de profesores es un token compartido.
+ */
+async function recogerRetornoSso(): Promise<boolean> {
+  const bruto = window.location.hash.replace(/^#/, '');
+  if (!bruto) return false;
+
+  const datos = new URLSearchParams(bruto);
+  const token = datos.get('sso');
+  const fallo = datos.get('sso-error');
+  if (!token && !fallo) return false;
+
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+
+  if (fallo) {
+    error.value = MOTIVOS_SSO[fallo] ?? 'No se pudo entrar con la cuenta del colegio.';
+    modo.value = 'adulto';
+    return false;
+  }
+  if (!token) return false;
+
+  // Un token que ni siquiera se puede leer no se guarda. Guardarlo dejaba al
+  // docente "dentro" con una sesion rota: el portal le pedia entrar otra vez sin
+  // explicar nada, que es peor que decirle que la entrada fallo.
+  const rol = rolDelToken(token);
+  if (!rol) {
+    error.value = 'No se pudo entrar con la cuenta del colegio.';
+    modo.value = 'adulto';
+    return false;
+  }
+
+  guardarToken(token);
+  await router.push(datos.get('volverA') ?? inicioSegunRol(rol));
+  return true;
+}
+
+function entrarConElColegio(): void {
+  const volverA = (ruta.query.volverA as string) || '';
+  const parametros = volverA ? `?volverA=${encodeURIComponent(volverA)}` : '';
+  // Es una navegacion de verdad, no una peticion: el navegador tiene que salir
+  // hacia Microsoft y volver. Con fetch no habria pantalla donde autenticarse.
+  window.location.assign(`/api/auth/sso/inicio${parametros}`);
+}
+
+onMounted(async () => {
   cargarRecordados();
+
+  // Si venimos de Microsoft, esto navega y lo demas ya da igual.
+  if (await recogerRetornoSso()) return;
+
+  try {
+    sso.value = await api.get<{ activo: boolean; obligatorio: boolean; dominios: string[] }>(
+      '/auth/sso/estado',
+    );
+  } catch {
+    // Sin respuesta se asume que no hay SSO: se entra con contrasena, como antes.
+  }
+
   void audio.narrar('ui_bienvenida', 'Hola, soy Nube. Bienvenido a CodeNest. Vamos a jugar y a programar.');
 });
 </script>
@@ -231,21 +329,45 @@ onMounted(() => {
 
     <!-- Acceso de adultos -->
     <section v-else class="tarjeta">
-      <label class="campo">
-        <span class="etiqueta">Correo</span>
-        <input v-model="email" type="email" autocomplete="email" />
-      </label>
-      <label class="campo">
-        <span class="etiqueta">Contrasena</span>
-        <input v-model="password" type="password" autocomplete="current-password" />
-      </label>
-      <BotonJuguete
-        etiqueta="Entrar"
-        tono="verde"
-        tamano="lg"
-        :deshabilitado="enviando"
-        @pulsar="entrarComoAdulto"
-      />
+      <!--
+        El acceso del colegio va PRIMERO: en el Colegio Aleman es el camino de
+        casi todos, y ponerlo debajo del formulario invita a teclear una
+        contrasena que la mitad de los docentes ni siquiera tiene.
+      -->
+      <template v-if="sso.activo">
+        <BotonJuguete
+          etiqueta="Entrar con el correo del colegio"
+          icono="🏫"
+          tono="azul"
+          tamano="lg"
+          @pulsar="entrarConElColegio"
+        />
+        <p class="dominio">
+          Con tu cuenta
+          <strong>@{{ sso.dominios[0] }}</strong>
+          de Microsoft.
+        </p>
+      </template>
+
+      <template v-if="!sso.obligatorio">
+        <p v-if="sso.activo" class="separador"><span>o con tu contrasena</span></p>
+
+        <label class="campo">
+          <span class="etiqueta">Correo</span>
+          <input v-model="email" type="email" autocomplete="email" />
+        </label>
+        <label class="campo">
+          <span class="etiqueta">Contrasena</span>
+          <input v-model="password" type="password" autocomplete="current-password" />
+        </label>
+        <BotonJuguete
+          etiqueta="Entrar"
+          tono="verde"
+          tamano="lg"
+          :deshabilitado="enviando"
+          @pulsar="entrarComoAdulto"
+        />
+      </template>
     </section>
 
     <p v-if="error" class="error" role="alert">{{ error }}</p>
@@ -280,6 +402,31 @@ onMounted(() => {
   background: rgb(255 255 255 / 0.78);
   border-radius: var(--radio-xl);
   box-shadow: var(--sombra-panel);
+}
+
+.dominio {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--gris-texto, #64748b);
+}
+
+/* Una linea con el "o" en medio: separa dos formas de entrar, no dos secciones. */
+.separador {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  width: 100%;
+  margin: 0;
+  color: var(--gris-texto, #94a3b8);
+  font-size: var(--texto-sm);
+}
+
+.separador::before,
+.separador::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: var(--gris-claro, #e2e8f0);
 }
 
 .campo {
