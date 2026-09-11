@@ -301,6 +301,12 @@ onMounted(() => {
   const area = Blockly.inject(contenedor.value, {
     toolbox: construirToolbox(),
     theme: tema,
+    // Sin esto, Blockly pide sus iconos a `blockly-demo.appspot.com`, un
+    // servidor de demostracion de Google. Son dos problemas: en produccion la
+    // politica de seguridad bloquea la peticion y los iconos no aparecen, y en
+    // cualquier otro sitio la peticion SI sale, de modo que un producto para
+    // niños llamaba a un tercero en cada partida. Los archivos estan copiados.
+    media: `${import.meta.env.BASE_URL || '/'}blockly/`.replace('//blockly/', '/blockly/'),
     renderer: 'zelos',
     grid: { spacing: 24, length: 3, colour: '#dbe9f5', snap: true },
     zoom: { controls: true, wheel: false, startScale: 0.95, minScale: 0.6, maxScale: 1.5 },

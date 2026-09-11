@@ -9,17 +9,11 @@
  */
 import { computed } from 'vue';
 
-export type ClaseFicha =
-  | 'derecha'
-  | 'izquierda'
-  | 'arriba'
-  | 'abajo'
-  | 'saltar'
-  | 'recoger'
-  | 'repetir'
-  | 'siColor'
-  | 'siSino'
-  | 'funcion';
+import { GIRO_FICHA, TONOS_FICHA, type ClaseFicha } from './fichas';
+
+// Se reexporta para no obligar a cambiar a quien ya lo importaba de aqui.
+export type { ClaseFicha };
+
 
 const props = withDefaults(
   defineProps<{
@@ -37,27 +31,7 @@ const props = withDefaults(
   { veces: 2, color: 'rojo', tamano: 84, colocada: false, fantasma: false, resaltada: false },
 );
 
-/** Cada comando tiene su color propio, constante en toda la aplicación. */
-const TONOS: Record<ClaseFicha, { fondo: string; borde: string }> = {
-  derecha: { fondo: 'var(--azul-neon)', borde: 'var(--azul-neon-oscuro)' },
-  izquierda: { fondo: 'var(--azul-neon)', borde: 'var(--azul-neon-oscuro)' },
-  arriba: { fondo: 'var(--azul-neon)', borde: 'var(--azul-neon-oscuro)' },
-  abajo: { fondo: 'var(--azul-neon)', borde: 'var(--azul-neon-oscuro)' },
-  saltar: { fondo: 'var(--verde-cesped)', borde: 'var(--verde-cesped-oscuro)' },
-  recoger: { fondo: 'var(--amarillo)', borde: 'var(--amarillo-oscuro)' },
-  repetir: { fondo: 'var(--naranja)', borde: 'var(--naranja-oscuro)' },
-  siColor: { fondo: 'var(--magenta)', borde: 'var(--magenta-oscuro)' },
-  siSino: { fondo: 'var(--magenta)', borde: 'var(--magenta-oscuro)' },
-  funcion: { fondo: 'var(--morado)', borde: 'var(--morado-oscuro)' },
-};
 
-/** Giro de la flecha según la dirección. */
-const GIRO: Partial<Record<ClaseFicha, number>> = {
-  derecha: 0,
-  abajo: 90,
-  izquierda: 180,
-  arriba: 270,
-};
 
 const COLORES_CASILLA: Record<string, string> = {
   rojo: '#EF4444',
@@ -68,9 +42,9 @@ const COLORES_CASILLA: Record<string, string> = {
   naranja: '#FF8A3D',
 };
 
-const esFlecha = computed(() => props.comando in GIRO);
-const tono = computed(() => TONOS[props.comando]);
-const giro = computed(() => GIRO[props.comando] ?? 0);
+const esFlecha = computed(() => props.comando in GIRO_FICHA);
+const tono = computed(() => TONOS_FICHA[props.comando]);
+const giro = computed(() => GIRO_FICHA[props.comando] ?? 0);
 
 /** Descripción para lectores de pantalla y para el modo de accesibilidad. */
 const descripcion = computed(() => {
@@ -95,6 +69,8 @@ const descripcion = computed(() => {
       return 'Si pasa esto, si no lo otro';
     case 'funcion':
       return 'Super salto';
+    case 'llamar':
+      return 'Usar el Super salto';
     default:
       return 'Ficha';
   }
@@ -200,6 +176,17 @@ const descripcion = computed(() => {
       />
       <circle cx="10" cy="38" r="4" fill="white" />
       <circle cx="38" cy="38" r="4" fill="white" />
+    </svg>
+
+    <!--
+      Usar el Super salto: el mismo paquete que define la ficha de función, pero
+      con el triángulo de reproducir dentro. Las dos salen siempre juntas en la
+      misma actividad, así que el niño tiene que poder distinguir de un vistazo
+      la que crea el paquete de la que lo usa.
+    -->
+    <svg v-else-if="comando === 'llamar'" viewBox="0 0 48 48" class="ficha__svg" aria-hidden="true">
+      <rect x="9" y="12" width="30" height="24" rx="5" stroke="white" stroke-width="5" fill="none" />
+      <path d="M 21 19 L 32 24 L 21 29 Z" fill="white" />
     </svg>
 
     <!-- Función: paquete de instrucciones -->
