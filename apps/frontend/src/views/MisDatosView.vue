@@ -10,12 +10,11 @@
  *  - Todo lo que se enseña es algo que él hizo. Nada de lo que le falta
  *    presentado como deuda: las actividades que no ha tocado no son un fallo
  *    suyo, son el camino que le queda.
- *  - Los porcentajes y el puesto en el grupo solo aparecen a partir de los siete
- *    años. A un prelector "12,5 %" no le dice nada, y "vas el último de
- *    veinticinco" le dice algo que no necesita saber.
+ *  - Nada de esto aparece al entrar al juego. Vive solo aquí, y aquí se entra
+ *    queriendo: el mapa es para jugar y esta pantalla es para mirarse.
  *
  * La página se narra igual que el resto del juego, porque el más pequeño de los
- * que llegan aquí todavía no lee.
+ * que llegan aquí todavía no lee, y ahora también ve los porcentajes.
  */
 import { computed, onMounted, ref } from 'vue';
 
@@ -65,10 +64,6 @@ const audio = useAudioStore();
 const datos = ref<MisDatos | null>(null);
 const cargando = ref(true);
 const error = ref<string | null>(null);
-/** El grupo de edad decide cuánto detalle se enseña. */
-const grupoEdad = ref<string>('exploradores');
-
-const esPrelector = computed(() => grupoEdad.value === 'exploradores');
 
 /** Cuánto de lo jugado salió perfecto. Se mide contra lo suyo, no contra 600. */
 const porcentajeDeExcelencia = computed(() => {
@@ -119,12 +114,7 @@ async function cargar(): Promise<void> {
   cargando.value = true;
   error.value = null;
   try {
-    const [mios, yo] = await Promise.all([
-      api.get<MisDatos>('/progreso/mio'),
-      api.get<{ grupoEdad?: string }>('/auth/yo'),
-    ]);
-    datos.value = mios;
-    grupoEdad.value = yo.grupoEdad ?? 'exploradores';
+    datos.value = await api.get<MisDatos>('/progreso/mio');
 
     // Se narra al entrar: el que menos lee es el que más lo necesita. La frase
     // es fija y no lleva números porque la voz es grabada, no sintetizada: un
@@ -204,8 +194,7 @@ onMounted(() => void cargar());
         </div>
       </section>
 
-      <!-- El detalle solo para quien ya lee y entiende un porcentaje. -->
-      <section v-if="!esPrelector" class="panel">
+      <section class="panel">
         <h2>Tus números</h2>
         <ul class="detalle">
           <li>
@@ -240,11 +229,10 @@ onMounted(() => void cargar());
       </section>
 
       <!--
-        El puesto en el grupo, solo a partir de los siete años. A un prelector no
-        le aporta nada y a cualquiera le puede doler: por eso va al final, en
-        pequeño, y sin decir quién va delante.
+        El puesto en el grupo va al final, en pequeño y sin decir quién va
+        delante: a cualquiera le puede doler, y lo que importa es su avance.
       -->
-      <section v-if="!esPrelector && fraseDelGrupo" class="panel panel--grupo">
+      <section v-if="fraseDelGrupo" class="panel panel--grupo">
         <h2>En tu grupo</h2>
         <p class="grupo">{{ fraseDelGrupo }}</p>
         <p class="grupo__nota">
