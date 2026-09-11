@@ -507,6 +507,13 @@ async function main(): Promise<void> {
   const mundoIds = await sembrarMundos(voces);
   await sembrarActividades(mundoIds, voces);
 
+  // La tienda va tambien aqui, y no solo en el atajo de `--solo-si-vacio`. Sin
+  // esta linea, una base recien creada se quedaba sin catalogo: en local no se
+  // notaba porque el atajo ya lo habia sembrado, y salto donde tenia que saltar,
+  // en la integracion continua, que siempre parte de una base vacia.
+  console.log('\nTienda:');
+  await sembrarTienda();
+
   console.log('\nVerificaciones:');
   await verificarCoherencia();
 
