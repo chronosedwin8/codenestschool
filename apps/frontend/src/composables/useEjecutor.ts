@@ -129,6 +129,24 @@ export function useEjecutor() {
     pasoActual.value = null;
   }
 
+  /**
+   * Vuelve a animar una tirada ya ocurrida, sin ejecutar nada.
+   *
+   * Es lo que compra el poder de Repeticion. No toca el sandbox ni el servidor:
+   * repite las mismas acciones, que es justo lo que hace falta para entender un
+   * programa que paso demasiado rapido.
+   */
+  async function repetir(acciones: readonly Accion[]): Promise<void> {
+    if (ejecutando.value || acciones.length === 0) return;
+    ejecutando.value = true;
+    try {
+      renderizador.value?.reiniciar();
+      await animar(acciones);
+    } finally {
+      ejecutando.value = false;
+    }
+  }
+
   /** Tirada completa: sandbox, animación y aviso amable si algo falla. */
   async function jugar(
     codigo: string,
@@ -195,6 +213,7 @@ export function useEjecutor() {
     ultimoError,
     renderizador,
     jugar,
+    repetir,
     celebrar,
     reiniciar,
     destruir,

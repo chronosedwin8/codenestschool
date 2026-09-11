@@ -18,6 +18,7 @@ import { useRoute, useRouter } from 'vue-router';
 import {
   ErrorSintaxisPython,
   transpilarPython,
+  type Accion,
   type ActivityConfigV3,
 } from '@codenest/shared';
 import {
@@ -37,6 +38,7 @@ import { useEjecutor } from '@/composables/useEjecutor';
 import { IsoRenderer } from '@/game/IsoRenderer';
 import { api } from '@/api/cliente';
 import { useAudioStore } from '@/stores/audio';
+import { useTiendaStore } from '@/stores/tienda';
 
 /** Lo que viene despues de esta actividad, tal y como lo manda el servidor. */
 interface Siguiente {
@@ -70,6 +72,7 @@ const ruta = useRoute();
 const router = useRouter();
 const audio = useAudioStore();
 const ejecutor = useEjecutor();
+const tienda = useTiendaStore();
 
 const actividad = shallowRef<Actividad | null>(null);
 const cargando = ref(true);
@@ -109,6 +112,34 @@ const monedasGanadas = ref(0);
 const pistaVisible = ref<number | null>(null);
 
 const lienzo = ref<HTMLElement | null>(null);
+
+/**
+ * Las acciones de la ultima tirada, para el poder de Repeticion.
+ *
+ * Se guardan aunque el poder no este comprado: cuesta una referencia y evita que
+ * comprarlo a mitad de una actividad no sirva hasta la siguiente.
+ */
+const ultimaTirada = ref<readonly Accion[]>([]);
+
+/** Poderes y pociones activos, tal y como los resolvio el servidor. */
+const efectosActivos = computed(() => {
+  const poderes = tienda.efectos.poderes;
+  const pocion = tienda.efectos.pocion;
+  return {
+    camaraLenta: poderes.includes('camaraLenta'),
+    huellas: poderes.includes('huellas'),
+    gigante: pocion === 'gigante',
+    brillo: pocion === 'brillo',
+    arcoiris: pocion === 'arcoiris',
+  };
+});
+
+const tieneRepeticion = computed(() => tienda.efectos.poderes.includes('repeticion'));
+
+/** Repite la ultima tirada sin volver a ejecutar ni puntuar nada. */
+async function volverAVer(): Promise<void> {
+  await ejecutor.repetir(ultimaTirada.value);
+}
 
 /** Comandos y estructuras que esta actividad ha desbloqueado. */
 const disponibles = computed<readonly string[]>(() => {
@@ -179,6 +210,11 @@ async function cargar(): Promise<void> {
     });
     sesionId.value = sesion.sesion.id;
 
+    // Lo comprado en la tienda hace falta ANTES de dibujar: si llegara despues,
+    // el Fuzz aparecia azul y sin gorro y cambiaba de golpe un segundo mas tarde.
+    // Si la tienda falla, el store deja el color de fabrica y se juega igual.
+    await tienda.cargar();
+
     await montarLienzo();
 
     // La instrucción se narra sola: el niño no tiene que buscar cómo oírla.
@@ -204,7 +240,17 @@ async function montarLienzo(): Promise<void> {
     spawn: act.config.spawn,
     items: act.config.items,
     bioma: act.mundo.bioma,
-    colorFuzz: '#1FA2FF',
+    // El Fuzz del tablero va del color que el nino compro, con sus cosas
+    // puestas. Antes estaba fijo en azul, asi que un color de la tienda se veia
+    // en el mapa y no dentro del juego, que es donde el nino mira.
+    colorFuzz: tienda.colorFuzz,
+    atuendo: {
+      sombrero: tienda.adornos.sombrero,
+      gafas: tienda.adornos.gafas,
+      accesorio: tienda.adornos.accesorio,
+      disfraz: tienda.adornos.disfraz,
+    },
+    efectos: efectosActivos.value,
   });
   ejecutor.renderizador.value = renderizador;
 }
@@ -243,6 +289,7 @@ async function jugar(): Promise<void> {
   }
 
   const tirada = await ejecutor.jugar(codigoEjecutable, lenguaje.value, act.config);
+  ultimaTirada.value = tirada.acciones;
 
   // Se envía siempre, acierte o falle: los intentos fallidos son el dato más
   // valioso para el panel del docente.
@@ -421,6 +468,16 @@ onBeforeUnmount(() => {
           tono="amarillo"
           solo-icono
           @pulsar="mostrarPista"
+        />
+        <!-- Solo aparece con el poder comprado y con algo que repetir. -->
+        <BotonJuguete
+          v-if="tieneRepeticion && ultimaTirada.length > 0"
+          etiqueta="Volver a ver tu intento"
+          icono="🔁"
+          tono="morado"
+          solo-icono
+          :deshabilitado="ejecutor.ejecutando.value"
+          @pulsar="volverAVer"
         />
       </div>
     </header>

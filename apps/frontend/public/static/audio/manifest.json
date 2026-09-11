@@ -161,12 +161,12 @@
       "clave": "ui_tienda",
       "tipo": "ui",
       "voz": "guia_clara",
-      "hash": "8849cdad791ef6b2fe671ff305531d3da0ed1b1fd1ef096048fda253bdf7b077",
+      "hash": "38f28618073c137d837113093290a2c91c6849813aac3d681c571a4a86f4eeb8",
       "archivo": "ui_tienda.mp3",
-      "caracteres": 72,
-      "tamanoBytes": 39541,
-      "duracionMs": 4943,
-      "generadoEn": "2026-09-09T15:55:14.034Z"
+      "caracteres": 61,
+      "tamanoBytes": 32226,
+      "duracionMs": 4028,
+      "generadoEn": "2026-09-11T13:56:49.301Z"
     },
     "ui_sin-monedas": {
       "clave": "ui_sin-monedas",
@@ -21914,6 +21914,39 @@
       "tamanoBytes": 30555,
       "duracionMs": 3819,
       "generadoEn": "2026-09-11T11:04:21.293Z"
+    },
+    "ui_sin-estrellas": {
+      "clave": "ui_sin-estrellas",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "e9f3a18f09e7e2e2d74025e5e2531d1d0e895c34025a59025d8e26a4dc6c0abf",
+      "archivo": "ui_sin-estrellas.mp3",
+      "caracteres": 77,
+      "tamanoBytes": 38496,
+      "duracionMs": 4812,
+      "generadoEn": "2026-09-11T13:56:49.617Z"
+    },
+    "ui_pocion-lista": {
+      "clave": "ui_pocion-lista",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "71f174e783f445a36463fe84d94c71763aa024adcd0f138f6186ccf7069520fc",
+      "archivo": "ui_pocion-lista.mp3",
+      "caracteres": 53,
+      "tamanoBytes": 28047,
+      "duracionMs": 3506,
+      "generadoEn": "2026-09-11T13:56:50.985Z"
+    },
+    "ui_mundo-nuevo": {
+      "clave": "ui_mundo-nuevo",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "a49d45e1ca35b1d2b8347aa460bbb3d854413998b9c2d79a9493026428c6e21b",
+      "archivo": "ui_mundo-nuevo.mp3",
+      "caracteres": 43,
+      "tamanoBytes": 22404,
+      "duracionMs": 2801,
+      "generadoEn": "2026-09-11T13:56:51.219Z"
     }
   }
 }

@@ -23,6 +23,7 @@ import { PrismaClient, type Prisma } from '@prisma/client';
 import { hashPassword } from '../src/services/auth.service.js';
 
 import {
+  CATALOGO_TIENDA,
   CELEBRACIONES,
   FRASES_UI,
   VOCES,
@@ -413,6 +414,49 @@ async function asegurarAdministrador(): Promise<void> {
   console.log(`Administrador creado: ${email}`);
 }
 
+/**
+ * La tienda.
+ *
+ * El catalogo es codigo (`packages/content/src/tienda.ts`) y la tabla es su
+ * copia: asi un precio se cambia en un sitio y se vuelve a sembrar. Los que
+ * dejan de estar en el catalogo se desactivan en vez de borrarse, porque puede
+ * haber ninos que ya los compraron y verlos desaparecer del avatar seria
+ * quitarles algo que pagaron.
+ */
+async function sembrarTienda(): Promise<void> {
+  for (const item of CATALOGO_TIENDA) {
+    const datos = {
+      nombre: item.nombre,
+      tipo: item.tipo,
+      descripcion: item.descripcion,
+      costoEstrellas: item.costoEstrellas,
+      mundosNecesarios: item.requiereMundos ?? null,
+      datos: (item.datos ?? {}) as unknown as Prisma.InputJsonValue,
+      orden: item.orden,
+      activo: true,
+    };
+    await prisma.storeItem.upsert({
+      where: { clave: item.clave },
+      update: datos,
+      create: { clave: item.clave, ...datos },
+    });
+  }
+
+  const claves = CATALOGO_TIENDA.map((i) => i.clave);
+  const retirados = await prisma.storeItem.updateMany({
+    where: { clave: { notIn: claves }, activo: true },
+    data: { activo: false },
+  });
+
+  const porTipo = new Map<string, number>();
+  for (const item of CATALOGO_TIENDA) {
+    porTipo.set(item.tipo, (porTipo.get(item.tipo) ?? 0) + 1);
+  }
+  const resumen = [...porTipo.entries()].map(([t, n]) => `${n} ${t}`).join(', ');
+  console.log(`  ${CATALOGO_TIENDA.length} articulos (${resumen})`);
+  if (retirados.count > 0) console.log(`  ${retirados.count} retirados del catalogo`);
+}
+
 async function main(): Promise<void> {
   // Paso suelto para el arranque del contenedor: es barato y corre siempre.
   if (process.argv.includes('--asegurar-admin')) {
@@ -429,7 +473,20 @@ async function main(): Promise<void> {
   if (process.argv.includes('--solo-si-vacio')) {
     const mundos = await prisma.world.count();
     if (mundos > 0) {
-      console.log(`Ya hay ${mundos} mundos sembrados: no se toca nada.`);
+      console.log(`Ya hay ${mundos} mundos sembrados: no se siembra el curriculo.`);
+      // La tienda si se siembra siempre. Son treinta upserts (dos segundos) y es
+      // lo unico que hace que un catalogo nuevo llegue a una base que ya existe:
+      // con el `return` seco de antes, la tienda no habria aparecido nunca en
+      // produccion, porque alli los mundos estan sembrados desde el primer dia.
+      console.log('\nTienda:');
+      await sembrarTienda();
+
+      // Los audios fijos (voz de interfaz y celebraciones) tambien: son ciento
+      // cincuenta upserts y es lo que mantiene la tabla `audios` al dia cuando
+      // se retoca una frase. Sin esto, cambiar el texto de una locucion dejaba
+      // la fila vieja marcada como obsoleta para siempre.
+      console.log('\nAudios fijos:');
+      await sembrarAudiosFijos(await sembrarVoces());
       return;
     }
     console.log('Base vacia: se siembra el curriculo completo.\n');
@@ -453,12 +510,13 @@ async function main(): Promise<void> {
   console.log('\nVerificaciones:');
   await verificarCoherencia();
 
-  const [mundos, actividades, audios, pendientes, planes] = await Promise.all([
+  const [mundos, actividades, audios, pendientes, planes, articulos] = await Promise.all([
     prisma.world.count(),
     prisma.activity.count(),
     prisma.audioAsset.count(),
     prisma.audioAsset.count({ where: { estado: 'pendiente' } }),
     prisma.plan.count(),
+    prisma.storeItem.count({ where: { activo: true } }),
   ]);
 
   console.log('\nResumen');
@@ -466,6 +524,7 @@ async function main(): Promise<void> {
   console.log(`  actividades        : ${actividades}`);
   console.log(`  audios             : ${audios} (${pendientes} pendientes de generar)`);
   console.log(`  planes             : ${planes}`);
+  console.log(`  articulos tienda   : ${articulos}`);
   console.log('\nSiguiente paso: npm run voice:generate -- --worlds 1');
 }
 

@@ -24,6 +24,7 @@ import { portalRoutes } from './routes/portal.routes.js';
 import { progresoRoutes } from './routes/progreso.routes.js';
 import { sessionsRoutes } from './routes/sessions.routes.js';
 import { telemetryRoutes } from './routes/telemetry.routes.js';
+import { tiendaRoutes } from './routes/tienda.routes.js';
 import { asegurarParticiones } from '../scripts/ensure-partitions.js';
 
 /**
@@ -79,6 +80,7 @@ export async function construirServidor(): Promise<FastifyInstance> {
   await fastify.register(portalRoutes, { prefix: '/api/portal' });
   await fastify.register(docenteRoutes, { prefix: '/api/docente' });
   await fastify.register(progresoRoutes, { prefix: '/api/progreso' });
+  await fastify.register(tiendaRoutes, { prefix: '/api/tienda' });
 
   fastify.get('/health', async () => ({
     estado: 'ok',

@@ -22,6 +22,7 @@ import FuzzAvatar from '@/components/FuzzAvatar.vue';
 import { CLAVE_APERTURA, claveEntrada, yaSeVio } from '@/composables/cinematicas';
 import { api } from '@/api/cliente';
 import { useAudioStore } from '@/stores/audio';
+import { useTiendaStore } from '@/stores/tienda';
 
 interface Mundo {
   readonly numero: number;
@@ -48,6 +49,7 @@ interface Actividad {
 }
 
 const audio = useAudioStore();
+const tienda = useTiendaStore();
 
 const mundos = ref<Mundo[]>([]);
 const cargando = ref(true);
@@ -95,6 +97,9 @@ const estrellasTotales = computed(() =>
 
 async function cargar(): Promise<void> {
   cargando.value = true;
+  // Lo comprado en la tienda se dibuja aqui tambien: el mapa es la primera cosa
+  // que ve al entrar, y es donde quiere reconocer a su Fuzz.
+  void tienda.cargar();
   try {
     const datos = await api.get<{ mundos: Mundo[] }>('/curriculo/mundos');
     mundos.value = datos.mundos;
@@ -180,14 +185,34 @@ onMounted(cargar);
     />
 
     <header class="mapa__cabecera">
-      <FuzzAvatar :tamano="80" expresion="feliz" :mirar="false" />
+      <FuzzAvatar
+        :tamano="80"
+        expresion="feliz"
+        :mirar="false"
+        :color="tienda.colorFuzz"
+        :sombrero="tienda.adornos.sombrero"
+        :gafas="tienda.adornos.gafas"
+        :accesorio="tienda.adornos.accesorio"
+        :disfraz="tienda.adornos.disfraz"
+      />
       <div>
         <h1>Elige tu aventura</h1>
         <p class="mapa__resumen">
           <span aria-hidden="true">⭐</span> {{ estrellasTotales }} estrellas
+          <span v-if="tienda.cargada" class="mapa__gastables">
+            · {{ tienda.estrellasDisponibles }} para gastar
+          </span>
         </p>
       </div>
       <div class="mapa__acciones">
+        <!-- La tienda. Va junto a las estrellas porque es donde se gastan. -->
+        <BotonJuguete
+          etiqueta="Ir a la tienda"
+          icono="🛒"
+          tono="magenta"
+          solo-icono
+          @pulsar="$router.push('/tienda')"
+        />
         <!-- Sus datos. Va aqui porque el mapa es su casa dentro del juego. -->
         <BotonJuguete
           etiqueta="Ver lo que llevas hecho"
@@ -299,6 +324,11 @@ onMounted(cargar);
 .mapa__cabecera h1 {
   margin: 0;
   font-size: var(--texto-2xl);
+}
+
+.mapa__gastables {
+  color: var(--magenta, #ff3cac);
+  white-space: nowrap;
 }
 
 .mapa__resumen {

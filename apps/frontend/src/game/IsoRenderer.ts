@@ -124,13 +124,50 @@ function recogerEn(escena: IsoScene, accion: Accion, celda: { x: number; y: numb
   }
 }
 
+/**
+ * Lo que el niño compró en la tienda y lleva puesto.
+ *
+ * Se dibuja también aquí, y no solo en el avatar del mapa, porque es donde el
+ * niño mira: un gorro que solo se ve en la pantalla de inicio no es el gorro que
+ * creía estar comprando. Llegan como FORMA ("mago", "capa"), no como clave de
+ * artículo: el motor no sabe de precios ni de inventarios.
+ */
+export interface Atuendo {
+  readonly sombrero?: string | null;
+  readonly gafas?: string | null;
+  readonly accesorio?: string | null;
+  readonly disfraz?: string | null;
+}
+
+/** Poderes y pociones activos, ya resueltos por el servidor. */
+export interface EfectosEscena {
+  /** Anima más despacio para que se vea cada paso. */
+  readonly camaraLenta?: boolean;
+  /** Deja marcas en las casillas por las que paso. */
+  readonly huellas?: boolean;
+  /** Poción: el Fuzz se ve enorme. */
+  readonly gigante?: boolean;
+  /** Poción: aura luminosa alrededor. */
+  readonly brillo?: boolean;
+  /** Poción: rastro de colores al moverse. */
+  readonly arcoiris?: boolean;
+}
+
 export interface ConfiguracionEscena {
   readonly grid: Grid;
   readonly spawn: Spawn;
   readonly items: readonly ItemNivel[];
   readonly bioma: string;
   readonly colorFuzz: string;
+  readonly atuendo?: Atuendo;
+  readonly efectos?: EfectosEscena;
 }
+
+/** Cuánto se alarga cada animación con la cámara lenta encendida. */
+const FACTOR_CAMARA_LENTA = 2.4;
+
+/** Colores del rastro de la poción arcoíris, en orden. */
+const ARCOIRIS = [0xff3cac, 0xff8a3d, 0xffd93d, 0x5ad35a, 0x1fa2ff, 0x7b61ff];
 
 /**
  * Escena de Phaser que dibuja la rejilla isométrica y anima al Fuzz.
@@ -154,6 +191,10 @@ export class IsoScene extends Phaser.Scene {
   /** Grafico de cada puente roto, para poder repararlo en pantalla. */
   private graficosPuente = new Map<string, Phaser.GameObjects.Graphics>();
   private origen = { x: 0, y: 0 };
+
+  /** Marcas del poder de huellas y del rastro arcoiris, para poder borrarlas. */
+  private marcas: Phaser.GameObjects.GameObject[] = [];
+  private pasoArcoiris = 0;
 
   constructor() {
     // `active: false` no es un detalle: Phaser arranca por su cuenta la escena
@@ -455,6 +496,10 @@ export class IsoScene extends Phaser.Scene {
     // El Fuzz empieza mirando a donde diga la actividad, no siempre igual.
     this.colocarMirada(this.configuracion.spawn.dir ?? 'derecha');
 
+    // Lo comprado en la tienda, y lo que esté haciendo una poción.
+    this.vestirFuzz();
+    this.aplicarEfectosAlFuzz();
+
     // Respiración: el personaje nunca está del todo quieto.
     this.tweens.add({
       targets: this.cuerpoFuzz,
@@ -464,6 +509,236 @@ export class IsoScene extends Phaser.Scene {
       repeat: -1,
       ease: 'Sine.easeInOut',
     });
+  }
+
+  /**
+   * Dibuja lo que el nino lleva puesto sobre el Fuzz del tablero.
+   *
+   * Son primitivas y no sprites, igual que el resto del motor: asi un color
+   * nuevo del catalogo no obliga a generar imagenes. Las formas son las mismas
+   * que dibuja `FuzzAvatar.vue` para que el gorro del mapa y el del tablero sean
+   * reconociblemente el mismo gorro.
+   *
+   * Se dibuja con `Graphics` y no con las formas de Phaser (`add.triangle`,
+   * `add.rectangle`) por una razon concreta: esas formas se colocan por el centro
+   * de su caja, no por las coordenadas que se les pasan, asi que el gorro salia
+   * flotando arriba a la izquierda de la cabeza. Graphics dibuja exactamente
+   * donde se le dice, que es lo que ya hacia la flecha de la mirada.
+   */
+  private vestirFuzz(): void {
+    const atuendo = this.configuracion.atuendo;
+    if (!atuendo) return;
+
+    // Dos lienzos: uno detras del cuerpo (capa, alas, mochila, cresta) y otro
+    // delante (gorros, gafas, bufanda). Si todo fuera delante, una capa taparia
+    // al personaje entero.
+    const detras = this.add.graphics();
+    const delante = this.add.graphics();
+
+    const triangulo = (
+      g: Phaser.GameObjects.Graphics,
+      color: number,
+      puntos: readonly [number, number][],
+      alfa = 1,
+    ): void => {
+      g.fillStyle(color, alfa);
+      g.beginPath();
+      g.moveTo(puntos[0]![0], puntos[0]![1]);
+      for (const [x, y] of puntos.slice(1)) g.lineTo(x, y);
+      g.closePath();
+      g.fillPath();
+    };
+
+    switch (atuendo.accesorio) {
+      case 'capa':
+        // Acampanada y no en punta: el cuerpo mide 20 de radio y el pelaje llega
+        // a 25, asi que una capa que acabe en el centro queda escondida entera
+        // detras del Fuzz. Solo se ve si sobresale por los lados.
+        triangulo(detras, 0xef4444, [[-14, -14], [14, -14], [34, 16], [-34, 16]]);
+        triangulo(detras, 0xb91c1c, [[-14, -14], [14, -14], [11, -6], [-11, -6]]);
+        break;
+      case 'alas':
+        triangulo(detras, 0xffffff, [[-14, -10], [-14, 8], [-32, -2]]);
+        triangulo(detras, 0xffffff, [[14, -10], [14, 8], [32, -2]]);
+        break;
+      case 'mochila':
+        detras.fillStyle(0x7b61ff, 1);
+        detras.fillRoundedRect(8, -10, 20, 22, 6);
+        break;
+      case 'bufanda':
+        delante.fillStyle(0xff8a3d, 1);
+        delante.fillRoundedRect(-17, 8, 34, 8, 4);
+        delante.fillStyle(0xea580c, 1);
+        delante.fillRoundedRect(9, 14, 9, 14, 4);
+        break;
+      default:
+        break;
+    }
+
+    switch (atuendo.disfraz) {
+      case 'robot':
+        delante.fillStyle(0x94a3b8, 1);
+        delante.fillRoundedRect(-16, 6, 32, 13, 4);
+        delante.fillStyle(0x64748b, 1);
+        delante.fillRoundedRect(-7, 10, 14, 6, 2);
+        delante.fillStyle(0x94a3b8, 1);
+        delante.fillRect(-1.5, -34, 3, 12);
+        delante.fillStyle(0xef4444, 1);
+        delante.fillCircle(0, -36, 3.5);
+        break;
+      case 'dino':
+        triangulo(detras, 0x22c55e, [[10, -14], [10, 2], [26, -8]]);
+        triangulo(detras, 0x22c55e, [[12, 2], [12, 16], [26, 8]]);
+        delante.fillStyle(0xbbf7d0, 1);
+        delante.fillEllipse(0, 11, 28, 14);
+        break;
+      case 'buzo':
+        delante.fillStyle(0xf59e0b, 1);
+        delante.fillRoundedRect(-16, 14, 32, 7, 3);
+        break;
+      default:
+        break;
+    }
+
+    switch (atuendo.gafas) {
+      case 'sol':
+        delante.fillStyle(0x1e293b, 1);
+        delante.fillRoundedRect(-16, -9, 32, 9, 4);
+        delante.fillStyle(0x06b6d4, 0.6);
+        delante.fillRoundedRect(-14, -7.5, 12, 6, 3);
+        delante.fillRoundedRect(2, -7.5, 12, 6, 3);
+        break;
+      case 'redondas':
+        delante.lineStyle(2, 0x1e293b, 1);
+        delante.strokeCircle(-7, -4, 8);
+        delante.strokeCircle(7, -4, 8);
+        delante.lineBetween(1, -4, -1, -4);
+        break;
+      case 'buceo':
+        delante.fillStyle(0x06b6d4, 0.4);
+        delante.fillRoundedRect(-17, -12, 34, 15, 7);
+        delante.lineStyle(2.5, 0x0e7490, 1);
+        delante.strokeRoundedRect(-17, -12, 34, 15, 7);
+        break;
+      case 'ciber':
+        delante.fillStyle(0x1e293b, 1);
+        delante.fillRoundedRect(-17, -8, 34, 7, 3);
+        delante.fillStyle(0x22d3ee, 1);
+        delante.fillRect(-14, -6, 28, 2);
+        break;
+      default:
+        break;
+    }
+
+    switch (atuendo.sombrero) {
+      case 'gorro':
+        triangulo(delante, 0xff3cac, [[-15, -14], [15, -14], [0, -34]]);
+        delante.fillStyle(0xd81b8c, 1);
+        delante.fillRoundedRect(-17, -17, 34, 6, 3);
+        delante.fillStyle(0xffffff, 1);
+        delante.fillCircle(0, -36, 3.5);
+        break;
+      case 'fiesta':
+        triangulo(delante, 0xffd93d, [[-10, -14], [10, -14], [0, -40]]);
+        delante.lineStyle(2.5, 0xff3cac, 1);
+        delante.lineBetween(-6, -24, 6, -24);
+        delante.lineStyle(2.5, 0x06b6d4, 1);
+        delante.lineBetween(-8, -18, 8, -18);
+        delante.fillStyle(0xff3cac, 1);
+        delante.fillCircle(0, -42, 3);
+        break;
+      case 'pirata':
+        triangulo(delante, 0x1e293b, [[-17, -16], [17, -16], [0, -32]]);
+        delante.fillStyle(0x1e293b, 1);
+        delante.fillEllipse(0, -16, 44, 11);
+        delante.fillStyle(0xf8fafc, 1);
+        delante.fillCircle(0, -22, 4);
+        break;
+      case 'mago':
+        triangulo(delante, 0x7b61ff, [[-13, -18], [13, -18], [0, -46]]);
+        delante.fillStyle(0x5a3fe0, 1);
+        delante.fillEllipse(0, -18, 44, 10);
+        delante.fillStyle(0xffd93d, 1);
+        delante.fillCircle(0, -33, 2.6);
+        break;
+      case 'corona':
+        delante.fillStyle(0xffd93d, 1);
+        delante.beginPath();
+        delante.moveTo(-15, -16);
+        for (const [x, y] of [[-13, -29], [-6, -21], [0, -34], [6, -21], [13, -29], [15, -16]] as const) {
+          delante.lineTo(x, y);
+        }
+        delante.closePath();
+        delante.fillPath();
+        delante.fillStyle(0xe0b81c, 1);
+        delante.fillRoundedRect(-15, -17, 30, 5, 2);
+        break;
+      default:
+        break;
+    }
+
+    // La burbuja va al final y translucida: si tapara la cara, se perderia lo
+    // unico que hace simpatico al personaje.
+    if (atuendo.sombrero === 'casco' || atuendo.disfraz === 'buzo') {
+      delante.fillStyle(0xbae6fd, 0.22);
+      delante.fillCircle(0, -2, 29);
+      delante.lineStyle(2, 0x38bdf8, 0.8);
+      delante.strokeCircle(0, -2, 29);
+    }
+
+    this.fuzz.addAt(detras, 0);
+    this.fuzz.add(delante);
+  }
+
+  /** Poderes y pociones que cambian como se ve el Fuzz. */
+  private aplicarEfectosAlFuzz(): void {
+    const efectos = this.configuracion.efectos;
+    if (!efectos) return;
+
+    if (efectos.gigante === true) this.fuzz.setScale(1.5);
+
+    if (efectos.brillo === true) {
+      const aura = this.add.circle(0, 0, 34, 0xffd93d, 0.3);
+      this.fuzz.addAt(aura, 0);
+      this.tweens.add({
+        targets: aura,
+        scale: 1.2,
+        alpha: 0.12,
+        duration: 900,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
+  }
+
+  /**
+   * Deja constancia de que el Fuzz paso por una casilla.
+   *
+   * El poder de huellas es la unica forma de ver el recorrido cuando el programa
+   * ya termino, que es justo el momento en el que el nino se pregunta por donde
+   * se fue. El rastro de la pocion arcoiris es lo mismo pero para divertirse.
+   */
+  private marcarPaso(x: number, y: number): void {
+    const efectos = this.configuracion.efectos;
+    if (!efectos?.huellas && !efectos?.arcoiris) return;
+
+    const { px, py } = this.aPantalla(x, y);
+
+    if (efectos.huellas === true) {
+      const huella = this.add.ellipse(px, py, 24, 12, 0x1e293b, 0.26);
+      huella.setDepth(this.profundidad(x, y) + 1);
+      this.marcas.push(huella);
+    }
+
+    if (efectos.arcoiris === true) {
+      const color = ARCOIRIS[this.pasoArcoiris % ARCOIRIS.length] ?? ARCOIRIS[0]!;
+      this.pasoArcoiris += 1;
+      const mancha = this.add.ellipse(px, py, 42, 21, color, 0.5);
+      mancha.setDepth(this.profundidad(x, y) + 1);
+      this.marcas.push(mancha);
+      this.tweens.add({ targets: mancha, alpha: 0, duration: 2600, ease: 'Cubic.easeIn' });
+    }
   }
 
   /** Pone la mirada en una direccion sin animarla (al crear o al reiniciar). */
@@ -511,6 +786,7 @@ export class IsoScene extends Phaser.Scene {
   async moverA(x: number, y: number, duracion: number): Promise<void> {
     const { px, py } = this.aPantalla(x, y);
     this.fuzz.setDepth(this.profundidad(x, y) + 8);
+    this.marcarPaso(x, y);
 
     return new Promise((resolver) => {
       this.tweens.add({
@@ -631,11 +907,27 @@ export class IsoScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Cuanto hay que alargar cada animacion.
+   *
+   * La camara lenta no cambia ni una regla del juego: solo estira el tiempo de
+   * las animaciones para que se pueda seguir con el ojo lo que el programa hizo.
+   */
+  get factorDeTiempo(): number {
+    return this.configuracion.efectos?.camaraLenta === true ? FACTOR_CAMARA_LENTA : 1;
+  }
+
   /** Devuelve al Fuzz a su casilla de salida y repone los objetos. */
   reiniciarEscena(): void {
     this.tweens.killAll();
     for (const item of this.itemsVivos.values()) item.destroy();
     this.itemsVivos.clear();
+
+    // Las huellas y el rastro son del intento anterior: dejarlas haria creer al
+    // nino que su programa nuevo paso por donde paso el viejo.
+    for (const marca of this.marcas) marca.destroy();
+    this.marcas = [];
+    this.pasoArcoiris = 0;
 
     const { spawn } = this.configuracion;
     const { px, py } = this.aPantalla(spawn.x, spawn.y);
@@ -714,6 +1006,9 @@ export class IsoRenderer implements IRenderer {
     if (!escena) return;
 
     const destino = accion.hasta;
+    // Con la camara lenta comprada y encendida, todo dura mas. El factor lo
+    // decide la escena porque es ella la que sabe que poderes trae el nivel.
+    const lento = escena.factorDeTiempo;
 
     switch (accion.cmd) {
       case 'saltar':
@@ -737,7 +1032,7 @@ export class IsoRenderer implements IRenderer {
         // El giro no cambia de casilla, asi que si no se ve girar no se ve
         // nada: para el nino la orden habria fallado. La accion trae ya la
         // direccion resultante, calculada por el simulador.
-        if (accion.dir) await escena.orientar(accion.dir);
+        if (accion.dir) await escena.orientar(accion.dir, DURACION_GIRO * lento);
         break;
 
       default: {
@@ -749,7 +1044,7 @@ export class IsoRenderer implements IRenderer {
         const desde = accion.desde;
         const direccion =
           accion.dir ?? (desde ? direccionEntre(desde, destino) : null);
-        if (direccion) await escena.orientar(direccion, DURACION_GIRO / 2);
+        if (direccion) await escena.orientar(direccion, (DURACION_GIRO / 2) * lento);
 
         // En modo rodar se atraviesan varias casillas de una vez: se anima cada
         // una para que el niño vea el recorrido, no un salto instantáneo.
@@ -758,7 +1053,7 @@ export class IsoRenderer implements IRenderer {
           await escena.moverA(
             celda.x,
             celda.y,
-            recorrido.length > 1 ? DURACION_RODAR_CASILLA : DURACION_PASO,
+            (recorrido.length > 1 ? DURACION_RODAR_CASILLA : DURACION_PASO) * lento,
           );
           // La estrella desaparece en la casilla donde estaba, no al final del
           // recorrido: rodando se atraviesan varias de una vez, y ver cada una

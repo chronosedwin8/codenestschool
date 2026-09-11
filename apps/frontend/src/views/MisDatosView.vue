@@ -44,6 +44,7 @@ interface MisDatos {
     readonly ganadas: number;
     readonly posiblesDeLoJugado: number;
     readonly perfectas: number;
+    readonly disponibles: number;
   };
   readonly monedas: number;
   readonly rachaDias: number;
@@ -153,7 +154,14 @@ onMounted(() => void cargar());
         <div class="tarjeta tarjeta--estrellas">
           <span class="tarjeta__icono" aria-hidden="true">⭐</span>
           <strong class="tarjeta__cifra">{{ datos.estrellas.ganadas }}</strong>
-          <span class="tarjeta__que">estrellas</span>
+          <span class="tarjeta__que">estrellas ganadas</span>
+          <!--
+            Las ganadas no bajan nunca; las de gastar si. Se ven juntas para que
+            entienda que comprar un gorro no le quita lo que consiguio.
+          -->
+          <button type="button" class="tarjeta__tienda" @click="router.push('/tienda')">
+            {{ datos.estrellas.disponibles }} para gastar 🛒
+          </button>
         </div>
 
         <div class="tarjeta tarjeta--actividades">
@@ -304,6 +312,18 @@ onMounted(() => void cargar());
   font-size: var(--texto-sm);
   color: #64748b;
   text-align: center;
+}
+
+.tarjeta__tienda {
+  margin-top: 6px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--magenta, #ff3cac);
+  color: #fff;
+  font: inherit;
+  font-size: var(--texto-sm);
+  cursor: pointer;
 }
 
 .tarjeta--estrellas { background: #fffbea; }

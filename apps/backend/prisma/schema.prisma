@@ -96,6 +96,12 @@ enum TipoItemTienda {
   disfraz
   color
   accesorio
+  /// Habilidad permanente: se compra una vez y queda.
+  poder
+  /// Consumible: se gasta al usarlo, se puede tener varios.
+  pocion
+  /// Contenido que se abre al comprarlo.
+  mundo
 
   @@map("tipo_item_tienda")
 }
@@ -212,10 +218,27 @@ model User {
 
   /// Lo que el Fuzz lleva puesto ahora mismo (unica fuente de verdad de lo
   /// equipado; `inventario_usuario` solo registra posesion).
-  avatarConfig Json @default("{\"fuzzColor\":\"azul\",\"sombrero\":null,\"gafas\":null,\"disfraz\":null}") @map("avatar_config") @db.JsonB
+  ///
+  /// Cada hueco guarda la CLAVE del articulo de la tienda, no su color ni su
+  /// forma: asi se puede comprobar que lo tiene comprado y un retoque del
+  /// catalogo llega a todos los que lo llevan puesto. `poderes` son los que
+  /// tiene encendidos y `pocion` la que esta gastando en la actividad de ahora.
+  avatarConfig Json @default("{\"color\":null,\"sombrero\":null,\"gafas\":null,\"disfraz\":null,\"accesorio\":null,\"poderes\":[],\"pocion\":null}") @map("avatar_config") @db.JsonB
 
   monedas          Int       @default(0)
+  /// Estrellas ganadas en toda su historia. Es su marca: NUNCA baja.
   estrellasTotales Int       @default(0) @map("estrellas_totales")
+  /// Estrellas que le quedan por gastar en la tienda.
+  ///
+  /// Son dos numeros y no uno a proposito. Si comprar restara de las ganadas, el
+  /// nino veria bajar su logro al ponerse un gorro, y lo que consiguio no se
+  /// deshace por gastarlo. Los dos suben juntos al superar una actividad; solo
+  /// este baja al comprar.
+  estrellasDisponibles Int   @default(0) @map("estrellas_disponibles")
+  /// Mundos abiertos con un Pase del Nido, ademas de los que le toquen por
+  /// avance. Es una lista y no un tope porque un pase abre un mundo concreto y
+  /// el desbloqueo normal sigue su curso por separado.
+  mundosExtra        Int[]   @default([]) @map("mundos_extra")
   rachaDias        Int       @default(0) @map("racha_dias")
   ultimaActividad  DateTime? @map("ultima_actividad") @db.Date
 
@@ -662,9 +685,13 @@ model StoreItem {
   tipo          TipoItemTienda
   descripcion   String?
   imagenUrl     String?        @map("imagen_url") @db.VarChar(300)
-  costoMonedas  Int            @default(0) @map("costo_monedas")
-  /// Cosmetico que solo se consigue completando un mundo (no se compra).
-  requiereMundo Int?           @map("requiere_mundo")
+  /// Precio en estrellas. Es lo unico que se gasta en la tienda.
+  costoEstrellas Int           @default(0) @map("costo_estrellas")
+  /// Cuantos mundos terminados hacen falta para poder comprarlo.
+  ///
+  /// Una cuenta y no un mundo concreto: atado al mundo 7, el sombrero pirata era
+  /// inalcanzable para un nino de diez anos, que empieza en el 21.
+  mundosNecesarios Int?         @map("mundos_necesarios")
   grupoEdad     GrupoEdad?     @map("grupo_edad")
   datos         Json?          @db.JsonB
   orden         Int            @default(0)
@@ -680,6 +707,8 @@ model UserInventory {
   id         Int      @id @default(autoincrement())
   usuarioId  Int      @map("usuario_id")
   itemId     Int      @map("item_id")
+  /// Cuantas tiene. Los cosmeticos se quedan en 1; las pociones se acumulan.
+  cantidad   Int      @default(1)
   compradoEn DateTime @default(now()) @map("comprado_en") @db.Timestamptz(6)
 
   usuario User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)

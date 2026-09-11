@@ -15,6 +15,7 @@ import { z } from 'zod';
 import type { ActivityConfigV3 } from '@codenest/shared';
 
 import { evaluarIntento, registrarIntento } from '../services/scoring.service.js';
+import { apagarPocion } from '../services/tienda.service.js';
 
 const abrirSesionSchema = z.object({
   actividadId: z.number().int().positive(),
@@ -163,10 +164,19 @@ export const sessionsRoutes: FastifyPluginAsync = async (fastify: FastifyInstanc
       },
     });
 
+    // Una pocion dura una actividad: al resolverla se apaga. Se hace aqui y no
+    // en el navegador porque si no, cerrar la pestana la dejaria puesta para
+    // siempre y el consumible dejaria de ser un consumible.
+    if (resultado.estrellas > 0) await apagarPocion(fastify.prisma, request.user.id);
+
     return reply.send({
       estrellas: registro.estrellas,
       monedasGanadas: registro.monedasPagadas,
       monedasTotales: registro.monedasTotales,
+      // Las estrellas que acaba de sumar y con cuantas queda para la tienda. La
+      // pantalla de celebracion las usa para decirle que ya puede ir a comprar.
+      estrellasNuevas: registro.estrellasNuevas,
+      estrellasDisponibles: registro.estrellasDisponibles,
       objetivos: resultado.objetivos,
       verificado: resultado.valido,
       mensaje: resultado.mensaje,

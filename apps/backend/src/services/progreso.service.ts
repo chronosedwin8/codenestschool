@@ -30,6 +30,8 @@ export interface EstadisticasEstudiante {
     readonly ganadas: number;
     readonly posiblesDeLoJugado: number;
     readonly perfectas: number;
+    /** Las que le quedan por gastar en la tienda. */
+    readonly disponibles: number;
   };
   readonly monedas: number;
   readonly rachaDias: number;
@@ -52,7 +54,7 @@ export async function estadisticasDeEstudiante(
   const [nino, totalActividades, totalMundos, progreso, sesiones, inscripcion] = await Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: ninoId },
-      select: { estrellasTotales: true, monedas: true, rachaDias: true },
+      select: { estrellasTotales: true, estrellasDisponibles: true, monedas: true, rachaDias: true },
     }),
     prisma.activity.count({ where: { activo: true } }),
     prisma.world.count({ where: { activo: true } }),
@@ -135,6 +137,7 @@ export async function estadisticasDeEstudiante(
       // sentido medirse, no contra las 1.800 de un curriculo que no ha jugado.
       posiblesDeLoJugado: completadas * 3,
       perfectas,
+      disponibles: nino.estrellasDisponibles,
     },
     monedas: nino.monedas,
     rachaDias: nino.rachaDias,

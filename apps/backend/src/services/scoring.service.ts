@@ -88,7 +88,13 @@ export async function registrarIntento(
     tiempoSegundos: number;
     monedasBase: number;
   },
-): Promise<{ estrellas: number; monedasPagadas: number; monedasTotales: number }> {
+): Promise<{
+  estrellas: number;
+  monedasPagadas: number;
+  monedasTotales: number;
+  estrellasNuevas: number;
+  estrellasDisponibles: number;
+}> {
   const { usuarioId, actividadId, sesionId, resultado, tiempoSegundos, monedasBase } = parametros;
 
   return prisma.$transaction(async (tx) => {
@@ -131,16 +137,29 @@ export async function registrarIntento(
       },
     });
 
+    // Las estrellas nuevas suben los dos contadores a la vez: el historico, que
+    // es su marca y nunca baja, y el monedero de la tienda, que baja al comprar.
+    // Solo cuenta la mejora sobre el mejor resultado anterior, igual que las
+    // monedas: repetir un nivel ya resuelto no da estrellas nuevas.
+    const estrellasNuevas = Math.max(0, mejorAhora - mejorAnterior);
+
     const usuario = await tx.user.update({
       where: { id: usuarioId },
       data: {
         monedas: { increment: monedasPagadas },
-        estrellasTotales: { increment: Math.max(0, mejorAhora - mejorAnterior) },
+        estrellasTotales: { increment: estrellasNuevas },
+        estrellasDisponibles: { increment: estrellasNuevas },
         ultimaActividad: new Date(),
       },
-      select: { monedas: true },
+      select: { monedas: true, estrellasDisponibles: true },
     });
 
-    return { estrellas: resultado.estrellas, monedasPagadas, monedasTotales: usuario.monedas };
+    return {
+      estrellas: resultado.estrellas,
+      monedasPagadas,
+      monedasTotales: usuario.monedas,
+      estrellasNuevas,
+      estrellasDisponibles: usuario.estrellasDisponibles,
+    };
   });
 }

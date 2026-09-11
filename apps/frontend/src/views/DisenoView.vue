@@ -67,7 +67,7 @@ const ESCENAS_MECANICA = [
   'integrador',
 ];
 const COLORES = ['#1FA2FF', '#5AD35A', '#FF3CAC', '#FFD93D', '#FF8A3D', '#7B61FF'];
-const SOMBREROS = [null, 'sombrero_mago', 'corona', 'gorro'];
+const SOMBREROS = [null, 'gorro', 'fiesta', 'pirata', 'mago', 'casco', 'corona'];
 
 /** Recorre el programa resaltando cada paso, como lo hará el juego. */
 async function ejecutar(): Promise<void> {

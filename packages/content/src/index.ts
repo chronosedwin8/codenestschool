@@ -13,3 +13,4 @@ export * from './ui-phrases.js';
 export * from './generadores.js';
 export * from './historia.js';
 export * from './continuidad.js';
+export * from './tienda.js';

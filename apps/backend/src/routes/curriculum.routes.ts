@@ -11,6 +11,8 @@ import { z } from 'zod';
 
 import { ACTIVIDADES_POR_MUNDO, mundoDe } from '@codenest/shared';
 
+import { mundosAbiertos } from '../services/desbloqueo.service.js';
+
 const paramsMundo = z.object({ numero: z.coerce.number().int().min(1).max(30) });
 const paramsActividad = z.object({ id: z.coerce.number().int().positive() });
 
@@ -19,7 +21,7 @@ export const curriculumRoutes: FastifyPluginAsync = async (fastify: FastifyInsta
   fastify.get('/mundos', { preHandler: fastify.autenticar }, async (request, reply) => {
     const usuarioId = request.user.id;
 
-    const [mundos, progreso] = await Promise.all([
+    const [mundos, progreso, usuario] = await Promise.all([
       fastify.prisma.world.findMany({
         where: { activo: true },
         orderBy: { numero: 'asc' },
@@ -31,6 +33,10 @@ export const curriculumRoutes: FastifyPluginAsync = async (fastify: FastifyInsta
       fastify.prisma.userActivityProgress.findMany({
         where: { usuarioId, completada: true },
         select: { mejorEstrellas: true, actividad: { select: { mundoId: true } } },
+      }),
+      fastify.prisma.user.findUniqueOrThrow({
+        where: { id: usuarioId },
+        select: { mundosExtra: true },
       }),
     ]);
 
@@ -44,25 +50,24 @@ export const curriculumRoutes: FastifyPluginAsync = async (fastify: FastifyInsta
     }
 
     const esAdulto = request.user.rol !== 'nino';
-    let ultimoCompletadoPorGrupo = new Map<string, number>();
 
-    for (const mundo of mundos) {
-      const avance = porMundo.get(mundo.id);
-      const total = mundo._count.actividades;
-      if (total > 0 && avance?.completadas === total) {
-        ultimoCompletadoPorGrupo.set(mundo.grupoEdad, mundo.numero);
-      }
-    }
+    // La regla de desbloqueo vive en su propio servicio porque la tienda tambien
+    // la necesita: el Pase del Nido abre un mundo, y si la regla estuviera solo
+    // aqui el mapa y la tienda dirian cosas distintas.
+    const abiertos = mundosAbiertos(
+      mundos.map((m) => ({
+        numero: m.numero,
+        grupoEdad: m.grupoEdad,
+        completadas: porMundo.get(m.id)?.completadas ?? 0,
+        total: m._count.actividades,
+      })),
+      { esAdulto, mundosExtra: usuario.mundosExtra },
+    );
 
     const resultado = mundos.map((mundo) => {
       const avance = porMundo.get(mundo.id) ?? { completadas: 0, estrellas: 0 };
       const total = mundo._count.actividades;
-
-      // Primer mundo de cada grupo abierto; el resto exige el anterior.
-      const primeroDelGrupo = mundos.find((m) => m.grupoEdad === mundo.grupoEdad)?.numero;
-      const ultimoCompletado = ultimoCompletadoPorGrupo.get(mundo.grupoEdad) ?? 0;
-      const desbloqueado =
-        esAdulto || mundo.numero === primeroDelGrupo || mundo.numero <= ultimoCompletado + 1;
+      const desbloqueado = abiertos.has(mundo.numero);
 
       return {
         numero: mundo.numero,
