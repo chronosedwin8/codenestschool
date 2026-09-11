@@ -31,6 +31,7 @@ export const FRASES_UI: readonly FraseUi[] = [
   { slug: 'sin-monedas', texto: 'Todavia no tienes monedas suficientes. Juega otra actividad para ganar mas.' },
   { slug: 'pista', texto: 'Te doy una pista.' },
   { slug: 'mundo-completo', texto: 'Terminaste el mundo entero. Eres todo un programador.' },
+  { slug: 'mis-datos', texto: 'Mira todo lo que llevas hecho. Cada estrella la ganaste tu.' },
   { slug: 'hasta-pronto', texto: 'Hasta pronto. Vuelve cuando quieras seguir jugando.' },
 ];
 

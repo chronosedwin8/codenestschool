@@ -127,7 +127,19 @@ export async function aulaPermitida(
   throw new ErrorDocente(404, 'Ese grupo no existe');
 }
 
-/** Igual que la anterior pero para un estudiante: debe estar en un aula suya. */
+/**
+ * Devuelve el estudiante si el actor puede tocarlo, y lanza si no.
+ *
+ * Hay tres formas de tener derecho sobre un estudiante, y las tres hacen falta:
+ *
+ *  1. Estar en un aula del actor. Es el caso normal.
+ *  2. Ser el adulto que lo dio de alta (`tutores_ninos`). Sin esto no se podia
+ *     traer a un estudiante que todavia no esta en ningun grupo, y entonces
+ *     "inscribir a uno que ya existe" era imposible: el primer grupo no se podia
+ *     asignar nunca.
+ *  3. Mandar en su colegio. El administrador de la institucion responde cuando
+ *     un docente se va a mitad de curso.
+ */
 export async function estudiantePermitido(
   prisma: PrismaClient,
   ninoId: number,
@@ -135,14 +147,33 @@ export async function estudiantePermitido(
 ): Promise<{ id: number; nombre: string; usuario: string }> {
   const nino = await prisma.user.findFirst({
     where: { id: ninoId, rol: 'nino' },
-    select: { id: true, nombre: true, usuario: true, inscripciones: { select: { aulaId: true } } },
+    select: {
+      id: true,
+      nombre: true,
+      usuario: true,
+      institucionId: true,
+      inscripciones: { select: { aulaId: true } },
+      tutores: { select: { tutorId: true } },
+    },
   });
   if (!nino) throw new ErrorDocente(404, 'Ese estudiante no existe');
+
+  const suyo = { id: nino.id, nombre: nino.nombre, usuario: nino.usuario };
+
+  if (actor.rol === 'admin') return suyo;
+  if (nino.tutores.some((t) => t.tutorId === actor.id)) return suyo;
+  if (
+    actor.rol === 'admin_escuela' &&
+    actor.institucionId !== null &&
+    nino.institucionId === actor.institucionId
+  ) {
+    return suyo;
+  }
 
   for (const inscripcion of nino.inscripciones) {
     try {
       await aulaPermitida(prisma, inscripcion.aulaId, actor);
-      return { id: nino.id, nombre: nino.nombre, usuario: nino.usuario };
+      return suyo;
     } catch {
       // Se prueba con la siguiente: un estudiante puede estar en varias aulas.
     }

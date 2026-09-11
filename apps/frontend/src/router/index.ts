@@ -29,6 +29,12 @@ export const router = createRouter({
       meta: { requiereSesion: true, soloEstudiantes: true },
     },
     {
+      path: '/mis-datos',
+      name: 'mis-datos',
+      component: () => import('@/views/MisDatosView.vue'),
+      meta: { requiereSesion: true, soloEstudiantes: true },
+    },
+    {
       path: '/portal',
       name: 'portal',
       component: () => import('@/views/PortalView.vue'),

@@ -188,6 +188,14 @@ onMounted(cargar);
         </p>
       </div>
       <div class="mapa__acciones">
+        <!-- Sus datos. Va aqui porque el mapa es su casa dentro del juego. -->
+        <BotonJuguete
+          etiqueta="Ver lo que llevas hecho"
+          icono="📊"
+          tono="amarillo"
+          solo-icono
+          @pulsar="$router.push('/mis-datos')"
+        />
         <BotonEscuchar />
         <BotonJuguete
           :etiqueta="audio.silenciado ? 'Activar sonido' : 'Silenciar'"
