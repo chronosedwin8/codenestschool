@@ -15,7 +15,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { esArchivoDeTrabajador } from './security.js';
+import { esArchivoDeTrabajador, origenesDeConexion, origenesDeImagen } from './security.js';
 
 describe('que archivos reciben la excepcion de la politica', () => {
   it('reconoce los tres trabajadores que compila Vite', () => {
@@ -45,5 +45,61 @@ describe('que archivos reciben la excepcion de la politica', () => {
     ]) {
       expect(esArchivoDeTrabajador(ruta), ruta).toBe(false);
     }
+  });
+});
+
+describe('de donde se pueden cargar imagenes', () => {
+  it('anade el bucket de S3 cuando esta configurado', () => {
+    const origenes = origenesDeImagen({
+      S3_BUCKET: 'codexialabstorage',
+      S3_REGION: 'us-east-1',
+    } as never);
+
+    // Sin esto, en produccion los escenarios de los juegos se bloquean por
+    // politica de contenido y el juego sale con un degradado, sin un solo error
+    // de red que lo explique.
+    expect(origenes).toContain('https://codexialabstorage.s3.us-east-1.amazonaws.com');
+    expect(origenes).toContain("'self'");
+  });
+
+  it('prefiere el dominio propio si algun dia hay una CDN delante', () => {
+    const origenes = origenesDeImagen({
+      S3_BUCKET: 'codexialabstorage',
+      S3_REGION: 'us-east-1',
+      S3_PUBLIC_URL: 'https://media.codenestschool.com/',
+    } as never);
+
+    expect(origenes).toContain('https://media.codenestschool.com');
+    expect(origenes).not.toContain('https://codexialabstorage.s3.us-east-1.amazonaws.com');
+  });
+
+  it('sin almacenamiento no abre nada de fuera', () => {
+    expect(origenesDeImagen({ S3_REGION: 'us-east-1' } as never)).toEqual([
+      "'self'",
+      'data:',
+      'blob:',
+    ]);
+  });
+});
+
+describe('a donde se puede conectar el navegador', () => {
+  it('incluye el almacen, porque Phaser pide las imagenes por XHR', () => {
+    const origenes = origenesDeConexion({
+      S3_BUCKET: 'codexialabstorage',
+      S3_REGION: 'us-east-1',
+    } as never);
+
+    // Es el fallo que costo mas encontrar: con el almacen solo en `img-src`, las
+    // miniaturas se veian y el fondo del juego no, porque el motor no usa una
+    // etiqueta <img> sino XHR, y a XHR lo gobierna `connect-src`.
+    expect(origenes).toContain('https://codexialabstorage.s3.us-east-1.amazonaws.com');
+    expect(origenes).toContain('https://api.mercadopago.com');
+  });
+
+  it('sin almacenamiento se queda como estaba', () => {
+    expect(origenesDeConexion({ S3_REGION: 'us-east-1' } as never)).toEqual([
+      "'self'",
+      'https://api.mercadopago.com',
+    ]);
   });
 });

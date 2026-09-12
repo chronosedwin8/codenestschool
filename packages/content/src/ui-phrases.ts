@@ -13,7 +13,14 @@ export interface FraseUi {
 }
 
 /** Textos de interfaz. La clave final sera `ui_<slug>`. */
-export const FRASES_UI: readonly FraseUi[] = [
+/**
+ * Las del constructor de juegos viven en su propio archivo, con el resto del
+ * catalogo de esa seccion, y se juntan aqui para que el generador de locuciones
+ * y el sembrado las recojan sin tener que conocer dos listas.
+ */
+import { FRASES_CONSTRUCTOR } from './juegos-catalogo.js';
+
+const FRASES_BASE: readonly FraseUi[] = [
   { slug: 'bienvenida', texto: 'Hola, soy Nube. Bienvenido a CodeNest. Vamos a jugar y a programar.' },
   { slug: 'elige-mundo', texto: 'Toca un mundo para empezar tu aventura.' },
   { slug: 'mundo-bloqueado', texto: 'Este mundo todavia esta cerrado. Termina el anterior para abrirlo.' },
@@ -37,6 +44,8 @@ export const FRASES_UI: readonly FraseUi[] = [
   { slug: 'mis-datos', texto: 'Mira todo lo que llevas hecho. Cada estrella la ganaste tu.' },
   { slug: 'hasta-pronto', texto: 'Hasta pronto. Vuelve cuando quieras seguir jugando.' },
 ];
+
+export const FRASES_UI: readonly FraseUi[] = [...FRASES_BASE, ...FRASES_CONSTRUCTOR];
 
 /** Celebraciones genericas reutilizadas por cientos de actividades. */
 export const CELEBRACIONES: readonly string[] = [

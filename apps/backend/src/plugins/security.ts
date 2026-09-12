@@ -30,7 +30,7 @@ import { createHash } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 
-import { cargarConfig } from '../lib/env.js';
+import { cargarConfig, type Config } from '../lib/env.js';
 
 const ORIGENES_DESARROLLO = ['http://localhost:5173', 'http://localhost:3001'];
 
@@ -91,6 +91,44 @@ export function esArchivoDeTrabajador(url: string): boolean {
   return /\.worker-[^/]*\.js$/.test(ruta);
 }
 
+/**
+ * De donde se pueden cargar imagenes, ademas de nuestro propio dominio.
+ *
+ * Los escenarios de los juegos que construyen los estudiantes viven en S3, en
+ * otro dominio. Sin anadirlo aqui, en produccion el navegador las bloquea por
+ * politica de contenido: no fallan con un error de red, simplemente no se
+ * pintan, y el juego sale con un degradado como si no hubiera imagen. Pasó, y
+ * costo encontrarlo porque contar etiquetas `<img>` en el DOM no dice si la
+ * imagen cargo de verdad.
+ */
+export function origenDelAlmacen(config: Config): string | null {
+  if (config.S3_PUBLIC_URL) return new URL(config.S3_PUBLIC_URL).origin;
+  if (config.S3_BUCKET) return `https://${config.S3_BUCKET}.s3.${config.S3_REGION}.amazonaws.com`;
+  return null;
+}
+
+export function origenesDeImagen(config: Config): string[] {
+  const almacen = origenDelAlmacen(config);
+  return almacen ? ["'self'", 'data:', 'blob:', almacen] : ["'self'", 'data:', 'blob:'];
+}
+
+/**
+ * A donde puede abrir conexiones el navegador.
+ *
+ * El almacen tiene que estar aqui **ademas** de en `img-src`, y esto costo
+ * encontrarlo: Phaser no carga las imagenes con una etiqueta `<img>`, las pide
+ * por XHR, y a XHR lo gobierna `connect-src`. El resultado era desconcertante:
+ * las miniaturas del catalogo se veian perfectamente y el fondo del juego salia
+ * en degradado, con un `RED FALLO: csp` que solo aparece escuchando la red del
+ * navegador.
+ */
+export function origenesDeConexion(config: Config): string[] {
+  const origenes = ["'self'", 'https://api.mercadopago.com'];
+  const almacen = origenDelAlmacen(config);
+  if (almacen) origenes.push(almacen);
+  return origenes;
+}
+
 async function plugin(fastify: FastifyInstance): Promise<void> {
   const config = cargarConfig();
   const enProduccion = config.NODE_ENV === 'production';
@@ -105,9 +143,9 @@ async function plugin(fastify: FastifyInstance): Promise<void> {
             scriptSrc: ["'self'", 'https://sdk.mercadopago.com'],
             styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-            imgSrc: ["'self'", 'data:', 'blob:'],
+            imgSrc: origenesDeImagen(config),
             mediaSrc: ["'self'"],
-            connectSrc: ["'self'", 'https://api.mercadopago.com'],
+            connectSrc: origenesDeConexion(config),
             workerSrc: ["'self'", 'blob:'],
             frameSrc: ["'self'", 'https://www.mercadopago.com'],
             objectSrc: ["'none'"],

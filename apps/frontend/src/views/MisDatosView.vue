@@ -57,6 +57,18 @@ interface MisDatos {
     readonly posicion: number;
     readonly companeros: number;
   } | null;
+  readonly insignias: readonly {
+    readonly clave: string;
+    readonly nombre: string;
+    readonly descripcion: string | null;
+    readonly icono: string;
+    readonly rareza: string;
+  }[];
+  readonly diplomas: readonly {
+    readonly codigo: string;
+    readonly tituloJuego: string;
+    readonly emitidoEn: string;
+  }[];
 }
 
 const router = useRouter();
@@ -237,6 +249,36 @@ onMounted(() => void cargar());
       </section>
 
       <!--
+        Las insignias y los diplomas. Van juntos y antes del puesto en el grupo
+        porque son lo que el niño consiguio, no una comparacion con nadie.
+      -->
+      <section v-if="datos.insignias.length > 0" class="panel">
+        <h2>Tus insignias</h2>
+        <ul class="insignias">
+          <li v-for="i in datos.insignias" :key="i.clave" :class="`insignia insignia--${i.rareza}`">
+            <span class="insignia__icono" aria-hidden="true">{{ i.icono }}</span>
+            <span>
+              <strong>{{ i.nombre }}</strong>
+              <small>{{ i.descripcion }}</small>
+            </span>
+          </li>
+        </ul>
+      </section>
+
+      <section v-if="datos.diplomas.length > 0" class="panel">
+        <h2>Tus diplomas</h2>
+        <ul class="diplomas">
+          <li v-for="d in datos.diplomas" :key="d.codigo">
+            <button type="button" class="diploma" @click="router.push(`/diploma/${d.codigo}`)">
+              <span aria-hidden="true">🎓</span>
+              <span class="diploma__juego">{{ d.tituloJuego }}</span>
+              <span class="diploma__ver">ver</span>
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!--
         El puesto en el grupo va al final, en pequeño y sin decir quién va
         delante: a cualquiera le puede doler, y lo que importa es su avance.
       -->
@@ -394,6 +436,69 @@ onMounted(() => void cargar());
 .detalle strong {
   font-family: var(--fuente-titulo);
   font-size: var(--texto-lg);
+}
+
+.insignias {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.insignia {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 2px solid transparent;
+}
+
+.insignia__icono {
+  font-size: 30px;
+}
+
+.insignia small {
+  display: block;
+  font-size: var(--texto-sm);
+  color: #64748b;
+}
+
+/* La rareza se ve en el borde: es un premio, y se nota que lo es. */
+.insignia--raro { border-color: var(--azul-neon, #1fa2ff); }
+.insignia--epico { border-color: var(--morado, #7b61ff); background: #f5f3ff; }
+
+.diplomas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.diploma {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fff7db, #ffe9a8);
+  font: inherit;
+  cursor: pointer;
+}
+
+.diploma__juego {
+  font-family: var(--fuente-titulo);
+}
+
+.diploma__ver {
+  font-size: var(--texto-sm);
+  color: #92400e;
 }
 
 .panel--grupo { background: #f8fafc; }

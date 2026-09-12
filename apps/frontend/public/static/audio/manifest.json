@@ -21947,6 +21947,61 @@
       "tamanoBytes": 22404,
       "duracionMs": 2801,
       "generadoEn": "2026-09-11T13:56:51.219Z"
+    },
+    "ui_constructor-probar": {
+      "clave": "ui_constructor-probar",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "081f0883937d005e0ff338026263201b687250a13d1354b67e07843e7edb7d39",
+      "archivo": "ui_constructor-probar.mp3",
+      "caracteres": 73,
+      "tamanoBytes": 35152,
+      "duracionMs": 4394,
+      "generadoEn": "2026-09-12T15:39:04.624Z"
+    },
+    "ui_constructor-bienvenida": {
+      "clave": "ui_constructor-bienvenida",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "97415bb0d59fa0da2c326d0e9011d9ebf6531b200818502fdaadcc2baae9a65c",
+      "archivo": "ui_constructor-bienvenida.mp3",
+      "caracteres": 114,
+      "tamanoBytes": 52497,
+      "duracionMs": 6562,
+      "generadoEn": "2026-09-12T15:39:05.873Z"
+    },
+    "ui_constructor-ganado": {
+      "clave": "ui_constructor-ganado",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "eadaa73f81b526589d95584b5d688f4c46e681987f4c60132aa2c5ee045931d3",
+      "archivo": "ui_constructor-ganado.mp3",
+      "caracteres": 77,
+      "tamanoBytes": 37242,
+      "duracionMs": 4655,
+      "generadoEn": "2026-09-12T15:39:06.474Z"
+    },
+    "ui_constructor-publicado": {
+      "clave": "ui_constructor-publicado",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "a2290866bc0ea84cd97b6da2cee0dfb020b2a9a39a060e8f60e33eb200e64e3e",
+      "archivo": "ui_constructor-publicado.mp3",
+      "caracteres": 99,
+      "tamanoBytes": 53333,
+      "duracionMs": 6667,
+      "generadoEn": "2026-09-12T15:39:07.924Z"
+    },
+    "ui_constructor-aviso": {
+      "clave": "ui_constructor-aviso",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "0b1f915be5edc6b104749eecf3b83f0b195e05b145e33de73efe1c9165dc03e7",
+      "archivo": "ui_constructor-aviso.mp3",
+      "caracteres": 68,
+      "tamanoBytes": 36197,
+      "duracionMs": 4525,
+      "generadoEn": "2026-09-12T15:39:08.241Z"
     }
   }
 }

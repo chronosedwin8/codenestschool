@@ -99,6 +99,33 @@ const esquema = z.object({
       .transform((v) => v === 'true'),
   ),
 
+  /**
+   * Almacenamiento S3 de la multimedia de los juegos.
+   *
+   * Sin estas cuatro variables, el constructor de juegos sigue funcionando: los
+   * escenarios se dibujan con un degradado en vez de con su imagen, y las
+   * portadas no se guardan. Es a proposito: un desarrollo local no deberia
+   * necesitar credenciales de AWS para poder abrir la aplicacion.
+   */
+  S3_BUCKET: opcional(z.string().min(3)),
+  S3_REGION: z.preprocess(
+    (valor) => (typeof valor === 'string' && valor.trim() === '' ? undefined : valor),
+    z.string().default('us-east-1'),
+  ),
+  S3_ACCESS_KEY_ID: opcional(z.string().min(16)),
+  S3_SECRET_ACCESS_KEY: opcional(z.string().min(20)),
+  /** CDN o dominio propio por delante del bucket, si algun dia lo hay. */
+  S3_PUBLIC_URL: opcional(z.string().url()),
+
+  /**
+   * Generacion de imagenes (Magnific/Freepik). SOLO la usan los scripts.
+   *
+   * El servidor no genera imagenes en ninguna ruta, y menos a peticion de un
+   * nino: seria un boton que gasta creditos del colegio con cada toque. Los
+   * escenarios se generan una vez desde la linea de ordenes y se sirven de S3.
+   */
+  MAGNIFIC_API_KEY: opcional(z.string().min(10)),
+
   // Mercado Pago: opcionales en desarrollo, obligatorios para cobrar.
   MP_ACCESS_TOKEN: opcional(z.string()),
   MP_PUBLIC_KEY: opcional(z.string()),
@@ -127,6 +154,11 @@ export function cargarConfig(): Config {
 
   cache = resultado.data;
   return cache;
+}
+
+/** Indica si hay donde guardar la multimedia de los juegos. */
+export function almacenConfigurado(config: Config): boolean {
+  return Boolean(config.S3_BUCKET && config.S3_ACCESS_KEY_ID && config.S3_SECRET_ACCESS_KEY);
 }
 
 /** Indica si se puede entrar con la cuenta del colegio. */

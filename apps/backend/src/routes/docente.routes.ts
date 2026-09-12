@@ -15,6 +15,7 @@ import { z } from 'zod';
 
 import { cargarConfig } from '../lib/env.js';
 import { generarCodigoAcceso } from '../services/auth.service.js';
+import { proyectosDeAulas } from '../services/proyectos.service.js';
 import {
   ErrorDocente,
   IMAGENES_PIN,
@@ -105,6 +106,41 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
       throw error;
     }
   };
+
+  /**
+   * Los juegos que estan haciendo sus estudiantes, publicados o no.
+   *
+   * Los borradores se muestran a proposito: es su clase, y un proyecto a medias
+   * es justo lo que hace falta ver para poder ayudar. El docente no puede
+   * editarlos ni publicarlos; el juego es del estudiante.
+   */
+  fastify.get('/proyectos', { preHandler: soloDocentes }, async (request, reply) => {
+    const actor = actorDe(request);
+
+    const aulas = await fastify.prisma.classroom.findMany({
+      where:
+        actor.rol === 'admin'
+          ? {}
+          : actor.rol === 'admin_escuela' && actor.institucionId !== null
+            ? { OR: [{ docenteId: actor.id }, { institucionId: actor.institucionId }] }
+            : { docenteId: actor.id },
+      select: { id: true },
+    });
+
+    const proyectos = await proyectosDeAulas(
+      fastify.prisma,
+      aulas.map((a) => a.id),
+    );
+
+    return reply.send({
+      proyectos,
+      resumen: {
+        total: proyectos.length,
+        publicados: proyectos.filter((p) => p.estado === 'publicado').length,
+        constructores: new Set(proyectos.map((p) => p.autor.id)).size,
+      },
+    });
+  });
 
   // ─────────────────────────────── Grupos ───────────────────────────────────
 

@@ -20,6 +20,8 @@ import { authRoutes } from './routes/auth.routes.js';
 import { curriculumRoutes } from './routes/curriculum.routes.js';
 import { pagosRoutes } from './routes/pagos.routes.js';
 import { docenteRoutes } from './routes/docente.routes.js';
+import { juegosRoutes } from './routes/juegos.routes.js';
+import { proyectosRoutes } from './routes/proyectos.routes.js';
 import { portalRoutes } from './routes/portal.routes.js';
 import { progresoRoutes } from './routes/progreso.routes.js';
 import { sessionsRoutes } from './routes/sessions.routes.js';
@@ -83,6 +85,8 @@ export async function construirServidor(): Promise<FastifyInstance> {
   await fastify.register(docenteRoutes, { prefix: '/api/docente' });
   await fastify.register(progresoRoutes, { prefix: '/api/progreso' });
   await fastify.register(tiendaRoutes, { prefix: '/api/tienda' });
+  await fastify.register(proyectosRoutes, { prefix: '/api/proyectos' });
+  await fastify.register(juegosRoutes, { prefix: '/api/juegos' });
 
   fastify.get('/health', async () => ({
     estado: 'ok',

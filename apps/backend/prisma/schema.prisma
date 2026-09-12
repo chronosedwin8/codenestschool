@@ -106,6 +106,14 @@ enum TipoItemTienda {
   @@map("tipo_item_tienda")
 }
 
+/// Un juego de un estudiante esta en su taller o esta publicado. Lo decide el.
+enum EstadoProyecto {
+  borrador
+  publicado
+
+  @@map("estado_proyecto")
+}
+
 enum EstadoConsentimiento {
   pendiente
   otorgado
@@ -225,22 +233,22 @@ model User {
   /// tiene encendidos y `pocion` la que esta gastando en la actividad de ahora.
   avatarConfig Json @default("{\"color\":null,\"sombrero\":null,\"gafas\":null,\"disfraz\":null,\"accesorio\":null,\"poderes\":[],\"pocion\":null}") @map("avatar_config") @db.JsonB
 
-  monedas          Int       @default(0)
+  monedas              Int       @default(0)
   /// Estrellas ganadas en toda su historia. Es su marca: NUNCA baja.
-  estrellasTotales Int       @default(0) @map("estrellas_totales")
+  estrellasTotales     Int       @default(0) @map("estrellas_totales")
   /// Estrellas que le quedan por gastar en la tienda.
   ///
   /// Son dos numeros y no uno a proposito. Si comprar restara de las ganadas, el
   /// nino veria bajar su logro al ponerse un gorro, y lo que consiguio no se
   /// deshace por gastarlo. Los dos suben juntos al superar una actividad; solo
   /// este baja al comprar.
-  estrellasDisponibles Int   @default(0) @map("estrellas_disponibles")
+  estrellasDisponibles Int       @default(0) @map("estrellas_disponibles")
   /// Mundos abiertos con un Pase del Nido, ademas de los que le toquen por
   /// avance. Es una lista y no un tope porque un pase abre un mundo concreto y
   /// el desbloqueo normal sigue su curso por separado.
-  mundosExtra        Int[]   @default([]) @map("mundos_extra")
-  rachaDias        Int       @default(0) @map("racha_dias")
-  ultimaActividad  DateTime? @map("ultima_actividad") @db.Date
+  mundosExtra          Int[]     @default([]) @map("mundos_extra")
+  rachaDias            Int       @default(0) @map("racha_dias")
+  ultimaActividad      DateTime? @map("ultima_actividad") @db.Date
 
   institucionId Int?     @map("institucion_id")
   activo        Boolean  @default(true)
@@ -256,6 +264,9 @@ model User {
   progreso           UserActivityProgress[]
   logros             UserAchievement[]
   inventario         UserInventory[]
+  proyectos          GameProject[]
+  meGustaDados       GameLike[]
+  diplomas           Diploma[]
   tokens             RefreshToken[]
   metricas           UserMetricDaily[]
 
@@ -678,24 +689,104 @@ model UserAchievement {
   @@map("usuarios_logros")
 }
 
+// ───────────── Constructor de juegos: proyectos de los estudiantes ─────────
+
+/// Un juego hecho por un estudiante.
+///
+/// La definicion completa vive en `definicion` (JSONB) y la valida el esquema
+/// zod de `@codenest/shared/zod` en cada guardado: el servidor no se fia del
+/// navegador, que es el de un nino con las herramientas de desarrollo a mano.
+///
+/// El titulo NO lo escribe el estudiante: sale de un sorteo de tres listas de
+/// palabras y el servidor comprueba que pertenece a ese sorteo. Asi la zona de
+/// juegos publicados no contiene ni una linea de texto libre escrito por un
+/// menor, que es lo unico que hace viable una zona publica sin moderacion.
+model GameProject {
+  id         Int            @id @default(autoincrement())
+  autorId    Int            @map("autor_id")
+  titulo     String         @db.VarChar(60)
+  definicion Json           @db.JsonB
+  estado     EstadoProyecto @default(borrador)
+
+  /// Captura del propio juego, subida a S3 al publicar.
+  portadaUrl String? @map("portada_url") @db.VarChar(400)
+
+  /// Cuando el estudiante lo jugo y lo gano. Sin esto no se puede publicar: un
+  /// juego imposible de ganar decepciona a quien lo abre y a quien lo hizo.
+  probadoEn DateTime? @map("probado_en") @db.Timestamptz(6)
+
+  partidas    Int       @default(0)
+  meGusta     Int       @default(0) @map("me_gusta")
+  publicadoEn DateTime? @map("publicado_en") @db.Timestamptz(6)
+
+  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  autor   User       @relation(fields: [autorId], references: [id], onDelete: Cascade)
+  gustos  GameLike[]
+  diploma Diploma?
+
+  @@index([autorId])
+  @@index([estado, publicadoEn])
+  @@map("proyectos_juego")
+}
+
+/// Un "me gusta" de un jugador a un juego. Uno por persona y juego.
+model GameLike {
+  id         Int      @id @default(autoincrement())
+  proyectoId Int      @map("proyecto_id")
+  usuarioId  Int      @map("usuario_id")
+  creadoEn   DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  proyecto GameProject @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+  usuario  User        @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([proyectoId, usuarioId])
+  @@map("juegos_megusta")
+}
+
+/// Diploma de constructor de juegos.
+///
+/// El codigo es lo que lo hace un diploma y no un dibujo: se puede comprobar en
+/// una direccion publica, asi que la familia que recibe la foto del diploma
+/// puede verificar que existe de verdad. Por eso tambien se guarda el titulo del
+/// juego aqui: si el estudiante despues borra el proyecto, el diploma sigue
+/// diciendo la verdad de lo que paso.
+model Diploma {
+  id           Int      @id @default(autoincrement())
+  codigo       String   @unique @db.VarChar(20)
+  alumnoId     Int      @map("alumno_id")
+  proyectoId   Int      @unique @map("proyecto_id")
+  tituloJuego  String   @map("titulo_juego") @db.VarChar(60)
+  nombreAlumno String   @map("nombre_alumno") @db.VarChar(150)
+  imagenUrl    String?  @map("imagen_url") @db.VarChar(400)
+  emitidoEn    DateTime @default(now()) @map("emitido_en") @db.Timestamptz(6)
+
+  alumno   User        @relation(fields: [alumnoId], references: [id], onDelete: Cascade)
+  proyecto GameProject @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+
+  @@index([alumnoId])
+  @@map("diplomas")
+}
+
 model StoreItem {
-  id            Int            @id @default(autoincrement())
-  clave         String         @unique @db.VarChar(60)
-  nombre        String         @db.VarChar(150)
-  tipo          TipoItemTienda
-  descripcion   String?
-  imagenUrl     String?        @map("imagen_url") @db.VarChar(300)
+  id               Int            @id @default(autoincrement())
+  clave            String         @unique @db.VarChar(60)
+  nombre           String         @db.VarChar(150)
+  tipo             TipoItemTienda
+  descripcion      String?
+  imagenUrl        String?        @map("imagen_url") @db.VarChar(300)
   /// Precio en estrellas. Es lo unico que se gasta en la tienda.
-  costoEstrellas Int           @default(0) @map("costo_estrellas")
+  costoEstrellas   Int            @default(0) @map("costo_estrellas")
   /// Cuantos mundos terminados hacen falta para poder comprarlo.
   ///
   /// Una cuenta y no un mundo concreto: atado al mundo 7, el sombrero pirata era
   /// inalcanzable para un nino de diez anos, que empieza en el 21.
-  mundosNecesarios Int?         @map("mundos_necesarios")
-  grupoEdad     GrupoEdad?     @map("grupo_edad")
-  datos         Json?          @db.JsonB
-  orden         Int            @default(0)
-  activo        Boolean        @default(true)
+  mundosNecesarios Int?           @map("mundos_necesarios")
+  grupoEdad        GrupoEdad?     @map("grupo_edad")
+  datos            Json?          @db.JsonB
+  orden            Int            @default(0)
+  activo           Boolean        @default(true)
 
   inventarios UserInventory[]
 

@@ -7,12 +7,21 @@
  */
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 
+import { diplomasDe } from '../services/diplomas.service.js';
+import { insigniasDe } from '../services/logros.service.js';
 import { estadisticasDeEstudiante } from '../services/progreso.service.js';
 
 export const progresoRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-  /** Mis datos: avance, estrellas, tiempo y puesto en mi grupo. */
+  /** Mis datos: avance, estrellas, tiempo, insignias y puesto en mi grupo. */
   fastify.get('/mio', { preHandler: fastify.exigirJugador }, async (request, reply) => {
-    const datos = await estadisticasDeEstudiante(fastify.prisma, request.user.id);
-    return reply.send(datos);
+    const [datos, insignias, diplomas] = await Promise.all([
+      estadisticasDeEstudiante(fastify.prisma, request.user.id),
+      insigniasDe(fastify.prisma, request.user.id),
+      diplomasDe(fastify.prisma, request.user.id),
+    ]);
+    // Las insignias y los diplomas van con lo demas y no en otra llamada: el
+    // panel los ensena juntos, y dos peticiones para una sola pantalla se ven
+    // como dos saltos en la tableta.
+    return reply.send({ ...datos, insignias, diplomas });
   });
 };

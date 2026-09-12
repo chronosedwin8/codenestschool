@@ -21,6 +21,7 @@ import { createHash } from 'node:crypto';
 import { PrismaClient, type Prisma } from '@prisma/client';
 
 import { hashPassword } from '../src/services/auth.service.js';
+import { LOGROS_CONSTRUCTOR } from '../src/services/logros.service.js';
 
 import {
   CATALOGO_TIENDA,
@@ -423,6 +424,31 @@ async function asegurarAdministrador(): Promise<void> {
  * haber ninos que ya los compraron y verlos desaparecer del avatar seria
  * quitarles algo que pagaron.
  */
+/**
+ * Las insignias.
+ *
+ * Las tablas de logros existian desde el primer esquema y estaban vacias: no
+ * habia nada que las concediera. Ahora el constructor de juegos las usa.
+ */
+async function sembrarLogros(): Promise<void> {
+  for (const logro of LOGROS_CONSTRUCTOR) {
+    const datos = {
+      nombre: logro.nombre,
+      descripcion: logro.descripcion,
+      icono: logro.icono,
+      rareza: logro.rareza,
+      condicion: logro.condicion as unknown as Prisma.InputJsonValue,
+      activo: true,
+    };
+    await prisma.achievement.upsert({
+      where: { clave: logro.clave },
+      update: datos,
+      create: { clave: logro.clave, ...datos },
+    });
+  }
+  console.log(`  ${LOGROS_CONSTRUCTOR.length} insignias del constructor de juegos`);
+}
+
 async function sembrarTienda(): Promise<void> {
   for (const item of CATALOGO_TIENDA) {
     const datos = {
@@ -481,6 +507,9 @@ async function main(): Promise<void> {
       console.log('\nTienda:');
       await sembrarTienda();
 
+      console.log('\nInsignias:');
+      await sembrarLogros();
+
       // Los audios fijos (voz de interfaz y celebraciones) tambien: son ciento
       // cincuenta upserts y es lo que mantiene la tabla `audios` al dia cuando
       // se retoca una frase. Sin esto, cambiar el texto de una locucion dejaba
@@ -513,6 +542,9 @@ async function main(): Promise<void> {
   // en la integracion continua, que siempre parte de una base vacia.
   console.log('\nTienda:');
   await sembrarTienda();
+
+  console.log('\nInsignias:');
+  await sembrarLogros();
 
   console.log('\nVerificaciones:');
   await verificarCoherencia();

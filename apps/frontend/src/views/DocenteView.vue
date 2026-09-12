@@ -20,6 +20,7 @@ import PanelAvance from '@/components/docente/PanelAvance.vue';
 import PanelCredenciales from '@/components/docente/PanelCredenciales.vue';
 import PanelEstudiantes from '@/components/docente/PanelEstudiantes.vue';
 import PanelTareas from '@/components/docente/PanelTareas.vue';
+import PanelJuegos from '@/components/docente/PanelJuegos.vue';
 
 export interface Aula {
   readonly id: number;
@@ -32,13 +33,14 @@ export interface Aula {
   readonly docente: { readonly id: number; readonly nombre: string };
 }
 
-type Pestana = 'estudiantes' | 'credenciales' | 'tareas' | 'avance';
+type Pestana = 'estudiantes' | 'credenciales' | 'tareas' | 'avance' | 'juegos';
 
 const PESTANAS: { clave: Pestana; etiqueta: string }[] = [
   { clave: 'estudiantes', etiqueta: 'Estudiantes' },
   { clave: 'credenciales', etiqueta: 'Credenciales' },
   { clave: 'tareas', etiqueta: 'Tareas' },
   { clave: 'avance', etiqueta: 'Avance' },
+  { clave: 'juegos', etiqueta: 'Juegos' },
 ];
 
 const aulas = ref<readonly Aula[]>([]);
@@ -182,6 +184,12 @@ onMounted(() => void cargarAulas());
         :puede-ver-pines="puedeVerPines"
       />
       <PanelTareas v-else-if="pestana === 'tareas'" :aula="aula" @cambio="cargarAulas(aula.id)" />
+      <!--
+        Los juegos no dependen del grupo elegido: la lista es de todos sus
+        grupos, porque lo que el docente quiere ver de un vistazo es quien ha
+        construido algo y quien no ha empezado.
+      -->
+      <PanelJuegos v-else-if="pestana === 'juegos'" />
       <PanelAvance v-else :aula="aula" />
     </template>
   </main>

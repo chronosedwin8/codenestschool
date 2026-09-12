@@ -205,6 +205,21 @@ onMounted(cargar);
         </p>
       </div>
       <div class="mapa__acciones">
+        <!-- El taller de juegos: crear es lo que mas engancha, va primero. -->
+        <BotonJuguete
+          etiqueta="Hacer mis juegos"
+          icono="🛠️"
+          tono="verde"
+          solo-icono
+          @pulsar="$router.push('/proyectos')"
+        />
+        <BotonJuguete
+          etiqueta="Jugar los juegos de todos"
+          icono="🕹️"
+          tono="morado"
+          solo-icono
+          @pulsar="$router.push('/juegos')"
+        />
         <!-- La tienda. Va junto a las estrellas porque es donde se gastan. -->
         <BotonJuguete
           etiqueta="Ir a la tienda"

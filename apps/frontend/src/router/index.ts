@@ -29,6 +29,39 @@ export const router = createRouter({
       meta: { requiereSesion: true, soloEstudiantes: true },
     },
     {
+      path: '/proyectos',
+      name: 'proyectos',
+      component: () => import('@/views/ProyectosView.vue'),
+      meta: { requiereSesion: true, soloEstudiantes: true },
+    },
+    {
+      path: '/constructor/:id',
+      name: 'constructor',
+      component: () => import('@/views/ConstructorView.vue'),
+      meta: { requiereSesion: true, soloEstudiantes: true },
+    },
+    {
+      // La zona de juegos la ven los estudiantes y tambien el docente: es su
+      // clase la que publica, y quiere poder jugar lo que hacen.
+      path: '/juegos',
+      name: 'juegos',
+      component: () => import('@/views/JuegosView.vue'),
+      meta: { requiereSesion: true },
+    },
+    {
+      path: '/jugar/:id',
+      name: 'jugar',
+      component: () => import('@/views/JugarJuegoView.vue'),
+      meta: { requiereSesion: true },
+    },
+    {
+      // El diploma es publico a proposito: se abre con el codigo y sin sesion,
+      // para que la familia pueda comprobarlo desde su telefono.
+      path: '/diploma/:codigo',
+      name: 'diploma',
+      component: () => import('@/views/DiplomaView.vue'),
+    },
+    {
       path: '/tienda',
       name: 'tienda',
       component: () => import('@/views/TiendaView.vue'),
