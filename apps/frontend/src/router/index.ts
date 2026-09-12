@@ -29,6 +29,24 @@ export const router = createRouter({
       meta: { requiereSesion: true, soloEstudiantes: true },
     },
     {
+      path: '/mecanografia',
+      name: 'mecanografia',
+      component: () => import('@/views/MecanografiaView.vue'),
+      meta: { requiereSesion: true, soloEstudiantes: true },
+    },
+    {
+      path: '/mecanografia/practica',
+      name: 'practica-teclado',
+      component: () => import('@/views/PracticaTecladoView.vue'),
+      meta: { requiereSesion: true, soloEstudiantes: true },
+    },
+    {
+      path: '/mecanografia/leccion/:clave',
+      name: 'leccion-teclado',
+      component: () => import('@/views/LeccionTecladoView.vue'),
+      meta: { requiereSesion: true, soloEstudiantes: true },
+    },
+    {
       path: '/proyectos',
       name: 'proyectos',
       component: () => import('@/views/ProyectosView.vue'),

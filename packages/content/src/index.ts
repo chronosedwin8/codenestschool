@@ -15,3 +15,4 @@ export * from './historia.js';
 export * from './continuidad.js';
 export * from './tienda.js';
 export * from './juegos-catalogo.js';
+export * from './mecanografia.js';

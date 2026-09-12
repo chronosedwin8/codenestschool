@@ -205,6 +205,14 @@ onMounted(cargar);
         </p>
       </div>
       <div class="mapa__acciones">
+        <!-- Mecanografia: para los grandes, y se llega desde su casa. -->
+        <BotonJuguete
+          etiqueta="Aprender a escribir con el teclado"
+          icono="⌨️"
+          tono="azul"
+          solo-icono
+          @pulsar="$router.push('/mecanografia')"
+        />
         <!-- El taller de juegos: crear es lo que mas engancha, va primero. -->
         <BotonJuguete
           etiqueta="Hacer mis juegos"

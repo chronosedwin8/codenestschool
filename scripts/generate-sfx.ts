@@ -51,6 +51,11 @@ const EFECTOS: readonly EfectoSonido[] = [
   { clave: 'tres-estrellas', descripcion: 'celebratory sparkle cascade with confetti, joyful kids reward', duracion: 2.4 },
   { clave: 'desbloqueo', descripcion: 'magical unlock shimmer, new world opening, wondrous', duracion: 1.5 },
   { clave: 'compra', descripcion: 'cash register plus happy chime, toy shop purchase', duracion: 1.0 },
+  // Mecanografia: suenan en CADA pulsacion, asi que tienen que ser cortisimos y
+  // discretos. Un sonido de medio segundo repetido cien veces por minuto es una
+  // tortura, y lo primero que hace un nino es silenciar la aplicacion.
+  { clave: 'tecla', descripcion: 'single soft mechanical keyboard key press, very short, clean, no reverb', duracion: 0.5 },
+  { clave: 'tecla-mal', descripcion: 'short soft low buzz for a wrong key press, gentle, not harsh', duracion: 0.5 },
 ];
 
 async function main(): Promise<void> {

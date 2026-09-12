@@ -22,6 +22,7 @@ import { PrismaClient, type Prisma } from '@prisma/client';
 
 import { hashPassword } from '../src/services/auth.service.js';
 import { LOGROS_CONSTRUCTOR } from '../src/services/logros.service.js';
+import { LOGROS_TECLADO } from '../src/services/mecanografia.service.js';
 
 import {
   CATALOGO_TIENDA,
@@ -431,7 +432,8 @@ async function asegurarAdministrador(): Promise<void> {
  * habia nada que las concediera. Ahora el constructor de juegos las usa.
  */
 async function sembrarLogros(): Promise<void> {
-  for (const logro of LOGROS_CONSTRUCTOR) {
+  const todos = [...LOGROS_CONSTRUCTOR, ...LOGROS_TECLADO];
+  for (const logro of todos) {
     const datos = {
       nombre: logro.nombre,
       descripcion: logro.descripcion,
@@ -446,7 +448,7 @@ async function sembrarLogros(): Promise<void> {
       create: { clave: logro.clave, ...datos },
     });
   }
-  console.log(`  ${LOGROS_CONSTRUCTOR.length} insignias del constructor de juegos`);
+  console.log(`  ${todos.length} insignias (constructor de juegos y mecanografia)`);
 }
 
 async function sembrarTienda(): Promise<void> {

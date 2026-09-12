@@ -22002,6 +22002,72 @@
       "tamanoBytes": 36197,
       "duracionMs": 4525,
       "generadoEn": "2026-09-12T15:39:08.241Z"
+    },
+    "ui_teclado-bienvenida": {
+      "clave": "ui_teclado-bienvenida",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "c078701b54cc02d1c298158aa71c8e4a03032971862a0a32888ee881bfb866b5",
+      "archivo": "ui_teclado-bienvenida.mp3",
+      "caracteres": 131,
+      "tamanoBytes": 69634,
+      "duracionMs": 8704,
+      "generadoEn": "2026-09-12T16:45:11.313Z"
+    },
+    "ui_teclado-reposo": {
+      "clave": "ui_teclado-reposo",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "01bcb2f9eecf555cfb30ee12e56d57b7161f91f146144730e89d9bae585fcb71",
+      "archivo": "ui_teclado-reposo.mp3",
+      "caracteres": 103,
+      "tamanoBytes": 111221,
+      "duracionMs": 13903,
+      "generadoEn": "2026-09-12T16:45:12.384Z"
+    },
+    "ui_teclado-precision": {
+      "clave": "ui_teclado-precision",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "94794a306400ff6c636a5cb33a6ec48773111ec9eae3d29dd79e1678adba3c78",
+      "archivo": "ui_teclado-precision.mp3",
+      "caracteres": 109,
+      "tamanoBytes": 59603,
+      "duracionMs": 7450,
+      "generadoEn": "2026-09-12T16:45:13.506Z"
+    },
+    "ui_teclado-tilde": {
+      "clave": "ui_teclado-tilde",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "48ec867cedbc02ab6ce13fdf0c10a21cba5f595c3f43486a89e38e665df44401",
+      "archivo": "ui_teclado-tilde.mp3",
+      "caracteres": 107,
+      "tamanoBytes": 67753,
+      "duracionMs": 8469,
+      "generadoEn": "2026-09-12T16:45:14.636Z"
+    },
+    "ui_teclado-leccion-superada": {
+      "clave": "ui_teclado-leccion-superada",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "3c284c81b38cc28bb7a03c3da6fe555a362c5a17234eb1dc5aa4e4b3935158a0",
+      "archivo": "ui_teclado-leccion-superada.mp3",
+      "caracteres": 74,
+      "tamanoBytes": 38496,
+      "duracionMs": 4812,
+      "generadoEn": "2026-09-12T16:45:15.320Z"
+    },
+    "ui_teclado-mas-despacio": {
+      "clave": "ui_teclado-mas-despacio",
+      "tipo": "ui",
+      "voz": "guia_clara",
+      "hash": "9b1eb33647f13f43c9afc77bb231877b17c70731ae20c68305da079d565daeda",
+      "archivo": "ui_teclado-mas-despacio.mp3",
+      "caracteres": 81,
+      "tamanoBytes": 52497,
+      "duracionMs": 6562,
+      "generadoEn": "2026-09-12T16:45:16.701Z"
     }
   }
 }

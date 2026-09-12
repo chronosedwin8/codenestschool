@@ -15,6 +15,9 @@ import { z } from 'zod';
 
 import { cargarConfig } from '../lib/env.js';
 import { generarCodigoAcceso } from '../services/auth.service.js';
+import { LECCIONES } from '@codenest/content';
+
+import { mecanografiaDeAula } from '../services/mecanografia.service.js';
 import { proyectosDeAulas } from '../services/proyectos.service.js';
 import {
   ErrorDocente,
@@ -139,6 +142,28 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
         publicados: proyectos.filter((p) => p.estado === 'publicado').length,
         constructores: new Set(proyectos.map((p) => p.autor.id)).size,
       },
+    });
+  });
+
+  /**
+   * Como va de mecanografia un grupo.
+   *
+   * Salen tambien los estudiantes que no han empezado, con ceros: la lista sirve
+   * para saber a quien hay que animar, y quien no aparece no se ve.
+   */
+  fastify.get('/aulas/:aulaId/mecanografia', { preHandler: soloDocentes }, async (request, reply) => {
+    const aulaId = Number((request.params as { aulaId: string }).aulaId);
+
+    return responder(reply, async () => {
+      const aula = await aulaPermitida(fastify.prisma, aulaId, actorDe(request));
+      const filas = await mecanografiaDeAula(fastify.prisma, aula.id);
+      // El total va en la respuesta y no escrito a mano en la tabla: las
+      // lecciones se anaden, y un "de 24" fijo empieza a mentir el dia siguiente.
+      return reply.send({
+        aula: { id: aula.id, nombre: aula.nombre },
+        filas,
+        leccionesTotales: LECCIONES.length,
+      });
     });
   });
 

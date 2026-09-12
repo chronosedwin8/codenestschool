@@ -19,6 +19,7 @@ export interface FraseUi {
  * y el sembrado las recojan sin tener que conocer dos listas.
  */
 import { FRASES_CONSTRUCTOR } from './juegos-catalogo.js';
+import { FRASES_MECANOGRAFIA } from './mecanografia.js';
 
 const FRASES_BASE: readonly FraseUi[] = [
   { slug: 'bienvenida', texto: 'Hola, soy Nube. Bienvenido a CodeNest. Vamos a jugar y a programar.' },
@@ -45,7 +46,11 @@ const FRASES_BASE: readonly FraseUi[] = [
   { slug: 'hasta-pronto', texto: 'Hasta pronto. Vuelve cuando quieras seguir jugando.' },
 ];
 
-export const FRASES_UI: readonly FraseUi[] = [...FRASES_BASE, ...FRASES_CONSTRUCTOR];
+export const FRASES_UI: readonly FraseUi[] = [
+  ...FRASES_BASE,
+  ...FRASES_CONSTRUCTOR,
+  ...FRASES_MECANOGRAFIA,
+];
 
 /** Celebraciones genericas reutilizadas por cientos de actividades. */
 export const CELEBRACIONES: readonly string[] = [

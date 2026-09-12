@@ -21,6 +21,7 @@ import PanelCredenciales from '@/components/docente/PanelCredenciales.vue';
 import PanelEstudiantes from '@/components/docente/PanelEstudiantes.vue';
 import PanelTareas from '@/components/docente/PanelTareas.vue';
 import PanelJuegos from '@/components/docente/PanelJuegos.vue';
+import PanelMecanografia from '@/components/docente/PanelMecanografia.vue';
 
 export interface Aula {
   readonly id: number;
@@ -33,7 +34,7 @@ export interface Aula {
   readonly docente: { readonly id: number; readonly nombre: string };
 }
 
-type Pestana = 'estudiantes' | 'credenciales' | 'tareas' | 'avance' | 'juegos';
+type Pestana = 'estudiantes' | 'credenciales' | 'tareas' | 'avance' | 'juegos' | 'teclado';
 
 const PESTANAS: { clave: Pestana; etiqueta: string }[] = [
   { clave: 'estudiantes', etiqueta: 'Estudiantes' },
@@ -41,6 +42,7 @@ const PESTANAS: { clave: Pestana; etiqueta: string }[] = [
   { clave: 'tareas', etiqueta: 'Tareas' },
   { clave: 'avance', etiqueta: 'Avance' },
   { clave: 'juegos', etiqueta: 'Juegos' },
+  { clave: 'teclado', etiqueta: 'Mecanografia' },
 ];
 
 const aulas = ref<readonly Aula[]>([]);
@@ -190,6 +192,7 @@ onMounted(() => void cargarAulas());
         construido algo y quien no ha empezado.
       -->
       <PanelJuegos v-else-if="pestana === 'juegos'" />
+      <PanelMecanografia v-else-if="pestana === 'teclado'" :aula="aula" />
       <PanelAvance v-else :aula="aula" />
     </template>
   </main>

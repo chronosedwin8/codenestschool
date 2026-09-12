@@ -265,6 +265,8 @@ model User {
   logros             UserAchievement[]
   inventario         UserInventory[]
   proyectos          GameProject[]
+  mecanografia       TypingProgress[]
+  perfilTeclado      TypingProfile?
   meGustaDados       GameLike[]
   diplomas           Diploma[]
   tokens             RefreshToken[]
@@ -687,6 +689,56 @@ model UserAchievement {
 
   @@unique([usuarioId, logroId])
   @@map("usuarios_logros")
+}
+
+// ─────────────────────── Mecanografia (5.o, 6.o y 7.o) ────────────────────
+
+/// Lo que un estudiante ha logrado en una leccion de mecanografia.
+///
+/// Las lecciones NO estan en la base: viven en `packages/content` como el resto
+/// del curriculo, y aqui solo se guarda el progreso. Asi se puede corregir el
+/// texto de una leccion sin migrar nada, y la clave de texto (`playa-01`) sigue
+/// significando lo mismo.
+model TypingProgress {
+  id           Int    @id @default(autoincrement())
+  usuarioId    Int    @map("usuario_id")
+  leccionClave String @map("leccion_clave") @db.VarChar(40)
+
+  /// El mejor intento, no el ultimo: nadie pierde una estrella por practicar.
+  mejorPpm       Int @default(0) @map("mejor_ppm")
+  mejorPrecision Int @default(0) @map("mejor_precision")
+  estrellas      Int @default(0)
+
+  intentos   Int      @default(0)
+  completada Boolean  @default(false)
+  ultimaVez  DateTime @default(now()) @map("ultima_vez") @db.Timestamptz(6)
+
+  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, leccionClave])
+  @@index([usuarioId])
+  @@map("progreso_mecanografia")
+}
+
+/// Resumen de mecanografia de un estudiante.
+///
+/// `erroresPorTecla` es lo unico de aqui que el servidor no puede recalcular, y
+/// es lo mas util del conjunto: un docente no puede hacer nada con "76 % de
+/// precision", pero si con "falla la ñ y la p". Se acumula entre intentos.
+model TypingProfile {
+  usuarioId       Int      @id @map("usuario_id")
+  mejorPpm        Int      @default(0) @map("mejor_ppm")
+  ultimaPpm       Int      @default(0) @map("ultima_ppm")
+  ultimaPrecision Int      @default(0) @map("ultima_precision")
+  pulsaciones     Int      @default(0)
+  errores         Int      @default(0)
+  segundos        Int      @default(0)
+  erroresPorTecla Json     @default("{}") @map("errores_por_tecla") @db.JsonB
+  actualizadoEn   DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("perfil_mecanografia")
 }
 
 // ───────────── Constructor de juegos: proyectos de los estudiantes ─────────
