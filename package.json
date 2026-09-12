@@ -2,7 +2,7 @@
   "name": "codenestschool",
   "version": "0.1.0",
   "private": true,
-  "description": "CodeNest School \u2014 plataforma de programacion para ninos de 4 a 12+ anos (30 mundos, 600 actividades)",
+  "description": "CodeNest School — plataforma de programacion para ninos de 4 a 12+ anos (30 mundos, 600 actividades)",
   "type": "module",
   "engines": {
     "node": ">=24"
@@ -31,7 +31,10 @@
     "test": "npm run test --workspaces --if-present",
     "dev:backend": "npm run dev --workspace=@codenest/backend",
     "content:compile": "npm run compile --workspace=@codenest/content",
-    "metrics:rollup": "npm run metrics:rollup --workspace=@codenest/backend"
+    "metrics:rollup": "npm run metrics:rollup --workspace=@codenest/backend",
+    "deploy": "tsx scripts/desplegar.ts ahora",
+    "deploy:env": "tsx scripts/desplegar.ts env",
+    "deploy:ci": "tsx scripts/desplegar.ts ci"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
