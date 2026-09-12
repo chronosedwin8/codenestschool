@@ -113,6 +113,13 @@ tres son del mismo tipo: **fallos que solo existen cuando hay una pantalla**.
 | `´` + `a` contaba error | Solo en móvil: cada palabra con tilde de la Laguna se contaba mal | La tecla muerta se *armaba* y nunca se *aplicaba*. En un portátil no se notaba porque el sistema operativo compone la vocal antes de que la aplicación la vea; con el teclado de la pantalla no hay nada que lo tape |
 | "12000 ppm" tras la primera tecla | Un instante, y luego 50 | Un carácter en 10 ms. Aritméticamente cierto y pedagógicamente inútil. Se muestra un guion hasta la primera palabra (`velocidadEnVivo`) |
 
+| Dos lecciones de la Cima eran **imposibles** en tableta | El niño llegaba a la `@` y no podía seguir | `cima-02` (correos y fechas) y `cima-05` (código) piden `@ - _ > { }`, y esas teclas no estaban dibujadas. En un portátil da igual, porque el niño usa su teclado físico; tocando el de la pantalla, no había forma de avanzar. Se añadieron como están en el teclado latinoamericano de verdad: `-`/`_` tras el punto, `<`/`>` a la izquierda de la z, `[`/`{` y `]`/`}` tras la ñ, y la arroba en la Q con **Alt Gr** (en el teclado de España sería Alt Gr + 2; el colegio es colombiano) |
+
+Ese último se buscaba solo: hay una prueba que recorre **las 26 lecciones y las 70
+palabras de los minijuegos** y exige que cada carácter tenga tecla en el teclado
+dibujado y que `comoEscribir()` sepa decir con qué dedo y con qué modificador se
+escribe. Una lección que pida algo que no se puede tocar no llega a producción.
+
 Y una lección sobre el propio arnés, que llevó a acusar a la aplicación de algo
 que no hacía: en CDP, `Input.dispatchKeyEvent` con `type: 'keyDown'` **y** `text`
 ya inserta el carácter. Mandar además un evento `char` lo inserta dos veces. Eso
@@ -124,3 +131,12 @@ la isla con sus 3 zonas y 26 lecciones; una lección con tildes escrita con tecl
 reales hasta ⭐⭐⭐ y 100 % de precisión; los tres minijuegos con su fondo de S3;
 y, con un teléfono emulado (412 px, `pointer: coarse`), doce teclas escritas
 **tocando** el teclado de la pantalla, acento incluido.
+
+### Lo que no es ideal y se sabe
+
+En un teléfono de 412 px el teclado entra completo (384 px, sin desbordar), pero
+una fila española tiene 14 teclas, así que cada una queda en unos 22 px de ancho
+por 45 de alto. Nada es inalcanzable —está comprobado tocando— pero un dedo de
+diez años acertará más en una tableta o con el teléfono en horizontal. No se
+esconden teclas para ensancharlas: esto enseña dónde está cada tecla de un
+teclado de verdad, y un teclado al que le faltan teclas enseña mal.

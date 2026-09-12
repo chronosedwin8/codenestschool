@@ -57,6 +57,14 @@ export interface Tecla {
   readonly base: string;
   /** Lo que escribe con Mayús. */
   readonly alta?: string;
+  /**
+   * Lo que escribe con Alt Gr.
+   *
+   * En el teclado latinoamericano la arroba es Alt Gr + Q (en el de España es
+   * Alt Gr + 2). No es un adorno: sin esto, la lección de escribir un correo
+   * electrónico es imposible de terminar en una tableta.
+   */
+  readonly altGr?: string;
   /** Etiqueta a mostrar cuando no coincide con `base` (Mayús, Espacio...). */
   readonly etiqueta?: string;
   readonly dedo: Dedo;
@@ -67,7 +75,7 @@ export interface Tecla {
   /** Tecla muerta: espera la vocal siguiente para acentuarla. */
   readonly muerta?: boolean;
   /** Función especial en lugar de escribir. */
-  readonly funcion?: 'mayus' | 'borrar' | 'entrar' | 'tab';
+  readonly funcion?: 'mayus' | 'altgr' | 'borrar' | 'entrar' | 'tab';
 }
 
 /**
@@ -89,12 +97,13 @@ export const TECLADO_ES: readonly (readonly Tecla[])[] = [
     { base: '8', alta: '(', dedo: 'medio-der' },
     { base: '9', alta: ')', dedo: 'anular-der' },
     { base: '0', alta: '=', dedo: 'menique-der' },
-    { base: '?', alta: '¿', dedo: 'menique-der' },
+    { base: "'", alta: '?', dedo: 'menique-der' },
+    { base: '¿', alta: '¡', dedo: 'menique-der' },
     { base: '', etiqueta: '⌫', dedo: 'menique-der', ancho: 1.6, funcion: 'borrar' },
   ],
   [
     { base: '', etiqueta: 'tab', dedo: 'menique-izq', ancho: 1.4, funcion: 'tab' },
-    { base: 'q', alta: 'Q', dedo: 'menique-izq' },
+    { base: 'q', alta: 'Q', altGr: '@', dedo: 'menique-izq' },
     { base: 'w', alta: 'W', dedo: 'anular-izq' },
     { base: 'e', alta: 'E', dedo: 'medio-izq' },
     { base: 'r', alta: 'R', dedo: 'indice-izq' },
@@ -105,6 +114,7 @@ export const TECLADO_ES: readonly (readonly Tecla[])[] = [
     { base: 'o', alta: 'O', dedo: 'anular-der' },
     { base: 'p', alta: 'P', dedo: 'menique-der' },
     { base: '´', alta: '¨', dedo: 'menique-der', muerta: true },
+    { base: '+', alta: '*', dedo: 'menique-der' },
   ],
   [
     { base: '', etiqueta: 'bloq', dedo: 'menique-izq', ancho: 1.7 },
@@ -118,10 +128,13 @@ export const TECLADO_ES: readonly (readonly Tecla[])[] = [
     { base: 'k', alta: 'K', dedo: 'medio-der', reposo: true },
     { base: 'l', alta: 'L', dedo: 'anular-der', reposo: true },
     { base: 'ñ', alta: 'Ñ', dedo: 'menique-der', reposo: true },
+    { base: '[', alta: '{', dedo: 'menique-der' },
+    { base: ']', alta: '}', dedo: 'menique-der' },
     { base: '', etiqueta: '⏎', dedo: 'menique-der', ancho: 1.6, funcion: 'entrar' },
   ],
   [
-    { base: '', etiqueta: 'Mayus', dedo: 'menique-izq', ancho: 2.2, funcion: 'mayus' },
+    { base: '', etiqueta: 'Mayus', dedo: 'menique-izq', ancho: 1.6, funcion: 'mayus' },
+    { base: '<', alta: '>', dedo: 'menique-izq' },
     { base: 'z', alta: 'Z', dedo: 'menique-izq' },
     { base: 'x', alta: 'X', dedo: 'anular-izq' },
     { base: 'c', alta: 'C', dedo: 'medio-izq' },
@@ -131,18 +144,28 @@ export const TECLADO_ES: readonly (readonly Tecla[])[] = [
     { base: 'm', alta: 'M', dedo: 'indice-der' },
     { base: ',', alta: ';', dedo: 'medio-der' },
     { base: '.', alta: ':', dedo: 'anular-der' },
-    { base: '¡', alta: '¿', dedo: 'menique-der' },
+    { base: '-', alta: '_', dedo: 'menique-der' },
     { base: '', etiqueta: 'Mayus', dedo: 'menique-der', ancho: 1.8, funcion: 'mayus' },
   ],
-  [{ base: ' ', etiqueta: 'espacio', dedo: 'pulgar', ancho: 10 }],
+  [
+    { base: ' ', etiqueta: 'espacio', dedo: 'pulgar', ancho: 8 },
+    { base: '', etiqueta: 'Alt Gr', dedo: 'pulgar', ancho: 2, funcion: 'altgr' },
+  ],
 ];
 
 /** Índice rápido de carácter -> tecla, para saber el dedo de cada letra. */
-const INDICE = new Map<string, { tecla: Tecla; conMayus: boolean }>();
+const INDICE = new Map<string, { tecla: Tecla; conMayus: boolean; conAltGr: boolean }>();
 for (const fila of TECLADO_ES) {
   for (const tecla of fila) {
-    if (tecla.base && !INDICE.has(tecla.base)) INDICE.set(tecla.base, { tecla, conMayus: false });
-    if (tecla.alta && !INDICE.has(tecla.alta)) INDICE.set(tecla.alta, { tecla, conMayus: true });
+    if (tecla.base && !INDICE.has(tecla.base)) {
+      INDICE.set(tecla.base, { tecla, conMayus: false, conAltGr: false });
+    }
+    if (tecla.alta && !INDICE.has(tecla.alta)) {
+      INDICE.set(tecla.alta, { tecla, conMayus: true, conAltGr: false });
+    }
+    if (tecla.altGr && !INDICE.has(tecla.altGr)) {
+      INDICE.set(tecla.altGr, { tecla, conMayus: false, conAltGr: true });
+    }
   }
 }
 
@@ -168,6 +191,8 @@ export interface Pulsacion {
   readonly conMayus: boolean;
   /** Cierto si antes hay que pulsar la tecla muerta del acento. */
   readonly conAcento: boolean;
+  /** Cierto si hay que mantener Alt Gr (la arroba, por ejemplo). */
+  readonly conAltGr: boolean;
   readonly dedo: Dedo;
 }
 
@@ -186,6 +211,7 @@ export function comoEscribir(caracter: string): Pulsacion | null {
       tecla: base.tecla,
       conMayus: base.conMayus,
       conAcento: true,
+      conAltGr: false,
       dedo: base.tecla.dedo,
     };
   }
@@ -196,6 +222,7 @@ export function comoEscribir(caracter: string): Pulsacion | null {
     tecla: directa.tecla,
     conMayus: directa.conMayus,
     conAcento: false,
+    conAltGr: directa.conAltGr,
     dedo: directa.tecla.dedo,
   };
 }

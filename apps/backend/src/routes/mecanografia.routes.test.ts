@@ -9,7 +9,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 
-import { LECCIONES } from '@codenest/content';
+import {
+  ACENTUADAS,
+  LECCIONES,
+  PALABRAS_JUEGO,
+  TECLADO_ES,
+  comoEscribir,
+} from '@codenest/content';
 
 import { construirServidor } from '../server.js';
 
@@ -97,7 +103,7 @@ describe('el teclado que se sirve', () => {
     expect(respuesta.statusCode).toBe(200);
 
     const { filas, dedos } = respuesta.json() as {
-      filas: { base: string; muerta?: boolean; dedo: string }[][];
+      filas: { base: string; alta?: string; altGr?: string; muerta?: boolean; dedo: string }[][];
       dedos: { clave: string }[];
     };
     const todas = filas.flat();
@@ -108,7 +114,15 @@ describe('el teclado que se sirve', () => {
     expect(enie!.dedo).toBe('menique-der');
 
     expect(todas.some((t) => t.muerta === true)).toBe(true);
-    expect(todas.some((t) => t.base === '¡')).toBe(true);
+    // `¿` es la tecla y `¡` lo que escribe con Mayus, como en el teclado real.
+    expect(todas.some((t) => t.base === '¿' && t.alta === '¡')).toBe(true);
+    // La arroba va en la Q con Alt Gr: es el teclado latinoamericano, no el de
+    // España (donde seria Alt Gr + 2). Sin esta tecla, la leccion de escribir un
+    // correo electronico no se puede terminar en una tableta.
+    expect(todas.find((t) => t.base === 'q')?.altGr).toBe('@');
+    // Y las llaves, que hacen falta para la leccion de escribir codigo.
+    expect(todas.some((t) => t.base === '[' && t.alta === '{')).toBe(true);
+    expect(todas.some((t) => t.base === ']' && t.alta === '}')).toBe(true);
     expect(dedos.length).toBe(9);
   });
 
@@ -133,6 +147,63 @@ describe('el teclado que se sirve', () => {
       expect(zona.lecciones[0]!.desbloqueada).toBe(true);
       if (zona.lecciones.length > 1) expect(zona.lecciones[1]!.desbloqueada).toBe(false);
     }
+  });
+});
+
+describe('todo lo que se pide escribir se puede escribir', () => {
+  /*
+   * Esta prueba existe por un fallo que no se ve en ninguna pantalla de
+   * escritorio: dos lecciones de la Cima pedian `@`, `{`, `}`, `>` y `_`, y esas
+   * teclas no estaban dibujadas. En un portatil da igual —el niño usa su teclado
+   * fisico— pero en una tableta se escribe TOCANDO el teclado de la pantalla, y
+   * alli esas dos lecciones eran imposibles de terminar. No fallaba nada: el
+   * niño simplemente no podia avanzar.
+   */
+  const alcanzables = new Set<string>([' ']);
+  for (const tecla of TECLADO_ES.flat()) {
+    if (tecla.base) alcanzables.add(tecla.base);
+    if (tecla.alta) alcanzables.add(tecla.alta);
+    if (tecla.altGr) alcanzables.add(tecla.altGr);
+    // Con la tecla muerta se alcanzan las vocales acentuadas.
+    if (tecla.muerta) for (const acentuada of Object.keys(ACENTUADAS)) alcanzables.add(acentuada);
+  }
+
+  it.each(LECCIONES.map((l) => [l.clave, l.texto] as const))(
+    'la leccion %s se puede escribir con el teclado de la pantalla',
+    (_clave, texto) => {
+      const imposibles = [...new Set([...texto].filter((c) => !alcanzables.has(c)))];
+      expect(imposibles).toEqual([]);
+    },
+  );
+
+  it('las palabras de los minijuegos tambien', () => {
+    const imposibles = [
+      ...new Set(PALABRAS_JUEGO.flatMap((p) => [...p]).filter((c) => !alcanzables.has(c))),
+    ];
+    expect(imposibles).toEqual([]);
+  });
+
+  it('y de cada caracter se sabe decir con que dedo y con que modificador', () => {
+    // Si `comoEscribir` devolviera null, el niño veria la tecla iluminada pero
+    // sin saber que dedo usar, que es la mitad de lo que enseña esto.
+    const sinPulsacion = [...new Set(LECCIONES.flatMap((l) => [...l.texto]))]
+      .filter((c) => c !== ' ')
+      .filter((c) => comoEscribir(c) === null);
+    expect(sinPulsacion).toEqual([]);
+  });
+
+  it('la arroba es Alt Gr + Q, que es el teclado latinoamericano', () => {
+    // En el de España seria Alt Gr + 2. El colegio es colombiano.
+    const arroba = comoEscribir('@');
+    expect(arroba?.tecla.base).toBe('q');
+    expect(arroba?.conAltGr).toBe(true);
+    expect(arroba?.conMayus).toBe(false);
+  });
+
+  it('las llaves son Mayus sobre los corchetes, a la derecha de la ñ', () => {
+    expect(comoEscribir('{')?.conMayus).toBe(true);
+    expect(comoEscribir('{')?.tecla.base).toBe('[');
+    expect(comoEscribir('}')?.tecla.base).toBe(']');
   });
 });
 
