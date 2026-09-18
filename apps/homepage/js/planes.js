@@ -24,7 +24,7 @@
     if (plan.destacado) {
       var etiqueta = document.createElement('span');
       etiqueta.className = 'plan__etiqueta';
-      etiqueta.textContent = 'El mas elegido';
+      etiqueta.textContent = 'El más elegido';
       tarjeta.appendChild(etiqueta);
     }
 
@@ -44,10 +44,10 @@
 
     var periodo = document.createElement('small');
     periodo.textContent =
-      'al ano' +
+      'al año' +
       (plan.maxNinos === null
         ? ' · estudiantes ilimitados'
-        : ' · ' + plan.maxNinos + (plan.maxNinos === 1 ? ' nino' : ' ninos'));
+        : ' · ' + plan.maxNinos + (plan.maxNinos === 1 ? ' niño' : ' niños'));
     precio.appendChild(periodo);
     tarjeta.appendChild(precio);
 
@@ -95,14 +95,14 @@
         nota.style.textAlign = 'center';
         nota.style.color = 'var(--tinta-suave)';
         nota.textContent =
-          'La compra en linea estara disponible en breve. Escribenos y te ayudamos a activar tu plan.';
+          'La compra en línea estará disponible en breve. Escríbenos y te ayudamos a activar tu plan.';
         contenedor.appendChild(nota);
       }
     })
     .catch(function () {
       if (aviso) {
         aviso.textContent =
-          'No pudimos cargar los precios ahora mismo. Recarga la pagina o escribenos.';
+          'No pudimos cargar los precios ahora mismo. Recarga la página o escríbenos.';
       }
     });
 })();

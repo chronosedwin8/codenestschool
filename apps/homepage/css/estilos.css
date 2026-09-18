@@ -724,3 +724,314 @@ img {
     transition: none;
   }
 }
+
+/* ────────────────────────────── Compra (checkout) ────────────────────────────── */
+
+.compra {
+  padding-top: 2.5rem;
+}
+
+.compra__rejilla {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  align-items: start;
+}
+
+/* El resumen va a la derecha en escritorio y arriba en el telefono. */
+.pedido {
+  position: sticky;
+  top: 1.5rem;
+  order: 2;
+  padding: 1.75rem;
+  background: var(--blanco);
+  border: 3px solid var(--azul);
+  border-radius: var(--radio-grande);
+  box-shadow: var(--sombra);
+}
+
+.pedido__eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--azul-oscuro);
+}
+
+.pedido__plan {
+  margin: 0.2rem 0 0.4rem;
+  font-family: var(--fuente-titulo);
+  font-size: 1.9rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.pedido__descripcion {
+  margin: 0;
+  color: var(--tinta-suave);
+}
+
+.pedido__precio {
+  margin: 1rem 0;
+  font-family: var(--fuente-titulo);
+  font-size: 2.1rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--azul-oscuro);
+  font-variant-numeric: tabular-nums;
+}
+
+.pedido__precio small {
+  display: block;
+  font-family: var(--fuente-texto);
+  font-size: 0.95rem;
+  color: var(--tinta-suave);
+}
+
+.pedido__beneficios {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.95rem;
+}
+
+.pedido__beneficios li::before {
+  content: '✓ ';
+  font-weight: 800;
+  color: var(--verde-oscuro);
+}
+
+.pedido__pago {
+  padding: 1rem;
+  font-size: 0.9rem;
+  background: var(--gris-claro);
+  border-radius: var(--radio);
+}
+
+.pedido__pago p {
+  margin: 0 0 0.4rem;
+}
+
+.pedido__pago p:last-child {
+  margin: 0;
+  color: var(--tinta-suave);
+}
+
+.formulario-compra {
+  order: 1;
+}
+
+.formulario-compra h2 {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.formulario-compra__intro {
+  margin: 0.25rem 0 1.5rem;
+  color: var(--tinta-suave);
+  max-width: 60ch;
+}
+
+.alerta {
+  padding: 0.9rem 1.1rem;
+  margin: 0 0 1.25rem;
+  border-radius: var(--radio);
+}
+
+.alerta--mal {
+  color: #7f1d1d;
+  background: #fee2e2;
+}
+
+.alerta a {
+  font-weight: 800;
+  color: inherit;
+}
+
+.alerta[hidden],
+.bloque[hidden] {
+  display: none;
+}
+
+.bloque {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  margin: 0 0 1.25rem;
+  background: var(--blanco);
+  border: 0;
+  border-radius: var(--radio-grande);
+  box-shadow: var(--sombra);
+}
+
+.bloque legend {
+  float: left;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0;
+  margin-bottom: 0.25rem;
+  font-family: var(--fuente-titulo);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.bloque__num {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1rem;
+  color: var(--blanco);
+  background: var(--azul);
+  border-radius: 50%;
+}
+
+.campo {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.campo > span:first-child {
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.campo em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--gris);
+}
+
+.campo input,
+.campo select {
+  width: 100%;
+  min-height: 52px;
+  padding: 0.7rem 0.95rem;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--tinta);
+  background: var(--blanco);
+  border: 2px solid #d6dee8;
+  border-radius: 14px;
+}
+
+.campo input:focus,
+.campo select:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 4px rgb(31 162 255 / 0.2);
+}
+
+.campo input:user-invalid {
+  border-color: #ef4444;
+}
+
+.campo small {
+  font-size: 0.85rem;
+  color: var(--tinta-suave);
+}
+
+.campo__con-boton {
+  position: relative;
+  display: block;
+}
+
+.campo__con-boton input {
+  padding-right: 5.5rem;
+}
+
+.campo__ver {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--azul-oscuro);
+  cursor: pointer;
+  background: var(--gris-claro);
+  border: 0;
+  border-radius: 10px;
+  transform: translateY(-50%);
+}
+
+.campo-par {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.casilla {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin: 0.5rem 0 1.25rem;
+  font-size: 0.95rem;
+}
+
+.casilla input {
+  flex: 0 0 auto;
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: 0.15rem;
+  accent-color: var(--verde-oscuro);
+}
+
+.compra__boton {
+  width: 100%;
+  min-height: 64px;
+  font-size: 1.2rem;
+}
+
+.compra__boton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.compra__seguridad,
+.compra__ya-tengo {
+  margin: 0.9rem 0 0;
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--tinta-suave);
+}
+
+.compra__ya-tengo a {
+  font-weight: 800;
+  color: var(--azul-oscuro);
+}
+
+.compra__pie {
+  margin-top: 0;
+  border: none;
+}
+
+@media (max-width: 860px) {
+  .compra__rejilla {
+    grid-template-columns: 1fr;
+  }
+
+  .pedido {
+    position: static;
+    order: 0;
+  }
+
+  .formulario-compra h2 {
+    font-size: 1.6rem;
+  }
+
+  .bloque {
+    padding: 1.15rem;
+  }
+}

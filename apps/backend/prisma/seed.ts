@@ -71,23 +71,20 @@ function precioDe(envVar: string, porDefecto: number): number {
   return Number.isFinite(valor) && valor > 0 ? valor : porDefecto;
 }
 
+/**
+ * Crea los planes que falten. NUNCA toca uno que ya exista.
+ *
+ * Desde que el administrador edita las tarjetas de precios desde el panel, la
+ * base es la unica autoridad sobre el precio. Si el sembrado actualizara, cada
+ * vez que alguien lo ejecutara se desharian en silencio los cambios de precio
+ * hechos en el panel, y el siguiente cobro saldria al precio viejo.
+ */
 async function sembrarPlanes(): Promise<void> {
   for (const plan of PLANES) {
     const precioCop = precioDe(plan.envPrecio, plan.precioPorDefectoCop);
     await prisma.plan.upsert({
       where: { clave: plan.clave },
-      update: {
-        nombre: plan.nombre,
-        descripcion: plan.descripcion,
-        precioCop,
-        vigenciaDias: plan.vigenciaDias,
-        maxNinos: plan.maxNinos,
-        maxDocentes: plan.maxDocentes,
-        beneficios: plan.beneficios as unknown as Prisma.InputJsonValue,
-        destacado: plan.destacado,
-        orden: plan.orden,
-        activo: true,
-      },
+      update: {},
       create: {
         clave: plan.clave,
         nombre: plan.nombre,

@@ -1,91 +1,96 @@
 /**
- * Compra y renovación de licencias.
+ * Compra, pago y renovacion de licencias, y el aviso de Mercado Pago.
  *
- * Reglas que no se negocian:
- *  1. El precio lo pone el servidor a partir del plan. El cliente solo dice qué
- *     plan quiere.
+ * Reglas que no se negocian (ver `docs/PLAN-PAGOS.md`):
+ *  1. El precio lo pone el servidor, leyendo el plan de la base. El cliente solo
+ *     dice que plan quiere.
  *  2. La cuenta y la licencia se crean antes de cobrar, en estado pendiente. Si
- *     el cobro se rechaza, se deshace todo: nadie queda con una cuenta a medias.
- *  3. Un pago aprobado activa la licencia; uno pendiente (PSE, efectivo) la deja
- *     esperando y el webhook la activa cuando el banco confirme.
- *  4. El webhook es idempotente: Mercado Pago lo reintenta, y activar dos veces
- *     no puede duplicar la vigencia.
+ *     el comprador no termina de pagar, entra al portal y paga desde ahi: nunca
+ *     se queda bloqueado por "ese correo ya existe".
+ *  3. El estado de un pago se pide siempre a Mercado Pago. El aviso solo trae
+ *     un identificador.
+ *  4. Aplicar un pago es idempotente (ver `cobros.service.ts`).
  */
-import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
-import { randomUUID } from 'node:crypto';
+import type { FastifyInstance, FastifyPluginAsync, FastifyReply } from 'fastify';
 import { z } from 'zod';
 
 import { PLAN_POR_CLAVE, TIPO_PLAN, formatearCop } from '@codenest/shared';
+import { datosFacturacionSchema } from '@codenest/shared/zod';
 
 import { cargarConfig, pagosConfigurados } from '../lib/env.js';
-import {
-  crearPago,
-  esUrlPublica,
-  explicarRechazo,
-  obtenerPago,
-  traducirEstado,
-  ErrorMercadoPago,
-} from '../lib/mercadopago.js';
+import { ErrorMercadoPago, firmaValida, obtenerPago } from '../lib/mercadopago.js';
 import { LIMITE_PAGO } from '../plugins/security.js';
-import { generarCodigoAcceso, hashPassword } from '../services/auth.service.js';
+import { construirToken, generarCodigoAcceso, hashPassword } from '../services/auth.service.js';
+import {
+  ErrorCobro,
+  aplicarPago,
+  conciliar,
+  estadoEfectivoLicencia,
+  iniciarPagoLicencia,
+  iniciarRenovacion,
+} from '../services/cobros.service.js';
 
 const compraSchema = z.object({
   plan: z.enum([TIPO_PLAN.personal, TIPO_PLAN.padres, TIPO_PLAN.escuela]),
   cuenta: z.object({
-    nombre: z.string().min(2).max(150),
-    email: z.string().email(),
+    nombre: z.string().trim().min(2).max(150),
+    email: z.string().trim().toLowerCase().email().max(255),
     password: z.string().min(8).max(200),
   }),
+  facturacion: datosFacturacionSchema,
   institucion: z
     .object({
-      nombre: z.string().min(2).max(200),
-      nit: z.string().max(40).optional(),
-      ciudad: z.string().max(100).optional(),
+      nombre: z.string().trim().min(2).max(200),
+      ciudad: z.string().trim().max(100).optional(),
     })
     .optional(),
-  pago: z.object({
-    token: z.string().min(1),
-    paymentMethodId: z.string().min(1),
-    issuerId: z.string().optional(),
-    installments: z.number().int().min(1).max(36).default(1),
-    identificacion: z
-      .object({ tipo: z.string().min(2).max(10), numero: z.string().min(4).max(20) })
-      .optional(),
-  }),
+  // Sin aceptar los terminos y la politica de datos no hay compra: la
+  // plataforma trata datos de menores (Ley 1581).
+  aceptaTerminos: z.literal(true),
 });
 
-const renovacionSchema = z.object({
-  licenciaId: z.number().int().positive(),
-  pago: compraSchema.shape.pago,
-});
+const licenciaSchema = z.object({ licenciaId: z.number().int().positive() });
+
+/** Traduce los errores de cobro a una respuesta que el comprador entienda. */
+function responderError(reply: FastifyReply, error: unknown, log: FastifyInstance['log']) {
+  if (error instanceof ErrorCobro) {
+    return reply.code(error.codigo).send({ error: error.message });
+  }
+  if (error instanceof ErrorMercadoPago) {
+    log.error({ err: error, detalle: error.detalle }, 'Fallo de Mercado Pago');
+    return reply.code(502).send({
+      error: 'No pudimos abrir la página de pago. Intenta de nuevo en unos minutos.',
+    });
+  }
+  throw error;
+}
 
 export const pagosRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   const config = cargarConfig();
 
-  /** Precio de cada plan según lo configurado. El servidor es la autoridad. */
-  function precioDe(clave: keyof typeof PLAN_POR_CLAVE): number {
-    switch (clave) {
-      case TIPO_PLAN.personal:
-        return config.PRECIO_PERSONAL_COP;
-      case TIPO_PLAN.padres:
-        return config.PRECIO_PADRES_COP;
-      case TIPO_PLAN.escuela:
-        return config.PRECIO_ESCUELA_COP;
-    }
-  }
-
-  /** Configuración pública para el formulario de pago. Sin secretos. */
+  /**
+   * Planes y precios para las tarjetas del home y el checkout. Sin secretos.
+   *
+   * Sale de la base: es lo que el administrador edita en el panel, y es lo
+   * mismo que despues se cobra.
+   */
   fastify.get('/config', async (_request, reply) => {
+    const planes = await fastify.prisma.plan.findMany({
+      where: { activo: true },
+      orderBy: { orden: 'asc' },
+    });
+    // Unos segundos de cache en el navegador: el precio cambia de uvas a peras,
+    // y un cambio en el panel se ve casi al instante.
+    reply.header('Cache-Control', 'public, max-age=30');
     return reply.send({
-      publicKey: config.MP_PUBLIC_KEY ?? '',
       configurado: pagosConfigurados(config),
       moneda: 'COP',
-      planes: Object.values(PLAN_POR_CLAVE).map((plan) => ({
+      planes: planes.map((plan) => ({
         clave: plan.clave,
         nombre: plan.nombre,
         descripcion: plan.descripcion,
-        precioCop: precioDe(plan.clave),
-        precioFormateado: formatearCop(precioDe(plan.clave)),
+        precioCop: plan.precioCop,
+        precioFormateado: formatearCop(plan.precioCop),
         vigenciaDias: plan.vigenciaDias,
         maxNinos: plan.maxNinos,
         beneficios: plan.beneficios,
@@ -95,55 +100,56 @@ export const pagosRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
     });
   });
 
-  /** Compra de una licencia nueva, con alta de cuenta. */
+  /**
+   * Compra de una licencia nueva: alta de cuenta y pagina de pago.
+   *
+   * Devuelve la sesion junto con la URL de Mercado Pago. Asi, al volver del
+   * pago —o si el comprador cierra la pestana a medias— ya tiene cuenta y
+   * puede terminar desde el portal.
+   */
   fastify.post('/comprar', { config: LIMITE_PAGO }, async (request, reply) => {
     if (!pagosConfigurados(config)) {
       return reply.code(503).send({
-        error: 'Pasarela sin configurar',
-        mensaje: 'La pasarela de pago no esta disponible. Escribenos y te ayudamos.',
+        error: 'La compra en línea no está disponible ahora mismo. Escríbenos y te ayudamos.',
       });
     }
 
     const datos = compraSchema.safeParse(request.body);
     if (!datos.success) {
-      return reply.code(400).send({ error: 'Datos invalidos', detalles: datos.error.flatten() });
+      return reply.code(400).send({ error: 'Revisa los datos del formulario', detalles: datos.error.flatten() });
     }
-    const { plan: clavePlan, cuenta, institucion, pago } = datos.data;
+    const { plan: clavePlan, cuenta, facturacion, institucion } = datos.data;
 
     if (clavePlan === TIPO_PLAN.escuela && !institucion) {
-      return reply
-        .code(400)
-        .send({ error: 'La licencia de colegio necesita los datos de la institucion' });
+      return reply.code(400).send({ error: 'El plan Escuela necesita el nombre del colegio.' });
     }
 
     const yaExiste = await fastify.prisma.user.findUnique({ where: { email: cuenta.email } });
     if (yaExiste) {
-      return reply.code(409).send({ error: 'Ese correo ya tiene una cuenta' });
+      return reply.code(409).send({
+        error:
+          'Ya existe una cuenta con ese correo. Entra al portal para pagar o renovar tu plan.',
+        portal: '/app/portal',
+      });
     }
 
     const plan = await fastify.prisma.plan.findUnique({ where: { clave: clavePlan } });
     if (!plan?.activo) {
-      return reply.code(404).send({ error: 'Ese plan no esta disponible' });
+      return reply.code(404).send({ error: 'Ese plan no está disponible.' });
     }
-
-    // El monto sale del plan, nunca del cuerpo de la peticion.
-    const montoCop = precioDe(clavePlan);
     const definicion = PLAN_POR_CLAVE[clavePlan];
 
-    // 1) Cuenta, institucion y licencia pendiente, todo o nada.
+    // 1) Cuenta, institucion, datos de facturacion y licencia pendiente: todo o nada.
     const creado = await fastify.prisma.$transaction(async (tx) => {
       let institucionId: number | null = null;
-      let codigoInstitucion: string | null = null;
-
       if (clavePlan === TIPO_PLAN.escuela && institucion) {
-        codigoInstitucion = generarCodigoAcceso('CNS');
         const inst = await tx.institution.create({
           data: {
             nombre: institucion.nombre,
-            nit: institucion.nit ?? null,
-            ciudad: institucion.ciudad ?? null,
-            codigoAcceso: codigoInstitucion,
-            maxEstudiantes: definicion.maxNinos,
+            nit: facturacion.tipoDocumento === 'NIT' ? facturacion.documento : null,
+            ciudad: institucion.ciudad ?? facturacion.ciudad,
+            codigoAcceso: generarCodigoAcceso('CNS'),
+            maxEstudiantes: plan.maxNinos,
           },
         });
         institucionId = inst.id;
@@ -160,6 +166,19 @@ export const pagosRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
         },
       });
 
+      await tx.billingProfile.create({
+        data: {
+          usuarioId: usuario.id,
+          razonSocial:
+            facturacion.razonSocial ?? (institucion ? institucion.nombre : null),
+          tipoDocumento: facturacion.tipoDocumento,
+          nitCedula: facturacion.documento,
+          direccion: facturacion.direccion ?? null,
+          ciudad: facturacion.ciudad,
+          telefono: facturacion.telefono ?? null,
+        },
+      });
+
       const licencia = await tx.license.create({
         data: {
           planId: plan.id,
@@ -170,338 +189,191 @@ export const pagosRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
         },
       });
 
-      return { usuarioId: usuario.id, licenciaId: licencia.id, institucionId, codigoInstitucion };
+      return { usuarioId: usuario.id, licenciaId: licencia.id, institucionId };
     });
 
-    // 2) Cobro. La clave de idempotencia impide un cargo doble por reintento.
-    const claveIdempotencia = `lic-${creado.licenciaId}-${randomUUID()}`;
-
+    // 2) La pagina de pago. Si Mercado Pago no responde, se deshace el alta:
+    //    una cuenta sin forma de pagar solo serviria para bloquear ese correo.
     try {
-      const resultado = await crearPago(
-        {
-          token: pago.token,
-          paymentMethodId: pago.paymentMethodId,
-          issuerId: pago.issuerId,
-          installments: pago.installments,
-          montoCop,
-          descripcion: `CodeNest School - plan ${definicion.nombre}`,
-          emailComprador: cuenta.email,
-          identificacion: pago.identificacion
-            ? { tipo: pago.identificacion.tipo, numero: pago.identificacion.numero }
-            : undefined,
-          referenciaExterna: String(creado.licenciaId),
-          urlNotificacion: esUrlPublica(config.PUBLIC_BASE_URL)
-            ? `${config.PUBLIC_BASE_URL}/api/pagos/webhook`
-            : undefined,
-        },
-        claveIdempotencia,
+      const { urlPago } = await iniciarPagoLicencia(
+        fastify.prisma,
+        creado.licenciaId,
+        config.PUBLIC_BASE_URL,
       );
-
-      const estado = traducirEstado(resultado.status);
-
-      await fastify.prisma.payment.create({
-        data: {
-          licenciaId: creado.licenciaId,
-          mpPaymentId: String(resultado.id),
-          idempotencyKey: claveIdempotencia,
-          montoCop,
-          estado,
-          mpStatus: resultado.status,
-          mpStatusDetail: resultado.statusDetail,
-          metodo: resultado.paymentMethodId,
-          emailComprador: cuenta.email,
-        },
-      });
-
-      // 3a) Rechazado: se deshace el alta para no dejar cuentas huérfanas.
-      if (estado === 'rechazado') {
-        await limpiarCompra(fastify, creado);
-        return reply.code(402).send({
-          error: 'Pago rechazado',
-          mensaje: explicarRechazo(resultado.statusDetail),
-          detalle: resultado.statusDetail,
-        });
-      }
-
-      // 3b) Aprobado: se activa la licencia y se entrega la sesión.
-      if (estado === 'aprobado') {
-        const licencia = await activarLicencia(fastify, creado.licenciaId, plan.vigenciaDias);
-        const token = fastify.jwt.sign({
-          id: creado.usuarioId,
-          usuario: cuenta.email,
-          nombre: cuenta.nombre,
-          rol: definicion.rolTitular,
-          ninos: [],
-          institucionId: creado.institucionId,
-        });
-
-        return reply.code(201).send({
-          estado: 'aprobado',
-          token,
-          licencia: {
-            id: licencia.id,
-            codigoAcceso: licencia.codigoAcceso,
-            finVigencia: licencia.finVigencia,
-          },
-          codigoInstitucion: creado.codigoInstitucion,
-          mensaje: 'Listo. Tu licencia ya esta activa.',
-        });
-      }
-
-      // 3c) Pendiente (PSE, efectivo): la cuenta existe, la licencia espera.
-      return reply.code(202).send({
-        estado: 'pendiente',
-        licenciaId: creado.licenciaId,
-        mensaje:
-          'Estamos esperando la confirmacion de tu banco. Te avisamos en cuanto se acredite.',
-      });
+      const token = fastify.jwt.sign(await construirToken(fastify.prisma, creado.usuarioId));
+      return reply.code(201).send({ urlPago, token, licenciaId: creado.licenciaId });
     } catch (error) {
-      await limpiarCompra(fastify, creado);
-
-      if (error instanceof ErrorMercadoPago) {
-        fastify.log.error({ err: error, detalle: error.detalle }, 'Fallo de Mercado Pago');
-        return reply.code(402).send({
-          error: 'No se pudo cobrar',
-          mensaje: 'No se pudo procesar el pago. Revisa los datos o prueba con otra tarjeta.',
-        });
-      }
-      throw error;
+      await deshacerAlta(fastify, creado);
+      return responderError(reply, error, fastify.log);
     }
   });
 
-  /** Renovación de una licencia por su titular. */
+  /**
+   * Pagar desde el portal: una licencia pendiente o la renovacion de una que ya
+   * se pago. Es tambien la salida para quien empezo una compra y no la termino.
+   */
   fastify.post(
-    '/renovar',
-    { config: LIMITE_PAGO, preHandler: fastify.exigirRol('tutor', 'admin_escuela') },
+    '/pagar',
+    { config: LIMITE_PAGO, preHandler: fastify.autenticar },
     async (request, reply) => {
-      const datos = renovacionSchema.safeParse(request.body);
-      if (!datos.success) {
-        return reply.code(400).send({ error: 'Datos invalidos', detalles: datos.error.flatten() });
+      if (!pagosConfigurados(config)) {
+        return reply.code(503).send({ error: 'Los pagos en línea no están disponibles ahora mismo.' });
       }
+      const datos = licenciaSchema.safeParse(request.body);
+      if (!datos.success) return reply.code(400).send({ error: 'Datos inválidos' });
 
-      const anterior = await fastify.prisma.license.findUnique({
+      const licencia = await fastify.prisma.license.findUnique({
         where: { id: datos.data.licenciaId },
-        include: { plan: true, titular: { select: { email: true, nombre: true } } },
+        select: { id: true, titularId: true, estado: true },
       });
-
-      if (!anterior) return reply.code(404).send({ error: 'Esa licencia no existe' });
-      if (anterior.titularId !== request.user.id) {
+      if (!licencia) return reply.code(404).send({ error: 'Esa licencia no existe' });
+      if (licencia.titularId !== request.user.id) {
         return reply.code(403).send({ error: 'Esa licencia no es tuya' });
       }
 
-      const montoCop = precioDe(anterior.plan.clave);
-      const nueva = await fastify.prisma.license.create({
-        data: {
-          planId: anterior.planId,
-          titularId: anterior.titularId,
-          institucionId: anterior.institucionId,
-          estado: 'pendiente',
-          renovadaDeId: anterior.id,
-          codigoAcceso: generarCodigoAcceso('LIC'),
-        },
-      });
-
-      const claveIdempotencia = `ren-${nueva.id}-${randomUUID()}`;
-      const correo = anterior.titular.email ?? '';
-
       try {
-        const resultado = await crearPago(
-          {
-            token: datos.data.pago.token,
-            paymentMethodId: datos.data.pago.paymentMethodId,
-            issuerId: datos.data.pago.issuerId,
-            installments: datos.data.pago.installments,
-            montoCop,
-            descripcion: `CodeNest School - renovacion plan ${anterior.plan.nombre}`,
-            emailComprador: correo,
-            referenciaExterna: String(nueva.id),
-            urlNotificacion: esUrlPublica(config.PUBLIC_BASE_URL)
-              ? `${config.PUBLIC_BASE_URL}/api/pagos/webhook`
-              : undefined,
-          },
-          claveIdempotencia,
-        );
-
-        const estado = traducirEstado(resultado.status);
-
-        await fastify.prisma.payment.create({
-          data: {
-            licenciaId: nueva.id,
-            mpPaymentId: String(resultado.id),
-            idempotencyKey: claveIdempotencia,
-            montoCop,
-            estado,
-            mpStatus: resultado.status,
-            mpStatusDetail: resultado.statusDetail,
-            metodo: resultado.paymentMethodId,
-            emailComprador: correo,
-          },
-        });
-
-        if (estado === 'rechazado') {
-          await fastify.prisma.license.delete({ where: { id: nueva.id } });
-          return reply.code(402).send({
-            error: 'Pago rechazado',
-            mensaje: explicarRechazo(resultado.statusDetail),
-          });
-        }
-
-        if (estado === 'aprobado') {
-          // La renovación empieza cuando acaba la anterior, no hoy: el cliente
-          // no pierde los días que le quedaban por renovar con antelación.
-          const desde =
-            anterior.finVigencia && anterior.finVigencia > new Date()
-              ? anterior.finVigencia
-              : new Date();
-          const licencia = await activarLicencia(
-            fastify,
-            nueva.id,
-            anterior.plan.vigenciaDias,
-            desde,
-          );
-          await fastify.prisma.license.update({
-            where: { id: anterior.id },
-            data: { estado: 'vencida' },
-          });
-
-          return reply.send({
-            estado: 'aprobado',
-            licencia: { id: licencia.id, finVigencia: licencia.finVigencia },
-            mensaje: 'Renovacion lista.',
-          });
-        }
-
-        return reply.code(202).send({
-          estado: 'pendiente',
-          licenciaId: nueva.id,
-          mensaje: 'Estamos esperando la confirmacion de tu banco.',
-        });
+        const r =
+          licencia.estado === 'pendiente'
+            ? {
+                ...(await iniciarPagoLicencia(fastify.prisma, licencia.id, config.PUBLIC_BASE_URL)),
+                licenciaId: licencia.id,
+              }
+            : await iniciarRenovacion(
+                fastify.prisma,
+                request.user.id,
+                licencia.id,
+                config.PUBLIC_BASE_URL,
+              );
+        return reply.send(r);
       } catch (error) {
-        await fastify.prisma.license.delete({ where: { id: nueva.id } });
-        if (error instanceof ErrorMercadoPago) {
-          return reply.code(402).send({ error: 'No se pudo cobrar la renovacion' });
-        }
-        throw error;
+        return responderError(reply, error, fastify.log);
       }
     },
   );
 
   /**
-   * Webhook de Mercado Pago.
+   * "¿Ya se acredito mi pago?" Lo llama el portal al volver de Mercado Pago.
    *
-   * Es idempotente por construcción: consulta el estado real del pago y activa
-   * la licencia solo si sigue pendiente. Mercado Pago reintenta este aviso varias
-   * veces, y activar dos veces no puede sumar dos años de vigencia.
+   * No espera al webhook: busca en Mercado Pago los pagos de esa licencia y los
+   * aplica. Si el aviso llega despues, no pasa nada: aplicar es idempotente.
+   */
+  fastify.post(
+    '/verificar',
+    { config: LIMITE_PAGO, preHandler: fastify.autenticar },
+    async (request, reply) => {
+      const datos = licenciaSchema.safeParse(request.body);
+      if (!datos.success) return reply.code(400).send({ error: 'Datos inválidos' });
+
+      const licencia = await fastify.prisma.license.findUnique({
+        where: { id: datos.data.licenciaId },
+      });
+      if (!licencia) return reply.code(404).send({ error: 'Esa licencia no existe' });
+      if (licencia.titularId !== request.user.id) {
+        return reply.code(403).send({ error: 'Esa licencia no es tuya' });
+      }
+
+      if (pagosConfigurados(config) && licencia.estado !== 'activa') {
+        try {
+          await conciliar(fastify.prisma, { tipo: 'licencia', id: licencia.id });
+        } catch (error) {
+          // Si Mercado Pago no responde, se contesta con lo que ya sabemos: el
+          // webhook activara la licencia cuando llegue.
+          fastify.log.warn({ err: error, licenciaId: licencia.id }, 'No se pudo conciliar');
+        }
+      }
+
+      const actual = await fastify.prisma.license.findUniqueOrThrow({
+        where: { id: licencia.id },
+        include: {
+          pagos: { orderBy: { creadoEn: 'desc' }, take: 1 },
+        },
+      });
+      const ultimo = actual.pagos[0];
+      return reply.send({
+        licenciaId: actual.id,
+        estado: estadoEfectivoLicencia(actual),
+        finVigencia: actual.finVigencia,
+        ultimoPago: ultimo
+          ? { estado: ultimo.estado, detalle: ultimo.mpStatusDetail, metodo: ultimo.metodo }
+          : null,
+      });
+    },
+  );
+
+  /**
+   * Aviso de Mercado Pago.
+   *
+   * Entiende los tres formatos que Mercado Pago usa: el de webhooks (cuerpo con
+   * `type` y `data.id`, y lo mismo en la URL), y el IPN antiguo
+   * (`?topic=payment&id=`). Solo procesa pagos.
+   *
+   * La firma se comprueba si llega. Aun sin ella, un aviso falsificado no puede
+   * activar nada: el pago se vuelve a pedir a Mercado Pago con nuestro token, y
+   * es esa respuesta, no el aviso, la que manda.
    */
   fastify.post('/webhook', async (request, reply) => {
-    const cuerpo = request.body as { type?: string; data?: { id?: string | number } } | undefined;
-    const idPago = cuerpo?.data?.id;
+    const consulta = request.query as Record<string, string | undefined>;
+    const cuerpo = (request.body ?? {}) as { type?: string; data?: { id?: string | number } };
 
-    // Se responde 200 siempre que el aviso sea legible: un error haría que
-    // Mercado Pago reintente en bucle por algo que no vamos a poder procesar.
-    if (!idPago || cuerpo?.type !== 'payment') {
+    const tipo = cuerpo.type ?? consulta.type ?? consulta.topic;
+    const idPago = String(consulta['data.id'] ?? cuerpo.data?.id ?? consulta.id ?? '');
+
+    const secreto = config.MP_WEBHOOK_SECRET;
+    const cabeceraFirma = request.headers['x-signature'];
+    if (secreto && typeof cabeceraFirma === 'string') {
+      const valida = firmaValida({
+        cabeceraFirma,
+        idSolicitud: typeof request.headers['x-request-id'] === 'string'
+          ? request.headers['x-request-id']
+          : undefined,
+        idRecurso: consulta['data.id'] ?? (cuerpo.data?.id !== undefined ? String(cuerpo.data.id) : undefined),
+        secreto,
+      });
+      if (!valida) {
+        fastify.log.warn({ idPago }, 'Aviso de Mercado Pago con firma invalida');
+        return reply.code(401).send({ error: 'Firma inválida' });
+      }
+    }
+
+    // Un aviso que no es de un pago (una orden, una prueba) se agradece y ya.
+    if (tipo !== 'payment' || !/^\d+$/.test(idPago)) {
       return reply.send({ recibido: true });
     }
 
     try {
       const pago = await obtenerPago(idPago);
-      const licenciaId = Number(pago.externalReference);
-      if (!Number.isInteger(licenciaId)) return reply.send({ recibido: true });
-
-      const estado = traducirEstado(pago.status);
-
-      await fastify.prisma.payment.updateMany({
-        where: { mpPaymentId: String(pago.id) },
-        data: {
-          estado,
-          mpStatus: pago.status,
-          mpStatusDetail: pago.statusDetail,
-          payloadWebhook: cuerpo as object,
-        },
-      });
-
-      const licencia = await fastify.prisma.license.findUnique({
-        where: { id: licenciaId },
-        include: { plan: true },
-      });
-
-      // Solo se activa si sigue pendiente: la doble notificación no hace nada.
-      if (licencia?.estado === 'pendiente' && estado === 'aprobado') {
-        await activarLicencia(fastify, licenciaId, licencia.plan.vigenciaDias);
-        fastify.log.info({ licenciaId }, 'Licencia activada por webhook');
+      const resultado = await aplicarPago(fastify.prisma, pago, request.body ?? consulta);
+      if (resultado.licenciaActivada) {
+        fastify.log.info({ idPago, pagoId: resultado.pagoId }, 'Licencia activada por aviso de pago');
       }
-
-      if (licencia?.estado === 'pendiente' && estado === 'rechazado') {
-        await fastify.prisma.license.update({
-          where: { id: licenciaId },
-          data: { estado: 'cancelada' },
-        });
-      }
-
       return reply.send({ recibido: true });
     } catch (error) {
-      fastify.log.error({ err: error, idPago }, 'Fallo al procesar el webhook');
-      // 200 igualmente: el estado se puede reconciliar consultando el pago.
-      return reply.send({ recibido: true });
+      if (error instanceof ErrorMercadoPago && error.estado === 404) {
+        // El boton "Simular notificacion" del panel de Mercado Pago manda un
+        // identificador que no existe. Se responde 200 para que no reintente.
+        return reply.send({ recibido: true });
+      }
+      // Cualquier otro fallo (Mercado Pago caido, la base ocupada) devuelve 500
+      // a proposito: Mercado Pago reintenta el aviso mas tarde, que es justo lo
+      // que queremos.
+      fastify.log.error({ err: error, idPago }, 'Fallo al procesar el aviso de pago');
+      return reply.code(500).send({ error: 'No se pudo procesar el aviso' });
     }
-  });
-
-  /** Estado de una licencia, para la pantalla de espera del comprador. */
-  fastify.get('/licencia/:id', async (request, reply) => {
-    const params = z.object({ id: z.coerce.number().int().positive() }).safeParse(request.params);
-    if (!params.success) return reply.code(400).send({ error: 'Identificador invalido' });
-
-    const licencia = await fastify.prisma.license.findUnique({
-      where: { id: params.data.id },
-      select: {
-        id: true,
-        estado: true,
-        finVigencia: true,
-        codigoAcceso: true,
-        plan: { select: { nombre: true, clave: true } },
-      },
-    });
-
-    if (!licencia) return reply.code(404).send({ error: 'Esa licencia no existe' });
-
-    // El código de acceso solo se entrega cuando la licencia está activa.
-    return reply.send({
-      ...licencia,
-      codigoAcceso: licencia.estado === 'activa' ? licencia.codigoAcceso : null,
-    });
   });
 };
 
-/** Activa una licencia y calcula su vigencia. */
-async function activarLicencia(
-  fastify: FastifyInstance,
-  licenciaId: number,
-  vigenciaDias: number,
-  desde: Date = new Date(),
-) {
-  const fin = new Date(desde);
-  fin.setDate(fin.getDate() + vigenciaDias);
-
-  return fastify.prisma.license.update({
-    where: { id: licenciaId },
-    data: { estado: 'activa', inicioVigencia: desde, finVigencia: fin },
-  });
-}
-
 /**
- * Deshace un alta cuyo cobro no salió.
+ * Deshace un alta cuya pagina de pago no se pudo crear.
  *
- * Importa el orden: primero la licencia (que apunta al usuario), después el
- * usuario, y por último la institución. Al revés, las claves foráneas lo
- * impedirían.
+ * El orden importa: primero la licencia (apunta al usuario), despues el usuario
+ * (arrastra su perfil de facturacion) y por ultimo la institucion.
  */
-async function limpiarCompra(
+async function deshacerAlta(
   fastify: FastifyInstance,
   creado: { usuarioId: number; licenciaId: number; institucionId: number | null },
 ): Promise<void> {
   try {
     await fastify.prisma.$transaction([
-      fastify.prisma.payment.deleteMany({ where: { licenciaId: creado.licenciaId } }),
       fastify.prisma.license.deleteMany({ where: { id: creado.licenciaId } }),
       fastify.prisma.user.deleteMany({ where: { id: creado.usuarioId } }),
       ...(creado.institucionId
@@ -509,9 +381,6 @@ async function limpiarCompra(
         : []),
     ]);
   } catch (error) {
-    // Si la limpieza falla, queda una cuenta sin licencia. Se registra para
-    // poder repararla a mano; no se propaga, porque el comprador ya tiene su
-    // mensaje de rechazo y un segundo error no le aporta nada.
-    fastify.log.error({ err: error, creado }, 'No se pudo deshacer una compra rechazada');
+    fastify.log.error({ err: error, creado }, 'No se pudo deshacer un alta sin pago');
   }
 }

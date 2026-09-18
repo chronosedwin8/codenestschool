@@ -8,7 +8,7 @@
     <title>Planes y precios | CodeNest School</title>
     <meta
       name="description"
-      content="Planes de CodeNest School: Personal y Padres para familias, y Escuela por $12.000.000 COP al año para colegios, con estudiantes y docentes ilimitados. Pago seguro con Mercado Pago."
+      content="Planes de CodeNest School: Personal y Padres para familias, y Escuela por ${{precioTexto:escuela}} COP al año para colegios, con estudiantes y docentes ilimitados. Pago seguro con Mercado Pago."
     />
     <link rel="canonical" href="https://codenestschool.com/planes.html" />
 
@@ -16,7 +16,7 @@
     <meta property="og:title" content="Planes y precios | CodeNest School" />
     <meta
       property="og:description"
-      content="Personal y Padres para familias. Escuela por $12.000.000 COP al año, con estudiantes ilimitados."
+      content="Personal y Padres para familias. Escuela por ${{precioTexto:escuela}} COP al año, con estudiantes ilimitados."
     />
     <meta property="og:url" content="https://codenestschool.com/planes.html" />
 
@@ -63,7 +63,8 @@
         "offers": {
           "@type": "AggregateOffer",
           "priceCurrency": "COP",
-          "highPrice": "12000000",
+          "lowPrice": "{{precio:minimo}}",
+          "highPrice": "{{precio:maximo}}",
           "offerCount": "3",
           "url": "https://codenestschool.com/planes.html"
         }

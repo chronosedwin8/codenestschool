@@ -15,7 +15,7 @@
     boton.addEventListener('click', function () {
       var abierta = nav.classList.toggle('abierta');
       boton.setAttribute('aria-expanded', String(abierta));
-      boton.setAttribute('aria-label', abierta ? 'Cerrar el menu' : 'Abrir el menu');
+      boton.setAttribute('aria-label', abierta ? 'Cerrar el menú' : 'Abrir el menú');
     });
 
     // Al tocar un enlace el menu se cierra: si no, tapa el destino.

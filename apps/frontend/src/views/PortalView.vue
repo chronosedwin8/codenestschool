@@ -7,22 +7,30 @@
  * del juego (botones de 72 píxeles, cero texto) resolvían un problema que aquí
  * no existe y estorbarían.
  *
- * Muestra lo que un tutor o un colegio necesita resolver sin escribir un correo:
- * cómo va cada niño, cuándo vence la licencia, cómo renovarla y qué pagos hay.
+ * Responde a lo que un padre o un colegio necesita resolver sin escribir un
+ * correo: cómo va cada niño, cuándo vence el plan, cómo pagarlo o renovarlo,
+ * qué pagos hay y dónde están sus facturas.
+ *
+ * Es también adonde vuelve el comprador desde Mercado Pago
+ * (`?licencia=12&pago=exito`). Al volver no se espera al aviso del webhook: se
+ * pregunta a Mercado Pago en ese momento, y la licencia se activa ahí mismo.
  */
 import { computed, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-import { formatearCop } from '@codenest/shared';
+import { etiquetaMedio } from '@codenest/shared';
 
 import { api, borrarToken } from '@/api/cliente';
-import { useRouter } from 'vue-router';
+import EstadoChip from '@/components/facturacion/EstadoChip.vue';
+import FormFacturacion from '@/components/facturacion/FormFacturacion.vue';
+import { cop, fecha } from '@/components/facturacion/formato';
+import '@/styles/adultos.css';
 
 interface Nino {
   readonly id: number;
   readonly nombre: string;
   readonly usuario: string;
   readonly grupoEdad: string | null;
-  readonly monedas: number;
 }
 
 interface Perfil {
@@ -33,93 +41,149 @@ interface Perfil {
   readonly ninosACargo: readonly Nino[];
 }
 
-interface Suscripcion {
-  readonly licencia: {
+interface Licencia {
+  readonly id: number;
+  readonly estado: string;
+  readonly inicioVigencia: string | null;
+  readonly finVigencia: string | null;
+  readonly codigoAcceso: string | null;
+  readonly plan: { readonly nombre: string; readonly precioCop: number; readonly maxNinos: number | null; readonly activo: boolean };
+  readonly renovacion: {
     readonly id: number;
     readonly estado: string;
+    readonly inicioVigencia: string | null;
     readonly finVigencia: string | null;
-    readonly codigoAcceso: string | null;
-    readonly plan: { readonly nombre: string; readonly precioCop: number; readonly maxNinos: number | null };
   } | null;
-  readonly pagos: readonly {
-    readonly id: number;
-    readonly montoCop: number;
-    readonly estado: string;
-    readonly metodo: string | null;
-    readonly creadoEn: string;
-  }[];
+}
+
+interface Suscripcion {
+  readonly licencia: Licencia | null;
   readonly cupos: { readonly usados: number; readonly maximo: number | null };
+}
+
+interface Pago {
+  readonly id: number;
+  readonly fecha: string;
+  readonly montoCop: number;
+  readonly estado: string;
+  readonly motivo: string | null;
+  readonly metodo: string | null;
+  readonly tipoMedio: string | null;
+  readonly cuotas: number | null;
+  readonly concepto: string;
+  readonly factura: { readonly numero: string; readonly token: string } | null;
+}
+
+interface Factura {
+  readonly id: number;
+  readonly numero: string;
+  readonly fechaEmision: string;
+  readonly totalCop: number;
+  readonly estado: string;
+  readonly token: string;
+}
+
+interface Cotizacion {
+  readonly id: number;
+  readonly numero: string;
+  readonly fechaEmision: string;
+  readonly validaHasta: string;
+  readonly totalCop: number;
+  readonly estado: string;
+  readonly token: string;
 }
 
 interface Reporte {
   readonly nino: { readonly nombre: string; readonly grupoEdad: string | null };
-  readonly resumen: {
-    readonly actividadesJugadas: number;
-    readonly estrellas: number;
-    readonly intentosTotales: number;
-  };
-  readonly actividadDiaria: readonly {
-    readonly fecha: string;
-    readonly minutos: number;
-    readonly actividades: number;
-  }[];
-  readonly porMundo: readonly {
-    readonly numero: number;
-    readonly nombre: string;
-    readonly completadas: number;
-    readonly estrellas: number;
-  }[];
-  readonly atascos: readonly {
-    readonly actividad: string;
-    readonly mundo: string;
-    readonly intentos: number;
-  }[];
+  readonly resumen: { readonly actividadesJugadas: number; readonly estrellas: number; readonly intentosTotales: number };
+  readonly actividadDiaria: readonly { readonly fecha: string; readonly minutos: number; readonly actividades: number }[];
+  readonly porMundo: readonly { readonly numero: number; readonly nombre: string; readonly completadas: number; readonly estrellas: number }[];
+  readonly atascos: readonly { readonly actividad: string; readonly mundo: string; readonly intentos: number }[];
 }
 
+type Pestana = 'resumen' | 'ninos' | 'plan' | 'pagos' | 'facturacion';
+
+const PESTANAS: readonly { clave: Pestana; nombre: string }[] = [
+  { clave: 'resumen', nombre: 'Resumen' },
+  { clave: 'ninos', nombre: 'Mis estudiantes' },
+  { clave: 'plan', nombre: 'Mi plan' },
+  { clave: 'pagos', nombre: 'Pagos y facturas' },
+  { clave: 'facturacion', nombre: 'Datos de facturación' },
+];
+
+const route = useRoute();
 const router = useRouter();
 
 const perfil = ref<Perfil | null>(null);
 const suscripcion = ref<Suscripcion | null>(null);
+const pagos = ref<readonly Pago[]>([]);
+const facturas = ref<readonly Factura[]>([]);
+const cotizaciones = ref<readonly Cotizacion[]>([]);
 const reporte = ref<Reporte | null>(null);
 const ninoSeleccionado = ref<number | null>(null);
-const pestana = ref<'resumen' | 'ninos' | 'suscripcion'>('resumen');
+const pestana = ref<Pestana>('resumen');
 const cargando = ref(true);
 const error = ref<string | null>(null);
 
+/** Lo que pasó al volver de Mercado Pago, o al pulsar "Comprobar". */
+const resultadoPago = ref<{ tono: 'bien' | 'espera' | 'mal'; texto: string } | null>(null);
+const pagando = ref(false);
+const comprobando = ref(false);
+
+const licencia = computed(() => suscripcion.value?.licencia ?? null);
+
 const diasRestantes = computed(() => {
-  const fin = suscripcion.value?.licencia?.finVigencia;
-  if (!fin) return null;
-  const dias = Math.ceil((new Date(fin).getTime() - Date.now()) / 86_400_000);
-  return dias;
+  const fin = licencia.value?.finVigencia;
+  if (!fin || licencia.value?.estado !== 'activa') return null;
+  return Math.ceil((new Date(fin).getTime() - Date.now()) / 86_400_000);
 });
 
-/** Aviso de vencimiento a partir de 30 días: da margen para renovar. */
-const avisoVencimiento = computed(() => {
+/** Aviso arriba de todo: lo que no puede pasar desapercibido. */
+const avisoPlan = computed(() => {
+  const l = licencia.value;
+  if (!l) return null;
+  if (l.estado === 'pendiente') {
+    return { tono: 'espera', texto: `Tu plan ${l.plan.nombre} está pendiente de pago.` };
+  }
+  if (l.estado === 'vencida') return { tono: 'mal', texto: 'Tu plan venció. Renuévalo para seguir jugando.' };
+  if (l.renovacion?.estado === 'activa') return null;
   const dias = diasRestantes.value;
-  if (dias === null) return null;
-  if (dias < 0) return { tono: 'grave', texto: 'Tu licencia vencio. Renuevala para seguir jugando.' };
-  if (dias <= 7) return { tono: 'grave', texto: `Tu licencia vence en ${dias} dia(s).` };
-  if (dias <= 30) return { tono: 'aviso', texto: `Tu licencia vence en ${dias} dias.` };
+  if (dias !== null && dias <= 7) return { tono: 'mal', texto: `Tu plan vence en ${dias} día(s).` };
+  if (dias !== null && dias <= 30) return { tono: 'espera', texto: `Tu plan vence en ${dias} días.` };
   return null;
 });
 
-/** Máximo de minutos de un día, para escalar el gráfico. */
-const maximoMinutos = computed(() => {
-  const dias = reporte.value?.actividadDiaria ?? [];
-  return Math.max(1, ...dias.map((d) => d.minutos));
-});
+const maximoMinutos = computed(() => Math.max(1, ...(reporte.value?.actividadDiaria ?? []).map((d) => d.minutos)));
+
+const esDocente = computed(() => ['docente', 'admin_escuela', 'admin'].includes(perfil.value?.rol ?? ''));
+const esAdmin = computed(() => perfil.value?.rol === 'admin');
+
+async function cargarAdministrativo(): Promise<void> {
+  const [s, p, f, c] = await Promise.all([
+    api.get<Suscripcion>('/portal/suscripcion'),
+    api.get<{ pagos: Pago[] }>('/portal/pagos'),
+    api.get<{ facturas: Factura[] }>('/portal/facturas'),
+    api.get<{ cotizaciones: Cotizacion[] }>('/portal/cotizaciones'),
+  ]);
+  suscripcion.value = s;
+  pagos.value = p.pagos;
+  facturas.value = f.facturas;
+  cotizaciones.value = c.cotizaciones;
+}
 
 async function cargar(): Promise<void> {
   cargando.value = true;
   try {
     perfil.value = await api.get<Perfil>('/auth/yo');
-    suscripcion.value = await api.get<Suscripcion>('/portal/suscripcion');
+    await cargarAdministrativo();
 
     const primero = perfil.value.ninosACargo[0];
-    if (primero) {
-      ninoSeleccionado.value = primero.id;
-      await cargarReporte(primero.id);
-    }
+    if (primero) await cargarReporte(primero.id);
+
+    // Sin plan activo, lo primero que hay que ver es el plan.
+    if (!licencia.value || licencia.value.estado !== 'activa') pestana.value = 'plan';
+
+    await atenderRegresoDePago();
   } catch (e) {
     error.value = e instanceof Error ? e.message : 'No se pudo cargar el portal';
   } finally {
@@ -132,144 +196,191 @@ async function cargarReporte(ninoId: number): Promise<void> {
   reporte.value = await api.get<Reporte>(`/telemetria/reporte/${ninoId}`);
 }
 
-/** Los roles que mandan en un aula ven el acceso a su zona. */
-const esDocente = computed(() =>
-  ['docente', 'admin_escuela', 'admin'].includes(perfil.value?.rol ?? ''),
-);
+/** El comprador vuelve de Mercado Pago con `?licencia=12&pago=exito|pendiente|fallo`. */
+async function atenderRegresoDePago(): Promise<void> {
+  const id = Number(route.query.licencia);
+  const vuelta = route.query.pago;
+  if (!Number.isInteger(id) || id <= 0 || typeof vuelta !== 'string') return;
+
+  pestana.value = 'plan';
+  await comprobar(id, vuelta);
+  // Se limpia la URL: recargar la página no debe repetir el mensaje.
+  void router.replace({ query: {} });
+}
+
+async function comprobar(licenciaId: number, vuelta?: string): Promise<void> {
+  comprobando.value = true;
+  try {
+    const r = await api.post<{
+      estado: string;
+      finVigencia: string | null;
+      ultimoPago: { estado: string } | null;
+    }>('/pagos/verificar', { licenciaId });
+    // Primero se recarga: el motivo del rechazo sale del historial actualizado.
+    await cargarAdministrativo();
+
+    if (r.estado === 'activa') {
+      resultadoPago.value = {
+        tono: 'bien',
+        texto: `¡Pago recibido! Tu plan está activo hasta el ${fecha(r.finVigencia)}.`,
+      };
+    } else if (r.ultimoPago?.estado === 'rechazado' || vuelta === 'fallo') {
+      const motivo = pagos.value.find((p) => p.estado === 'rechazado')?.motivo;
+      resultadoPago.value = {
+        tono: 'mal',
+        texto: `El pago no se completó. ${motivo ?? 'Puedes intentarlo de nuevo con otro medio de pago.'}`,
+      };
+    } else {
+      resultadoPago.value = {
+        tono: 'espera',
+        texto:
+          'Tu pago está en proceso. Con PSE o Efecty puede tardar desde unos minutos hasta un día hábil; lo verás confirmado aquí.',
+      };
+    }
+  } catch (e) {
+    resultadoPago.value = { tono: 'mal', texto: e instanceof Error ? e.message : 'No se pudo comprobar el pago' };
+  } finally {
+    comprobando.value = false;
+  }
+}
+
+/** Paga una licencia pendiente o renueva la vigente: el servidor sabe cuál es. */
+async function pagar(licenciaId: number): Promise<void> {
+  pagando.value = true;
+  resultadoPago.value = null;
+  try {
+    const r = await api.post<{ urlPago: string }>('/pagos/pagar', { licenciaId });
+    window.location.href = r.urlPago;
+  } catch (e) {
+    resultadoPago.value = { tono: 'mal', texto: e instanceof Error ? e.message : 'No se pudo abrir el pago' };
+    pagando.value = false;
+  }
+}
+
+function medio(p: Pago): string {
+  const base = etiquetaMedio(p.metodo, p.tipoMedio);
+  return p.cuotas && p.cuotas > 1 ? `${base} · ${p.cuotas} cuotas` : base;
+}
+
+function documento(tipo: 'factura' | 'cotizacion', token: string) {
+  return { name: 'documento', params: { tipo, token } };
+}
 
 function salir(): void {
   borrarToken();
   void router.push('/');
 }
 
-function formatearFecha(iso: string): string {
-  return new Date(iso).toLocaleDateString('es-CO', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
 onMounted(cargar);
 </script>
 
 <template>
-  <div class="portal">
-    <header class="portal__cabecera">
+  <div class="a-pagina">
+    <header class="a-cabecera">
       <div>
         <h1>Portal del cliente</h1>
-        <p v-if="perfil" class="portal__usuario">
-          {{ perfil.nombre }} · {{ perfil.email }}
-        </p>
+        <p v-if="perfil" class="a-subtitulo">{{ perfil.nombre }} · {{ perfil.email }}</p>
       </div>
-      <div class="portal__acciones">
-        <!--
-          Sin este enlace la zona de docentes existia y no habia forma de llegar
-          a ella salvo escribiendo la direccion a mano.
-        -->
-        <RouterLink v-if="esDocente" class="enlace enlace--boton" to="/portal/docente">
-          Mis grupos
-        </RouterLink>
-        <button type="button" class="salir" @click="salir">Cerrar sesion</button>
+      <div class="a-acciones">
+        <RouterLink v-if="esAdmin" class="a-boton" :to="{ name: 'admin' }">Administración</RouterLink>
+        <RouterLink v-if="esDocente" class="a-boton a-boton--fantasma" to="/portal/docente">Mis grupos</RouterLink>
+        <button type="button" class="a-boton a-boton--fantasma" @click="salir">Cerrar sesión</button>
       </div>
     </header>
 
-    <p v-if="error" class="aviso aviso--grave">{{ error }}</p>
-    <p v-else-if="cargando" class="aviso">Cargando...</p>
+    <p v-if="error" class="a-aviso a-aviso--mal" role="alert">{{ error }}</p>
+    <p v-else-if="cargando" class="a-aviso">Cargando…</p>
 
     <template v-else>
-      <!-- Aviso de vencimiento arriba: es lo que no puede pasar desapercibido -->
-      <p
-        v-if="avisoVencimiento"
-        class="aviso"
-        :class="`aviso--${avisoVencimiento.tono}`"
-        role="status"
-      >
-        {{ avisoVencimiento.texto }}
-        <a class="enlace" href="#suscripcion" @click="pestana = 'suscripcion'">Renovar</a>
+      <p v-if="resultadoPago" class="a-aviso" :class="`a-aviso--${resultadoPago.tono}`" role="status">
+        <span>{{ resultadoPago.texto }}</span>
+        <button
+          v-if="resultadoPago.tono === 'espera' && licencia"
+          type="button"
+          class="a-boton a-boton--fantasma a-boton--pequeno"
+          :disabled="comprobando"
+          @click="comprobar(licencia.renovacion?.estado === 'pendiente' ? licencia.renovacion.id : licencia.id)"
+        >
+          {{ comprobando ? 'Comprobando…' : 'Comprobar de nuevo' }}
+        </button>
       </p>
 
-      <nav class="pestanas" aria-label="Secciones del portal">
+      <p v-else-if="avisoPlan" class="a-aviso" :class="`a-aviso--${avisoPlan.tono}`" role="status">
+        <span>{{ avisoPlan.texto }}</span>
+        <button type="button" class="a-boton a-boton--pequeno" @click="pestana = 'plan'">Ver mi plan</button>
+      </p>
+
+      <nav class="a-pestanas" aria-label="Secciones del portal">
         <button
-          v-for="p in (['resumen', 'ninos', 'suscripcion'] as const)"
-          :key="p"
+          v-for="p in PESTANAS"
+          :key="p.clave"
           type="button"
-          class="pestana"
-          :class="{ 'pestana--activa': pestana === p }"
-          @click="pestana = p"
+          class="a-pestana"
+          :class="{ 'a-pestana--activa': pestana === p.clave }"
+          :aria-current="pestana === p.clave ? 'page' : undefined"
+          @click="pestana = p.clave"
         >
-          {{ p === 'resumen' ? 'Resumen' : p === 'ninos' ? 'Mis estudiantes' : 'Suscripcion' }}
+          {{ p.nombre }}
         </button>
       </nav>
 
-      <!-- Resumen -->
-      <section v-if="pestana === 'resumen'" class="panel">
-        <div class="cifras">
-          <div class="cifra">
-            <span class="cifra__valor">{{ perfil?.ninosACargo.length ?? 0 }}</span>
-            <span class="cifra__etiqueta">estudiantes</span>
+      <!-- ─────────────── Resumen ─────────────── -->
+      <section v-if="pestana === 'resumen'" class="a-panel">
+        <div class="a-cifras">
+          <div class="a-cifra">
+            <span class="a-cifra__valor">{{ perfil?.ninosACargo.length ?? 0 }}</span>
+            <span class="a-cifra__etiqueta">estudiantes</span>
           </div>
-          <div class="cifra">
-            <span class="cifra__valor">{{ reporte?.resumen.actividadesJugadas ?? 0 }}</span>
-            <span class="cifra__etiqueta">actividades jugadas</span>
+          <div class="a-cifra">
+            <span class="a-cifra__valor">{{ reporte?.resumen.actividadesJugadas ?? 0 }}</span>
+            <span class="a-cifra__etiqueta">actividades jugadas</span>
           </div>
-          <div class="cifra">
-            <span class="cifra__valor">{{ reporte?.resumen.estrellas ?? 0 }}</span>
-            <span class="cifra__etiqueta">estrellas</span>
+          <div class="a-cifra">
+            <span class="a-cifra__valor">{{ reporte?.resumen.estrellas ?? 0 }}</span>
+            <span class="a-cifra__etiqueta">estrellas</span>
           </div>
-          <div class="cifra">
-            <span class="cifra__valor">
-              {{ suscripcion?.licencia?.plan.nombre ?? 'sin plan' }}
-            </span>
-            <span class="cifra__etiqueta">plan actual</span>
+          <div class="a-cifra">
+            <span class="a-cifra__valor">{{ licencia?.plan.nombre ?? 'Sin plan' }}</span>
+            <span class="a-cifra__etiqueta">plan actual</span>
           </div>
         </div>
 
         <template v-if="reporte">
-          <h2>Actividad de los ultimos 30 dias</h2>
-          <p v-if="reporte.actividadDiaria.length === 0" class="vacio">
-            Todavia no hay actividad registrada.
-          </p>
-          <!-- Gráfico de barras en CSS: no justifica una librería de gráficos -->
-          <div v-else class="grafico" role="img" aria-label="Minutos jugados por dia">
+          <h3>Actividad de los últimos 30 días</h3>
+          <p v-if="reporte.actividadDiaria.length === 0" class="a-vacio">Todavía no hay actividad registrada.</p>
+          <div v-else class="grafico" role="img" aria-label="Minutos jugados por día">
             <div
               v-for="dia in reporte.actividadDiaria"
               :key="dia.fecha"
               class="grafico__barra"
               :style="{ height: `${Math.max(4, (dia.minutos / maximoMinutos) * 100)}%` }"
-              :title="`${formatearFecha(dia.fecha)}: ${dia.minutos} min`"
+              :title="`${fecha(dia.fecha)}: ${dia.minutos} min`"
             />
           </div>
 
-          <h2>Donde se atasca</h2>
-          <p v-if="reporte.atascos.length === 0" class="vacio">
-            Ninguna actividad le esta costando de mas ahora mismo.
-          </p>
-          <table v-else class="tabla">
-            <thead>
-              <tr>
-                <th>Actividad</th>
-                <th>Mundo</th>
-                <th>Intentos</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(a, i) in reporte.atascos" :key="i">
-                <td>{{ a.actividad }}</td>
-                <td>{{ a.mundo }}</td>
-                <td>{{ a.intentos }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <h3>Dónde se atasca</h3>
+          <p v-if="reporte.atascos.length === 0" class="a-vacio">Ninguna actividad le está costando de más ahora mismo.</p>
+          <div v-else class="a-tabla-contenedor">
+            <table class="a-tabla">
+              <thead>
+                <tr><th>Actividad</th><th>Mundo</th><th class="a-num">Intentos</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="(a, i) in reporte.atascos" :key="i">
+                  <td>{{ a.actividad }}</td>
+                  <td>{{ a.mundo }}</td>
+                  <td class="a-num">{{ a.intentos }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </template>
       </section>
 
-      <!-- Estudiantes -->
-      <section v-else-if="pestana === 'ninos'" class="panel">
+      <!-- ─────────────── Estudiantes ─────────────── -->
+      <section v-else-if="pestana === 'ninos'" class="a-panel">
         <h2>Mis estudiantes</h2>
-        <p v-if="(perfil?.ninosACargo.length ?? 0) === 0" class="vacio">
-          Todavia no has creado ningun perfil.
-        </p>
+        <p v-if="(perfil?.ninosACargo.length ?? 0) === 0" class="a-vacio">Todavía no has creado ningún perfil.</p>
 
         <div v-else class="ninos">
           <button
@@ -281,221 +392,218 @@ onMounted(cargar);
             @click="cargarReporte(nino.id)"
           >
             <span class="nino__nombre">{{ nino.nombre }}</span>
-            <span class="nino__usuario">{{ nino.usuario }}</span>
-            <span class="nino__grupo">{{ nino.grupoEdad }}</span>
+            <span class="nino__dato">{{ nino.usuario }}</span>
+            <span class="nino__dato">{{ nino.grupoEdad }}</span>
           </button>
         </div>
 
         <template v-if="reporte">
-          <h2>Progreso de {{ reporte.nino.nombre }} por mundo</h2>
-          <p v-if="reporte.porMundo.length === 0" class="vacio">Aun no ha empezado ningun mundo.</p>
-          <table v-else class="tabla">
-            <thead>
-              <tr>
-                <th>Mundo</th>
-                <th>Actividades completadas</th>
-                <th>Estrellas</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="m in reporte.porMundo" :key="m.numero">
-                <td>{{ m.numero }}. {{ m.nombre }}</td>
-                <td>{{ m.completadas }} de 20</td>
-                <td>{{ m.estrellas }} de {{ m.completadas * 3 }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <h3>Progreso de {{ reporte.nino.nombre }} por mundo</h3>
+          <p v-if="reporte.porMundo.length === 0" class="a-vacio">Aún no ha empezado ningún mundo.</p>
+          <div v-else class="a-tabla-contenedor">
+            <table class="a-tabla">
+              <thead>
+                <tr><th>Mundo</th><th class="a-num">Completadas</th><th class="a-num">Estrellas</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="m in reporte.porMundo" :key="m.numero">
+                  <td>{{ m.numero }}. {{ m.nombre }}</td>
+                  <td class="a-num">{{ m.completadas }} de 20</td>
+                  <td class="a-num">{{ m.estrellas }} de {{ m.completadas * 3 }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </template>
       </section>
 
-      <!-- Suscripción -->
-      <section v-else id="suscripcion" class="panel">
-        <h2>Tu suscripcion</h2>
+      <!-- ─────────────── Mi plan ─────────────── -->
+      <template v-else-if="pestana === 'plan'">
+        <section class="a-panel">
+          <h2>Mi plan</h2>
 
-        <p v-if="!suscripcion?.licencia" class="vacio">
-          No tienes una licencia activa.
-          <a class="enlace" href="/planes.html">Ver los planes</a>
-        </p>
+          <div v-if="!licencia" class="a-vacio">
+            <p>Todavía no tienes un plan.</p>
+            <a class="a-boton" href="/planes.html">Ver los planes</a>
+          </div>
 
-        <template v-else>
-          <dl class="datos">
-            <dt>Plan</dt>
-            <dd>{{ suscripcion.licencia.plan.nombre }}</dd>
+          <template v-else>
+            <dl class="a-datos">
+              <dt>Plan</dt>
+              <dd>{{ licencia.plan.nombre }}</dd>
 
-            <dt>Estado</dt>
-            <dd>{{ suscripcion.licencia.estado }}</dd>
+              <dt>Estado</dt>
+              <dd><EstadoChip :estado="licencia.estado" tipo="licencia" /></dd>
 
-            <dt>Vence</dt>
-            <dd>
-              {{
-                suscripcion.licencia.finVigencia
-                  ? formatearFecha(suscripcion.licencia.finVigencia)
-                  : 'sin definir'
-              }}
-              <span v-if="diasRestantes !== null"> ({{ diasRestantes }} dias)</span>
-            </dd>
+              <template v-if="licencia.estado === 'activa' || licencia.estado === 'vencida'">
+                <dt>Vigencia</dt>
+                <dd>
+                  {{ fecha(licencia.inicioVigencia) }} a {{ fecha(licencia.finVigencia) }}
+                  <span v-if="diasRestantes !== null" class="a-subtitulo">({{ diasRestantes }} días)</span>
+                </dd>
+              </template>
 
-            <dt>Precio anual</dt>
-            <dd>{{ formatearCop(suscripcion.licencia.plan.precioCop) }}</dd>
+              <dt>Precio anual</dt>
+              <dd>{{ cop(licencia.plan.precioCop) }} COP</dd>
 
-            <dt>Perfiles</dt>
-            <dd>
-              {{ suscripcion.cupos.usados }} de
-              {{ suscripcion.cupos.maximo === null ? 'ilimitados' : suscripcion.cupos.maximo }}
-            </dd>
+              <dt>Perfiles</dt>
+              <dd>
+                {{ suscripcion?.cupos.usados }} de
+                {{ suscripcion?.cupos.maximo === null ? 'ilimitados' : suscripcion?.cupos.maximo }}
+              </dd>
 
-            <dt v-if="suscripcion.licencia.codigoAcceso">Codigo de acceso</dt>
-            <dd v-if="suscripcion.licencia.codigoAcceso">
-              <code>{{ suscripcion.licencia.codigoAcceso }}</code>
-            </dd>
-          </dl>
+              <template v-if="licencia.codigoAcceso">
+                <dt>Código de acceso</dt>
+                <dd><code class="a-codigo">{{ licencia.codigoAcceso }}</code></dd>
+              </template>
+            </dl>
 
-          <h2>Historial de pagos</h2>
-          <p v-if="suscripcion.pagos.length === 0" class="vacio">No hay pagos registrados.</p>
-          <table v-else class="tabla">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Monto</th>
-                <th>Metodo</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="pago in suscripcion.pagos" :key="pago.id">
-                <td>{{ formatearFecha(pago.creadoEn) }}</td>
-                <td>{{ formatearCop(pago.montoCop) }}</td>
-                <td>{{ pago.metodo ?? '—' }}</td>
-                <td>{{ pago.estado }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </template>
+            <!-- Pendiente de pago: comprar sin terminar, o PSE en curso -->
+            <div v-if="licencia.estado === 'pendiente'" class="bloque-pago">
+              <p>
+                Tu cuenta está lista; falta el pago. Puedes pagar con tarjeta, PSE o Efecty en la página
+                segura de Mercado Pago.
+              </p>
+              <div class="a-acciones">
+                <button type="button" class="a-boton a-boton--verde" :disabled="pagando" @click="pagar(licencia.id)">
+                  {{ pagando ? 'Abriendo Mercado Pago…' : `Pagar ${cop(licencia.plan.precioCop)}` }}
+                </button>
+                <button type="button" class="a-boton a-boton--fantasma" :disabled="comprobando" @click="comprobar(licencia.id)">
+                  {{ comprobando ? 'Comprobando…' : 'Ya pagué: comprobar' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Activa o vencida: renovar -->
+            <div v-else-if="licencia.estado === 'activa' || licencia.estado === 'vencida'" class="bloque-pago">
+              <template v-if="licencia.renovacion?.estado === 'activa'">
+                <p>
+                  <EstadoChip estado="activa" tipo="licencia" />
+                  Ya renovaste: tu plan sigue hasta el {{ fecha(licencia.renovacion.finVigencia) }}.
+                </p>
+              </template>
+              <template v-else-if="licencia.renovacion?.estado === 'pendiente'">
+                <p>Tienes una renovación pendiente de pago.</p>
+                <div class="a-acciones">
+                  <button type="button" class="a-boton a-boton--verde" :disabled="pagando" @click="pagar(licencia.id)">
+                    {{ pagando ? 'Abriendo Mercado Pago…' : 'Completar el pago' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="a-boton a-boton--fantasma"
+                    :disabled="comprobando"
+                    @click="comprobar(licencia.renovacion.id)"
+                  >
+                    {{ comprobando ? 'Comprobando…' : 'Ya pagué: comprobar' }}
+                  </button>
+                </div>
+              </template>
+              <template v-else-if="licencia.plan.activo">
+                <p v-if="licencia.estado === 'activa'">
+                  Si renuevas ahora, el nuevo año empieza el {{ fecha(licencia.finVigencia) }}: no pierdes ningún día.
+                </p>
+                <button type="button" class="a-boton a-boton--verde" :disabled="pagando" @click="pagar(licencia.id)">
+                  {{ pagando ? 'Abriendo Mercado Pago…' : `Renovar por ${cop(licencia.plan.precioCop)}` }}
+                </button>
+              </template>
+              <p v-else class="a-vacio">
+                Este plan ya no se vende. Escríbenos y te ayudamos a pasar a otro.
+              </p>
+            </div>
+          </template>
+        </section>
+
+        <section v-if="cotizaciones.length > 0" class="a-panel">
+          <h2>Cotizaciones</h2>
+          <div class="a-tabla-contenedor">
+            <table class="a-tabla">
+              <thead>
+                <tr><th>Número</th><th>Fecha</th><th>Válida hasta</th><th class="a-num">Total</th><th>Estado</th><th /></tr>
+              </thead>
+              <tbody>
+                <tr v-for="c in cotizaciones" :key="c.id">
+                  <td>{{ c.numero }}</td>
+                  <td>{{ fecha(c.fechaEmision) }}</td>
+                  <td>{{ fecha(c.validaHasta) }}</td>
+                  <td class="a-num">{{ cop(c.totalCop) }}</td>
+                  <td><EstadoChip :estado="c.estado" tipo="cotizacion" /></td>
+                  <td><RouterLink class="a-enlace" :to="documento('cotizacion', c.token)">Ver</RouterLink></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </template>
+
+      <!-- ─────────────── Pagos y facturas ─────────────── -->
+      <template v-else-if="pestana === 'pagos'">
+        <section class="a-panel">
+          <h2>Pagos</h2>
+          <p v-if="pagos.length === 0" class="a-vacio">No hay pagos registrados.</p>
+          <div v-else class="a-tabla-contenedor">
+            <table class="a-tabla">
+              <thead>
+                <tr><th>Fecha</th><th>Concepto</th><th>Medio</th><th class="a-num">Monto</th><th>Estado</th><th>Factura</th></tr>
+              </thead>
+              <tbody>
+                <tr v-for="p in pagos" :key="p.id">
+                  <td>{{ fecha(p.fecha) }}</td>
+                  <td>{{ p.concepto }}</td>
+                  <td>{{ medio(p) }}</td>
+                  <td class="a-num">{{ cop(p.montoCop) }}</td>
+                  <td>
+                    <EstadoChip :estado="p.estado" tipo="pago" />
+                    <small v-if="p.motivo">{{ p.motivo }}</small>
+                  </td>
+                  <td>
+                    <RouterLink v-if="p.factura" class="a-enlace" :to="documento('factura', p.factura.token)">
+                      {{ p.factura.numero }}
+                    </RouterLink>
+                    <span v-else class="a-subtitulo">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="a-panel">
+          <h2>Facturas</h2>
+          <p v-if="facturas.length === 0" class="a-vacio">
+            Todavía no tienes facturas. Las emitimos después de cada pago aprobado.
+          </p>
+          <div v-else class="a-tabla-contenedor">
+            <table class="a-tabla">
+              <thead>
+                <tr><th>Número</th><th>Fecha</th><th class="a-num">Total</th><th>Estado</th><th /></tr>
+              </thead>
+              <tbody>
+                <tr v-for="f in facturas" :key="f.id">
+                  <td>{{ f.numero }}</td>
+                  <td>{{ fecha(f.fechaEmision) }}</td>
+                  <td class="a-num">{{ cop(f.totalCop) }}</td>
+                  <td><EstadoChip :estado="f.estado" tipo="factura" /></td>
+                  <td>
+                    <RouterLink class="a-enlace" :to="documento('factura', f.token)">Ver y descargar</RouterLink>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </template>
+
+      <!-- ─────────────── Datos de facturación ─────────────── -->
+      <section v-else class="a-panel">
+        <h2>Datos de facturación</h2>
+        <p class="a-subtitulo parrafo">Es lo que sale en tus facturas. Si cambias algo, afecta a las próximas, no a las ya emitidas.</p>
+        <FormFacturacion />
       </section>
     </template>
   </div>
 </template>
 
 <style scoped>
-/* El portal es para adultos: densidad alta y tipografía más pequeña que el juego. */
-.portal {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-}
-
-.portal__cabecera {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
-}
-
-.portal__cabecera h1 {
-  margin: 0;
-  font-size: 1.75rem;
-}
-
-.portal__usuario {
-  margin: 0.25rem 0 0;
-  color: var(--gris-oscuro);
-}
-
-.portal__acciones {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.enlace--boton {
-  padding: 7px 14px;
-  border-radius: 8px;
-  background: #1fa2ff;
-  color: #fff;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.salir {
-  padding: 0.5rem 1rem;
-  font-family: inherit;
-  font-size: 0.9rem;
-  color: var(--gris-oscuro);
-  background: white;
-  border: 2px solid var(--gris-claro);
-  border-radius: var(--radio-sm);
-}
-
-.pestanas {
-  display: flex;
-  gap: 0.25rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--gris-claro);
-}
-
-.pestana {
-  padding: 0.7rem 1.1rem;
-  font-family: inherit;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--gris-oscuro);
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-}
-
-.pestana--activa {
-  color: var(--azul-neon-oscuro);
-  border-bottom-color: var(--azul-neon);
-}
-
-.panel {
-  padding: 1.5rem;
-  background: white;
-  border-radius: var(--radio-lg);
-  box-shadow: var(--sombra-panel);
-}
-
-.panel h2 {
-  margin: 1.75rem 0 0.75rem;
-  font-size: 1.15rem;
-}
-
-.panel h2:first-child {
-  margin-top: 0;
-}
-
-.cifras {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  margin-bottom: 1rem;
-}
-
-.cifra {
-  padding: 1rem;
-  text-align: center;
-  background: var(--gris-claro);
-  border-radius: var(--radio-md);
-}
-
-.cifra__valor {
-  display: block;
-  font-family: var(--fuente-titulo);
-  font-size: 1.9rem;
-  color: var(--azul-neon-oscuro);
-}
-
-.cifra__etiqueta {
-  font-size: 0.85rem;
-  color: var(--gris-oscuro);
-}
-
 /* Gráfico de barras hecho con CSS: para 30 valores no hace falta más. */
 .grafico {
   display: flex;
@@ -514,43 +622,6 @@ onMounted(cargar);
   border-radius: 3px 3px 0 0;
 }
 
-.tabla {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-.tabla th,
-.tabla td {
-  padding: 0.6rem 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid var(--gris-claro);
-}
-
-.tabla th {
-  font-size: 0.8rem;
-  color: var(--gris-oscuro);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.datos {
-  display: grid;
-  gap: 0.5rem 1.5rem;
-  grid-template-columns: auto 1fr;
-  margin: 0;
-}
-
-.datos dt {
-  font-size: 0.85rem;
-  color: var(--gris-oscuro);
-}
-
-.datos dd {
-  margin: 0;
-  font-weight: 700;
-}
-
 .ninos {
   display: grid;
   gap: 0.75rem;
@@ -561,7 +632,9 @@ onMounted(cargar);
   display: grid;
   gap: 0.15rem;
   padding: 0.85rem;
+  font-family: inherit;
   text-align: left;
+  cursor: pointer;
   background: white;
   border: 2px solid var(--gris-claro);
   border-radius: var(--radio-md);
@@ -576,40 +649,26 @@ onMounted(cargar);
   font-weight: 800;
 }
 
-.nino__usuario,
-.nino__grupo {
+.nino__dato {
   font-size: 0.8rem;
   color: var(--gris-oscuro);
 }
 
-.aviso {
-  padding: 0.85rem 1.1rem;
-  margin-bottom: 1.25rem;
-  background: var(--gris-claro);
-  border-radius: var(--radio-md);
+.bloque-pago {
+  display: grid;
+  gap: 0.75rem;
+  padding-top: 1.1rem;
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--gris-claro);
 }
 
-.aviso--aviso {
-  background: rgb(255 217 61 / 0.28);
+.bloque-pago p {
+  margin: 0;
+  max-width: 62ch;
 }
 
-.aviso--grave {
-  background: rgb(239 68 68 / 0.14);
-}
-
-.vacio {
-  padding: 0.75rem 0;
-  color: var(--gris-oscuro);
-}
-
-.enlace {
-  color: var(--azul-neon-oscuro);
-}
-
-code {
-  padding: 0.15rem 0.45rem;
-  font-family: Consolas, monospace;
-  background: var(--gris-claro);
-  border-radius: 6px;
+.parrafo {
+  margin: -0.4rem 0 1rem;
+  max-width: 62ch;
 }
 </style>

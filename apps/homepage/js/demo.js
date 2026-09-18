@@ -133,9 +133,9 @@
         if (MAPA[fuzz.y][fuzz.x] === 'M') {
           mensaje.textContent = estrellaRecogida
             ? 'Perfecto. Llegaste y recogiste la estrella.'
-            : 'Llegaste. Puedes recoger tambien la estrella.';
+            : 'Llegaste. Puedes recoger también la estrella.';
         } else {
-          mensaje.textContent = 'Casi. Todavia no llegaste a la bandera.';
+          mensaje.textContent = 'Casi. Todavía no llegaste a la bandera.';
         }
         jugando = false;
         return;
@@ -146,7 +146,7 @@
 
       rodar(dir).then(function (movio) {
         if (!movio) {
-          mensaje.textContent = 'Por ahi no hay camino. Prueba con otra flecha.';
+          mensaje.textContent = 'Por ahí no hay camino. Prueba con otra flecha.';
           jugando = false;
           return;
         }

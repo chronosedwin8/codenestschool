@@ -98,6 +98,19 @@ export const router = createRouter({
       meta: { requiereSesion: true, soloAdultos: true },
     },
     {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('@/views/AdminView.vue'),
+      meta: { requiereSesion: true, soloAdmin: true },
+    },
+    {
+      // Publica a proposito: la abre compras de un colegio, sin cuenta. El token
+      // de 64 caracteres es lo que la protege, no la sesion.
+      path: '/documento/:tipo(factura|cotizacion)/:token',
+      name: 'documento',
+      component: () => import('@/views/DocumentoView.vue'),
+    },
+    {
       path: '/portal/docente',
       name: 'docente',
       component: () => import('@/views/DocenteView.vue'),
@@ -160,6 +173,9 @@ router.beforeEach((destino) => {
   }
   if (destino.meta.soloAdultos && !esAdulto) {
     return { name: 'mapa' };
+  }
+  if (destino.meta.soloAdmin && rol !== 'admin') {
+    return esAdulto ? { name: 'portal' } : { name: 'mapa' };
   }
 
   return true;

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="es-CO">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1FA2FF" />
+
+    <title>Comprar tu plan | CodeNest School</title>
+    <meta name="description" content="Crea tu cuenta y paga tu plan de CodeNest School con tarjeta, PSE o Efecty en la página segura de Mercado Pago." />
+    <!-- Una pagina de compra no tiene nada que posicionar. -->
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href="https://codenestschool.com/checkout.html" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/estilos.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='38' fill='%231FA2FF'/%3E%3Ccircle cx='38' cy='44' r='11' fill='white'/%3E%3Ccircle cx='62' cy='44' r='11' fill='white'/%3E%3Ccircle cx='38' cy='45' r='5' fill='%231E293B'/%3E%3Ccircle cx='62' cy='45' r='5' fill='%231E293B'/%3E%3C/svg%3E"
+    />
+  </head>
+
+  <body>
+    <header class="cabecera">
+      <div class="contenedor cabecera__fila">
+        <a class="marca" href="/">
+          <svg class="marca__fuzz" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="34" fill="#1FA2FF" />
+            <circle cx="38" cy="44" r="11" fill="white" />
+            <circle cx="62" cy="44" r="11" fill="white" />
+            <circle cx="38" cy="45" r="5" fill="#1E293B" />
+            <circle cx="62" cy="45" r="5" fill="#1E293B" />
+          </svg>
+          CodeNest School
+        </a>
+        <div class="cabecera__acciones">
+          <a class="boton boton--fantasma boton--pequeno" href="/planes.html">← Ver planes</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="seccion compra">
+      <div class="contenedor compra__rejilla">
+        <!-- Resumen del pedido: el precio lo pone el servidor -->
+        <aside class="pedido" aria-labelledby="pedidoTitulo">
+          <p class="pedido__eyebrow">Tu pedido</p>
+          <h1 class="pedido__plan" id="pedidoTitulo">Cargando el plan…</h1>
+          <p class="pedido__descripcion" id="pedidoDescripcion"></p>
+          <p class="pedido__precio">
+            <span id="pedidoPrecio">—</span>
+            <small id="pedidoPeriodo"></small>
+          </p>
+          <ul class="pedido__beneficios" id="pedidoBeneficios"></ul>
+          <div class="pedido__pago">
+            <p><strong>Pagas en la página segura de Mercado Pago.</strong></p>
+            <p id="pedidoMedios">Tarjeta de crédito o débito, PSE o Efecty.</p>
+            <p>Un solo pago al año. No hay renovación automática: te avisamos antes de que venza.</p>
+          </div>
+        </aside>
+
+        <section class="formulario-compra" aria-labelledby="formTitulo">
+          <h2 id="formTitulo">Crea tu cuenta y paga</h2>
+          <p class="formulario-compra__intro">
+            Con esta cuenta entras al portal: ahí ves tus pagos, tus facturas y cómo avanza cada niño.
+          </p>
+
+          <p class="alerta alerta--mal" id="alerta" role="alert" hidden></p>
+
+          <form id="formCompra" novalidate>
+            <fieldset class="bloque">
+              <legend><span class="bloque__num">1</span> Tu cuenta</legend>
+              <label class="campo">
+                <span>Nombre completo</span>
+                <input id="nombre" name="nombre" autocomplete="name" required minlength="2" maxlength="150" />
+              </label>
+              <label class="campo">
+                <span>Correo electrónico</span>
+                <input id="email" name="email" type="email" autocomplete="email" required maxlength="255" />
+                <small>Aquí te llega el comprobante de Mercado Pago.</small>
+              </label>
+              <label class="campo">
+                <span>Contraseña</span>
+                <span class="campo__con-boton">
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autocomplete="new-password"
+                    required
+                    minlength="8"
+                    maxlength="200"
+                  />
+                  <button type="button" class="campo__ver" id="verPassword" aria-controls="password" aria-pressed="false">
+                    Ver
+                  </button>
+                </span>
+                <small>Mínimo 8 caracteres.</small>
+              </label>
+            </fieldset>
+
+            <fieldset class="bloque" id="bloqueColegio" hidden>
+              <legend><span class="bloque__num">2</span> El colegio</legend>
+              <label class="campo">
+                <span>Nombre del colegio</span>
+                <input id="colegio" name="colegio" autocomplete="organization" maxlength="200" />
+              </label>
+              <label class="campo">
+                <span>Ciudad</span>
+                <input id="colegioCiudad" name="colegioCiudad" autocomplete="address-level2" maxlength="100" />
+              </label>
+            </fieldset>
+
+            <fieldset class="bloque">
+              <legend><span class="bloque__num" id="numFacturacion">2</span> Datos para la factura</legend>
+              <div class="campo-par">
+                <label class="campo">
+                  <span>Tipo de documento</span>
+                  <select id="tipoDocumento" name="tipoDocumento" required>
+                    <option value="CC">Cédula de ciudadanía</option>
+                    <option value="NIT">NIT</option>
+                    <option value="CE">Cédula de extranjería</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </label>
+                <label class="campo">
+                  <span>Número</span>
+                  <input
+                    id="documento"
+                    name="documento"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    required
+                    minlength="5"
+                    maxlength="20"
+                    pattern="[0-9A-Za-z.\-]+"
+                  />
+                </label>
+              </div>
+              <label class="campo">
+                <span>Razón social <em>(opcional)</em></span>
+                <input id="razonSocial" name="razonSocial" autocomplete="organization" maxlength="200" />
+                <small>Si la factura debe salir a nombre de una empresa.</small>
+              </label>
+              <div class="campo-par">
+                <label class="campo">
+                  <span>Ciudad</span>
+                  <input id="ciudad" name="ciudad" autocomplete="address-level2" required minlength="2" maxlength="100" />
+                </label>
+                <label class="campo">
+                  <span>Teléfono <em>(opcional)</em></span>
+                  <input id="telefono" name="telefono" type="tel" autocomplete="tel" maxlength="40" />
+                </label>
+              </div>
+              <label class="campo">
+                <span>Dirección <em>(opcional)</em></span>
+                <input id="direccion" name="direccion" autocomplete="street-address" maxlength="250" />
+              </label>
+            </fieldset>
+
+            <label class="casilla">
+              <input id="terminos" name="terminos" type="checkbox" required />
+              <span>
+                Acepto los <a href="/terminos.html" target="_blank" rel="noopener">términos</a> y la
+                <a href="/privacidad.html" target="_blank" rel="noopener">política de tratamiento de datos</a>
+                (Ley 1581 de 2012).
+              </span>
+            </label>
+
+            <button class="boton boton--verde compra__boton" id="botonPagar" type="submit" disabled>
+              Continuar al pago
+            </button>
+            <p class="compra__seguridad">
+              🔒 No vemos ni guardamos los datos de tu tarjeta: los escribes en Mercado Pago.
+            </p>
+          </form>
+
+          <p class="compra__ya-tengo">
+            ¿Ya tienes cuenta? <a href="/app/portal">Entra al portal</a> para pagar o renovar tu plan.
+          </p>
+        </section>
+      </div>
+    </main>
+
+    <footer class="pie">
+      <div class="contenedor">
+        <p class="pie__legal compra__pie">
+          CodeNest School. Tratamiento de datos de menores conforme a la Ley 1581 de 2012.
+          <span id="anio"></span>
+        </p>
+      </div>
+    </footer>
+
+    <script src="/js/principal.js" defer></script>
+    <script src="/js/checkout.js" defer></script>
+  </body>
+</html>

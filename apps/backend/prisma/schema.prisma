@@ -149,6 +149,25 @@ enum EstadoPago {
   @@map("estado_pago")
 }
 
+/// Una factura no se borra nunca: se anula con motivo.
+enum EstadoFactura {
+  emitida
+  anulada
+
+  @@map("estado_factura")
+}
+
+/// "vencida" no se guarda: se calcula al leer comparando con `validaHasta`.
+enum EstadoCotizacion {
+  borrador
+  enviada
+  aceptada
+  pagada
+  anulada
+
+  @@map("estado_cotizacion")
+}
+
 // ─────────────────────── Instituciones y usuarios ─────────────────────────
 
 model Institution {
@@ -283,6 +302,9 @@ model User {
   // Comercial
   licencias         License[]
   perfilFacturacion BillingProfile?
+  pagos             Payment[]
+  facturas          Invoice[]
+  cotizaciones      Quote[]
 
   @@unique([origenExterno, origenExternoId])
   @@index([rol])
@@ -880,7 +902,8 @@ model Plan {
   activo        Boolean  @default(true)
   actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
 
-  licencias License[]
+  licencias    License[]
+  cotizaciones Quote[]
 
   @@map("planes")
 }
@@ -919,8 +942,13 @@ model License {
 /// Pago de una licencia a traves de Mercado Pago (Checkout API).
 /// El monto lo fija el servidor; el cliente solo envia el token de la tarjeta.
 model Payment {
-  id         Int @id @default(autoincrement())
-  licenciaId Int @map("licencia_id")
+  id           Int  @id @default(autoincrement())
+  /// Licencia que paga. Null si paga una cotizacion sin licencia, o si la
+  /// licencia se borro: el pago es un registro contable y no se va con ella.
+  licenciaId   Int? @map("licencia_id")
+  cotizacionId Int? @map("cotizacion_id")
+  /// Quien pago. Da el historial del portal aunque la licencia cambie.
+  usuarioId    Int? @map("usuario_id")
 
   mpPaymentId    String? @unique @map("mp_payment_id") @db.VarChar(60)
   mpPreferenceId String? @map("mp_preference_id") @db.VarChar(80)
@@ -931,20 +959,33 @@ model Payment {
   moneda   String     @default("COP") @db.VarChar(3)
   estado   EstadoPago @default(pendiente)
 
-  mpStatus       String? @map("mp_status") @db.VarChar(40)
-  mpStatusDetail String? @map("mp_status_detail") @db.VarChar(80)
-  /// tarjeta, pse, efectivo...
-  metodo         String? @db.VarChar(40)
-  emailComprador String  @map("email_comprador") @db.VarChar(255)
+  mpStatus         String?   @map("mp_status") @db.VarChar(40)
+  mpStatusDetail   String?   @map("mp_status_detail") @db.VarChar(80)
+  /// visa, master, pse, efecty, transferencia...
+  metodo           String?   @db.VarChar(40)
+  /// credit_card, debit_card, bank_transfer, ticket, account_money...
+  tipoMedio        String?   @map("tipo_medio") @db.VarChar(30)
+  cuotas           Int?
+  /// mercadopago | manual (una transferencia registrada por el administrador).
+  origen           String    @default("mercadopago") @db.VarChar(20)
+  referenciaManual String?   @map("referencia_manual") @db.VarChar(120)
+  registradoPorId  Int?      @map("registrado_por_id")
+  aprobadoEn       DateTime? @map("aprobado_en") @db.Timestamptz(6)
+  emailComprador   String    @map("email_comprador") @db.VarChar(255)
   /// Ultimo payload recibido por webhook (auditoria de conciliacion).
-  payloadWebhook Json?   @map("payload_webhook") @db.JsonB
+  payloadWebhook   Json?     @map("payload_webhook") @db.JsonB
 
   creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
   actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
 
-  licencia License @relation(fields: [licenciaId], references: [id], onDelete: Cascade)
+  licencia   License? @relation(fields: [licenciaId], references: [id], onDelete: SetNull)
+  cotizacion Quote?   @relation(fields: [cotizacionId], references: [id], onDelete: SetNull)
+  usuario    User?    @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  factura    Invoice?
 
   @@index([licenciaId])
+  @@index([cotizacionId])
+  @@index([usuarioId])
   @@index([estado])
   @@map("pagos")
 }
@@ -954,6 +995,8 @@ model BillingProfile {
   id            Int      @id @default(autoincrement())
   usuarioId     Int      @unique @map("usuario_id")
   razonSocial   String?  @map("razon_social") @db.VarChar(200)
+  /// CC, NIT, CE, PAS: Mercado Pago y la factura lo necesitan junto al numero.
+  tipoDocumento String   @default("CC") @map("tipo_documento") @db.VarChar(10)
   nitCedula     String   @map("nit_cedula") @db.VarChar(40)
   direccion     String?  @db.VarChar(250)
   ciudad        String   @db.VarChar(100)
@@ -964,6 +1007,118 @@ model BillingProfile {
   usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@map("perfiles_facturacion")
+}
+
+/// Factura comercial con numeracion propia.
+///
+/// No es factura electronica DIAN: esa exige un proveedor tecnologico
+/// autorizado. Guarda una FOTO del emisor, del cliente y de las lineas: si
+/// manana cambia el NIT en un perfil, la factura de ayer no cambia.
+model Invoice {
+  id               Int           @id @default(autoincrement())
+  numero           Int           @unique
+  prefijo          String        @default("FAC") @db.VarChar(10)
+  estado           EstadoFactura @default(emitida)
+  fechaEmision     DateTime      @default(now()) @map("fecha_emision") @db.Timestamptz(6)
+  fechaVencimiento DateTime?     @map("fecha_vencimiento") @db.Date
+
+  /// Cliente con cuenta: la ve en su portal. Null para clientes sin cuenta.
+  usuarioId Int? @map("usuario_id")
+
+  emisor        Json    @db.JsonB
+  cliente       Json    @db.JsonB
+  items         Json    @db.JsonB
+  subtotalCop   Int     @map("subtotal_cop")
+  descuentoCop  Int     @default(0) @map("descuento_cop")
+  ivaPorcentaje Int     @default(0) @map("iva_porcentaje")
+  ivaCop        Int     @default(0) @map("iva_cop")
+  totalCop      Int     @map("total_cop")
+  notas         String?
+
+  /// El pago que documenta: uno a uno, para no facturar dos veces lo mismo.
+  pagoId       Int? @unique @map("pago_id")
+  cotizacionId Int? @map("cotizacion_id")
+
+  /// Para compartirla con quien no tiene cuenta. No adivinable.
+  tokenPublico    String    @unique @map("token_publico") @db.VarChar(64)
+  anuladaEn       DateTime? @map("anulada_en") @db.Timestamptz(6)
+  motivoAnulacion String?   @map("motivo_anulacion")
+  creadoPorId     Int?      @map("creado_por_id")
+  creadoEn        DateTime  @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn   DateTime  @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  usuario    User?    @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  pago       Payment? @relation(fields: [pagoId], references: [id], onDelete: SetNull)
+  cotizacion Quote?   @relation(fields: [cotizacionId], references: [id], onDelete: SetNull)
+
+  @@index([usuarioId])
+  @@index([fechaEmision])
+  @@map("facturas")
+}
+
+/// Cotizacion: lo que pide compras de un colegio antes de aprobar un gasto.
+/// Se comparte por enlace y se puede pagar desde ahi con Mercado Pago.
+model Quote {
+  id           Int              @id @default(autoincrement())
+  numero       Int              @unique
+  prefijo      String           @default("COT") @db.VarChar(10)
+  estado       EstadoCotizacion @default(borrador)
+  fechaEmision DateTime         @default(now()) @map("fecha_emision") @db.Timestamptz(6)
+  validaHasta  DateTime         @map("valida_hasta") @db.Date
+
+  usuarioId Int? @map("usuario_id")
+  /// Plan que vende, si vende uno: al pagarse se puede activar la licencia.
+  planId    Int? @map("plan_id")
+
+  emisor        Json    @db.JsonB
+  cliente       Json    @db.JsonB
+  items         Json    @db.JsonB
+  subtotalCop   Int     @map("subtotal_cop")
+  descuentoCop  Int     @default(0) @map("descuento_cop")
+  ivaPorcentaje Int     @default(0) @map("iva_porcentaje")
+  ivaCop        Int     @default(0) @map("iva_cop")
+  totalCop      Int     @map("total_cop")
+  notas         String?
+  condiciones   String?
+
+  tokenPublico    String    @unique @map("token_publico") @db.VarChar(64)
+  urlPago         String?   @map("url_pago")
+  pagadaEn        DateTime? @map("pagada_en") @db.Timestamptz(6)
+  /// Licencia activada a partir de esta cotizacion, para no activarla dos veces.
+  licenciaId      Int?      @unique @map("licencia_id")
+  anuladaEn       DateTime? @map("anulada_en") @db.Timestamptz(6)
+  motivoAnulacion String?   @map("motivo_anulacion")
+  creadoPorId     Int?      @map("creado_por_id")
+  creadoEn        DateTime  @default(now()) @map("creado_en") @db.Timestamptz(6)
+  actualizadoEn   DateTime  @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  usuario  User?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  plan     Plan?     @relation(fields: [planId], references: [id], onDelete: SetNull)
+  pagos    Payment[]
+  facturas Invoice[]
+
+  @@index([usuarioId])
+  @@index([estado])
+  @@map("cotizaciones")
+}
+
+/// Ajustes editables desde el panel (por ahora, los datos de la empresa emisora).
+model Setting {
+  clave         String   @id @db.VarChar(60)
+  valor         Json     @db.JsonB
+  actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
+
+  @@map("ajustes")
+}
+
+/// Consecutivos sin huecos. Se toman con UPDATE ... RETURNING dentro de la
+/// misma transaccion que crea el documento: si la transaccion falla, el numero
+/// no se consume. Una secuencia de Postgres si dejaria huecos.
+model Counter {
+  clave  String @id @db.VarChar(40)
+  ultimo Int    @default(0)
+
+  @@map("consecutivos")
 }
 
 // ─────────────── Telemetria y metricas (tablas PARTICIONADAS) ─────────────

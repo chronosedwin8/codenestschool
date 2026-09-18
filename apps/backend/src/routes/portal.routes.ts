@@ -11,16 +11,13 @@
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 
-import { hashPin, LONGITUD_PIN } from '../services/auth.service.js';
-import { comprobarAccesoANino } from '../services/guardian.service.js';
+import { estadoEfectivoCotizacion, numeroDocumento } from '@codenest/shared';
+import { datosFacturacionSchema } from '@codenest/shared/zod';
 
-const facturacionSchema = z.object({
-  razonSocial: z.string().max(200).optional(),
-  nitCedula: z.string().min(4).max(40),
-  direccion: z.string().max(250).optional(),
-  ciudad: z.string().min(2).max(100),
-  telefono: z.string().max(40).optional(),
-});
+import { explicarRechazo } from '../lib/mercadopago.js';
+import { hashPin, LONGITUD_PIN } from '../services/auth.service.js';
+import { estadoEfectivoLicencia, licenciaVigente } from '../services/cobros.service.js';
+import { comprobarAccesoANino } from '../services/guardian.service.js';
 
 const cambiarPinSchema = z.object({
   ninoId: z.number().int().positive(),
@@ -28,85 +25,186 @@ const cambiarPinSchema = z.object({
 });
 
 export const portalRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-  /** Estado de la suscripción del titular. */
-  fastify.get(
-    '/suscripcion',
-    { preHandler: fastify.exigirRol('tutor', 'docente', 'admin_escuela') },
-    async (request, reply) => {
-      const licencia = await fastify.prisma.license.findFirst({
-        where: { titularId: request.user.id },
-        // La más reciente: una renovación crea una licencia nueva.
-        orderBy: [{ estado: 'asc' }, { creadoEn: 'desc' }],
-        include: {
-          plan: { select: { nombre: true, clave: true, precioCop: true, maxNinos: true } },
-          pagos: {
-            orderBy: { creadoEn: 'desc' },
-            take: 20,
-            select: {
-              id: true,
-              montoCop: true,
-              estado: true,
-              metodo: true,
-              creadoEn: true,
-              mpPaymentId: true,
-            },
-          },
-        },
-      });
+  const soloTitulares = fastify.exigirRol('tutor', 'docente', 'admin_escuela');
 
-      // Perfiles ya creados, para poder mostrar los cupos restantes.
-      const usados = await fastify.prisma.guardianLink.count({
-        where: { tutorId: request.user.id },
-      });
+  /**
+   * La suscripcion del titular: la licencia que le toca ver, su renovacion si
+   * la hay, y los cupos.
+   */
+  fastify.get('/suscripcion', { preHandler: soloTitulares }, async (request, reply) => {
+    const licencias = await fastify.prisma.license.findMany({
+      where: { titularId: request.user.id },
+      include: {
+        plan: { select: { id: true, nombre: true, clave: true, precioCop: true, maxNinos: true, activo: true } },
+        renovacion: { select: { id: true, estado: true, inicioVigencia: true, finVigencia: true } },
+      },
+    });
 
-      return reply.send({
-        licencia: licencia
-          ? {
-              id: licencia.id,
-              estado: licencia.estado,
-              inicioVigencia: licencia.inicioVigencia,
-              finVigencia: licencia.finVigencia,
-              // El código solo se entrega si la licencia está activa.
-              codigoAcceso: licencia.estado === 'activa' ? licencia.codigoAcceso : null,
-              plan: licencia.plan,
-            }
-          : null,
-        pagos: licencia?.pagos ?? [],
-        cupos: { usados, maximo: licencia?.plan.maxNinos ?? null },
-      });
-    },
-  );
+    // Una renovacion ya pagada que empieza en el futuro no desplaza a la que
+    // esta en curso: licenciaVigente prefiere la que cubre hoy, y la renovacion
+    // se muestra como tal debajo.
+    const vigente = licenciaVigente(licencias);
 
-  /** Datos de facturación del titular. */
-  fastify.get(
-    '/facturacion',
-    { preHandler: fastify.exigirRol('tutor', 'docente', 'admin_escuela') },
-    async (request, reply) => {
-      const perfil = await fastify.prisma.billingProfile.findUnique({
-        where: { usuarioId: request.user.id },
-      });
-      return reply.send({ perfil });
-    },
-  );
+    const usados = await fastify.prisma.guardianLink.count({
+      where: { tutorId: request.user.id },
+    });
 
-  fastify.put(
-    '/facturacion',
-    { preHandler: fastify.exigirRol('tutor', 'docente', 'admin_escuela') },
-    async (request, reply) => {
-      const datos = facturacionSchema.safeParse(request.body);
-      if (!datos.success) {
-        return reply.code(400).send({ error: 'Datos invalidos', detalles: datos.error.flatten() });
-      }
+    const ahora = new Date();
+    return reply.send({
+      licencia: vigente
+        ? {
+            id: vigente.id,
+            estado: estadoEfectivoLicencia(vigente, ahora),
+            inicioVigencia: vigente.inicioVigencia,
+            finVigencia: vigente.finVigencia,
+            // El codigo solo se entrega si la licencia esta activa.
+            codigoAcceso: vigente.estado === 'activa' ? vigente.codigoAcceso : null,
+            plan: vigente.plan,
+            renovacion: vigente.renovacion
+              ? {
+                  id: vigente.renovacion.id,
+                  estado: vigente.renovacion.estado,
+                  inicioVigencia: vigente.renovacion.inicioVigencia,
+                  finVigencia: vigente.renovacion.finVigencia,
+                }
+              : null,
+          }
+        : null,
+      cupos: { usados, maximo: vigente?.plan.maxNinos ?? null },
+    });
+  });
 
-      const perfil = await fastify.prisma.billingProfile.upsert({
-        where: { usuarioId: request.user.id },
-        update: datos.data,
-        create: { usuarioId: request.user.id, ...datos.data },
-      });
+  /**
+   * Todos los pagos del titular, de todas sus licencias.
+   *
+   * Antes solo se veian los de la licencia mostrada: tras renovar, el pago del
+   * ano anterior desaparecia del historial.
+   */
+  fastify.get('/pagos', { preHandler: soloTitulares }, async (request, reply) => {
+    const pagos = await fastify.prisma.payment.findMany({
+      where: {
+        OR: [{ usuarioId: request.user.id }, { licencia: { titularId: request.user.id } }],
+      },
+      orderBy: { creadoEn: 'desc' },
+      take: 100,
+      include: {
+        licencia: { select: { plan: { select: { nombre: true } } } },
+        cotizacion: { select: { prefijo: true, numero: true } },
+        factura: { select: { prefijo: true, numero: true, tokenPublico: true, estado: true } },
+      },
+    });
 
-      return reply.send({ perfil });
-    },
-  );
+    return reply.send({
+      pagos: pagos.map((p) => ({
+        id: p.id,
+        fecha: p.aprobadoEn ?? p.creadoEn,
+        montoCop: p.montoCop,
+        estado: p.estado,
+        // Por que se rechazo, dicho de forma que el cliente sepa que hacer.
+        motivo: p.estado === 'rechazado' ? explicarRechazo(p.mpStatusDetail) : null,
+        metodo: p.metodo,
+        tipoMedio: p.tipoMedio,
+        cuotas: p.cuotas,
+        origen: p.origen,
+        operacion: p.mpPaymentId ?? p.referenciaManual,
+        concepto: p.licencia
+          ? `Plan ${p.licencia.plan.nombre}`
+          : p.cotizacion
+            ? `Cotización ${numeroDocumento(p.cotizacion.prefijo, p.cotizacion.numero)}`
+            : 'Pago',
+        factura:
+          p.factura && p.factura.estado === 'emitida'
+            ? {
+                numero: numeroDocumento(p.factura.prefijo, p.factura.numero),
+                token: p.factura.tokenPublico,
+              }
+            : null,
+      })),
+    });
+  });
+
+  /** Las facturas del titular. Las anuladas tambien: desaparecer seria peor. */
+  fastify.get('/facturas', { preHandler: soloTitulares }, async (request, reply) => {
+    const facturas = await fastify.prisma.invoice.findMany({
+      where: { usuarioId: request.user.id },
+      orderBy: { fechaEmision: 'desc' },
+      take: 100,
+    });
+    return reply.send({
+      facturas: facturas.map((f) => ({
+        id: f.id,
+        numero: numeroDocumento(f.prefijo, f.numero),
+        fechaEmision: f.fechaEmision,
+        totalCop: f.totalCop,
+        estado: f.estado,
+        token: f.tokenPublico,
+      })),
+    });
+  });
+
+  /**
+   * Las cotizaciones dirigidas al titular. Los borradores no: todavia no se
+   * han enviado, y un precio en borrador no es una oferta.
+   */
+  fastify.get('/cotizaciones', { preHandler: soloTitulares }, async (request, reply) => {
+    const cotizaciones = await fastify.prisma.quote.findMany({
+      where: { usuarioId: request.user.id, estado: { not: 'borrador' } },
+      orderBy: { fechaEmision: 'desc' },
+      take: 50,
+    });
+    return reply.send({
+      cotizaciones: cotizaciones.map((c) => ({
+        id: c.id,
+        numero: numeroDocumento(c.prefijo, c.numero),
+        fechaEmision: c.fechaEmision,
+        validaHasta: c.validaHasta,
+        totalCop: c.totalCop,
+        estado: estadoEfectivoCotizacion(c.estado, c.validaHasta),
+        token: c.tokenPublico,
+      })),
+    });
+  });
+
+  /** Datos de facturacion del titular: lo que va en sus facturas. */
+  fastify.get('/facturacion', { preHandler: soloTitulares }, async (request, reply) => {
+    const perfil = await fastify.prisma.billingProfile.findUnique({
+      where: { usuarioId: request.user.id },
+    });
+    return reply.send({
+      perfil: perfil
+        ? {
+            tipoDocumento: perfil.tipoDocumento,
+            documento: perfil.nitCedula,
+            razonSocial: perfil.razonSocial,
+            direccion: perfil.direccion,
+            ciudad: perfil.ciudad,
+            telefono: perfil.telefono,
+          }
+        : null,
+    });
+  });
+
+  fastify.put('/facturacion', { preHandler: soloTitulares }, async (request, reply) => {
+    const datos = datosFacturacionSchema.safeParse(request.body);
+    if (!datos.success) {
+      return reply.code(400).send({ error: 'Revisa los datos', detalles: datos.error.flatten() });
+    }
+    const { documento, ...resto } = datos.data;
+    const valores = {
+      tipoDocumento: resto.tipoDocumento,
+      nitCedula: documento,
+      razonSocial: resto.razonSocial ?? null,
+      direccion: resto.direccion ?? null,
+      ciudad: resto.ciudad,
+      telefono: resto.telefono ?? null,
+    };
+    await fastify.prisma.billingProfile.upsert({
+      where: { usuarioId: request.user.id },
+      update: valores,
+      create: { usuarioId: request.user.id, ...valores },
+    });
+    return reply.send({ mensaje: 'Datos de facturación guardados.' });
+  });
 
   /**
    * Cambia el PIN de imágenes de un niño.
@@ -121,7 +219,7 @@ export const portalRoutes: FastifyPluginAsync = async (fastify: FastifyInstance)
     async (request, reply) => {
       const datos = cambiarPinSchema.safeParse(request.body);
       if (!datos.success) {
-        return reply.code(400).send({ error: 'Datos invalidos', detalles: datos.error.flatten() });
+        return reply.code(400).send({ error: 'Datos inválidos', detalles: datos.error.flatten() });
       }
 
       const acceso = await comprobarAccesoANino(
@@ -130,7 +228,7 @@ export const portalRoutes: FastifyPluginAsync = async (fastify: FastifyInstance)
         datos.data.ninoId,
       );
       if (!acceso.permitido) {
-        return reply.code(403).send({ error: 'Ese estudiante no esta a tu cargo' });
+        return reply.code(403).send({ error: 'Ese estudiante no está a tu cargo' });
       }
 
       await fastify.prisma.user.update({
@@ -157,7 +255,7 @@ export const portalRoutes: FastifyPluginAsync = async (fastify: FastifyInstance)
       const params = z
         .object({ ninoId: z.coerce.number().int().positive() })
         .safeParse(request.params);
-      if (!params.success) return reply.code(400).send({ error: 'Identificador invalido' });
+      if (!params.success) return reply.code(400).send({ error: 'Identificador inválido' });
 
       const ninoId = params.data.ninoId;
 
@@ -195,7 +293,7 @@ export const portalRoutes: FastifyPluginAsync = async (fastify: FastifyInstance)
       const params = z
         .object({ ninoId: z.coerce.number().int().positive() })
         .safeParse(request.params);
-      if (!params.success) return reply.code(400).send({ error: 'Identificador invalido' });
+      if (!params.success) return reply.code(400).send({ error: 'Identificador inválido' });
 
       const ninoId = params.data.ninoId;
 

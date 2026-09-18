@@ -7,7 +7,8 @@
  *   /         el sitio publico, optimizado para buscadores
  */
 import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 
 import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
@@ -16,10 +17,12 @@ import { cargarConfig, pagosConfigurados } from './lib/env.js';
 import { authPlugin } from './plugins/auth.js';
 import { prismaPlugin } from './plugins/prisma.js';
 import { securityPlugin } from './plugins/security.js';
+import { adminRoutes } from './routes/admin.routes.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { curriculumRoutes } from './routes/curriculum.routes.js';
 import { pagosRoutes } from './routes/pagos.routes.js';
 import { docenteRoutes } from './routes/docente.routes.js';
+import { documentosRoutes } from './routes/documentos.routes.js';
 import { juegosRoutes } from './routes/juegos.routes.js';
 import { mecanografiaRoutes } from './routes/mecanografia.routes.js';
 import { proyectosRoutes } from './routes/proyectos.routes.js';
@@ -89,6 +92,8 @@ export async function construirServidor(): Promise<FastifyInstance> {
   await fastify.register(proyectosRoutes, { prefix: '/api/proyectos' });
   await fastify.register(juegosRoutes, { prefix: '/api/juegos' });
   await fastify.register(mecanografiaRoutes, { prefix: '/api/mecanografia' });
+  await fastify.register(adminRoutes, { prefix: '/api/admin' });
+  await fastify.register(documentosRoutes, { prefix: '/api/documentos' });
 
   fastify.get('/health', async () => ({
     estado: 'ok',
@@ -122,6 +127,46 @@ export async function construirServidor(): Promise<FastifyInstance> {
   }
 
   if (existsSync(DIR_HOMEPAGE)) {
+    /**
+     * Las paginas que anuncian precios llevan el precio real en su JSON-LD.
+     *
+     * Los buscadores leen el precio de ahi, no de las tarjetas (que se pintan
+     * con JavaScript). Si estuviera escrito a mano en el HTML, el dia que el
+     * administrador cambiara un precio en el panel, Google seguiria mostrando el
+     * viejo. Las marcas `{{precio:personal}}` se sustituyen al servir.
+     */
+    const conPrecios = async (archivo: string) => {
+      const html = await readFile(join(DIR_HOMEPAGE, archivo), 'utf8');
+      const planes = await fastify.prisma.plan.findMany({
+        where: { activo: true },
+        select: { clave: true, precioCop: true },
+      });
+      const precios = new Map<string, number>(planes.map((p) => [p.clave, p.precioCop]));
+      const valores = planes.map((p) => p.precioCop);
+      precios.set('minimo', valores.length ? Math.min(...valores) : 0);
+      precios.set('maximo', valores.length ? Math.max(...valores) : 0);
+      return html
+        .replace(/\{\{precio:(\w+)\}\}/g, (_m, clave: string) => String(precios.get(clave) ?? 0))
+        // Para el texto que lee una persona (y la descripcion que muestra
+        // Google): "12.000.000", con los puntos de miles del espanol.
+        .replace(/\{\{precioTexto:(\w+)\}\}/g, (_m, clave: string) =>
+          (precios.get(clave) ?? 0).toLocaleString('es-CO'),
+        );
+    };
+    for (const [ruta, archivo] of [
+      ['/', 'index.html'],
+      ['/index.html', 'index.html'],
+      ['/planes.html', 'planes.html'],
+      ['/terminos.html', 'terminos.html'],
+    ] as const) {
+      fastify.get(ruta, async (_request, reply) =>
+        reply
+          .type('text/html; charset=utf-8')
+          .header('Cache-Control', 'public, max-age=60')
+          .send(await conPrecios(archivo)),
+      );
+    }
+
     await fastify.register(fastifyStatic, {
       root: DIR_HOMEPAGE,
       prefix: '/',
