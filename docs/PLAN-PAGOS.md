@@ -69,10 +69,12 @@ valor del plan leído de la base.
 
 ## 5. Lo que no se resuelve aquí (y hay que decir)
 
-- **Facturación electrónica DIAN.** En Colombia una factura con validez fiscal
-  es electrónica y pasa por un proveedor tecnológico autorizado (CUFE, XML UBL,
-  firma). Lo que se construye es el documento comercial con numeración propia.
-  Para validez fiscal hay que conectarlo a un proveedor (Siigo, Alegra…).
+- **Facturación electrónica DIAN.** CodeNest School es una empresa con sede en
+  los Estados Unidos y factura conforme a esa jurisdicción (decisión del
+  2026-09-18). Lo que se emite es un comprobante comercial con numeración propia,
+  y el portal, el pie de cada factura y el checkout lo dicen con el mismo texto
+  (`components/facturacion/aviso.ts`). Si algún día hubiera que expedir factura
+  electrónica colombiana, se conecta un proveedor autorizado (Siigo, Alegra…).
 - **IVA.** Queda como porcentaje por documento, con 0 % por defecto. Si aplica y
   cuánto lo decide el contador, no el código.
 - **Correo.** No hay proveedor de correo: los documentos se ven en el portal y el

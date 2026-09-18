@@ -25,6 +25,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { setTimeout as esperar } from 'node:timers/promises';
+import { parseEnv } from 'node:util';
 
 import { cargarEntorno, RUTA_ENV } from './lib/entorno.js';
 
@@ -76,20 +77,23 @@ function cabeceras(token: string): Record<string, string> {
   };
 }
 
-/** Lee una clave del .env sin volcar el archivo a la consola. */
+/**
+ * Lee una clave del .env sin volcar el archivo a la consola.
+ *
+ * Con `parseEnv` de Node, que entiende el formato igual que la aplicacion: quita
+ * las comillas y respeta los `#`. Antes se leia la linea en crudo, y un valor
+ * escrito entre comillas (`MP_ACCESS_TOKEN="APP_USR-..."`) subia a Coolify CON
+ * las comillas: Mercado Pago rechazaba el token y ninguna firma de aviso
+ * validaba. Se vio el 2026-09-18, por suerte antes de desplegar.
+ */
 function delEnv(clave: string): string | undefined {
   try {
-    const texto = readFileSync(RUTA_ENV, 'utf8');
-    for (const linea of texto.split(/\r?\n/)) {
-      if (linea.startsWith(`${clave}=`)) {
-        const valor = linea.slice(clave.length + 1).trim();
-        return valor === '' ? undefined : valor;
-      }
-    }
+    const valor = parseEnv(readFileSync(RUTA_ENV, 'utf8'))[clave]?.trim();
+    return valor ? valor : undefined;
   } catch {
     // Sin .env no hay nada que copiar; el llamador ya lo dira.
+    return undefined;
   }
-  return undefined;
 }
 
 interface VariableCoolify {
@@ -177,7 +181,14 @@ async function sincronizarVariables(claves: string[], soloVer: boolean): Promise
   console.log(`\nen produccion: ${finales.length - previas} | copias is_preview: ${previas} (debe ser 0)`);
   const puestas = claves.every((c) => finales.some((e) => e.key === c && !e.is_preview));
   console.log(`las pedidas estan: ${puestas ? 'si' : 'NO'}`);
-  if (!puestas) process.exit(1);
+  // Y que el valor es exactamente el del .env, sin comillas ni espacios de mas.
+  // No se imprime ningun valor: solo si coincide.
+  const conValor = finales as (VariableCoolify & { value?: string })[];
+  const distintas = claves.filter(
+    (c) => conValor.find((e) => e.key === c && !e.is_preview)?.value !== delEnv(c),
+  );
+  console.log(`valores identicos al .env: ${distintas.length === 0 ? 'si' : `NO (${distintas.join(', ')})`}`);
+  if (!puestas || distintas.length > 0) process.exit(1);
 }
 
 /** Encola un despliegue y espera a que termine. */

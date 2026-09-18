@@ -23,6 +23,7 @@ import { etiquetaMedio } from '@codenest/shared';
 import { api, borrarToken } from '@/api/cliente';
 import EstadoChip from '@/components/facturacion/EstadoChip.vue';
 import FormFacturacion from '@/components/facturacion/FormFacturacion.vue';
+import { AVISO_JURISDICCION } from '@/components/facturacion/aviso';
 import { cop, fecha } from '@/components/facturacion/formato';
 import '@/styles/adultos.css';
 
@@ -569,6 +570,9 @@ onMounted(cargar);
 
         <section class="a-panel">
           <h2>Facturas</h2>
+          <p class="aviso-legal" role="note">
+            <strong>Sobre nuestras facturas.</strong> {{ AVISO_JURISDICCION }}
+          </p>
           <p v-if="facturas.length === 0" class="a-vacio">
             Todavía no tienes facturas. Las emitimos después de cada pago aprobado.
           </p>
@@ -597,6 +601,7 @@ onMounted(cargar);
       <section v-else class="a-panel">
         <h2>Datos de facturación</h2>
         <p class="a-subtitulo parrafo">Es lo que sale en tus facturas. Si cambias algo, afecta a las próximas, no a las ya emitidas.</p>
+        <p class="aviso-legal" role="note">{{ AVISO_JURISDICCION }}</p>
         <FormFacturacion />
       </section>
     </template>
@@ -670,5 +675,17 @@ onMounted(cargar);
 .parrafo {
   margin: -0.4rem 0 1rem;
   max-width: 62ch;
+}
+
+/* Un aviso para leer, no una alerta: fondo neutro y texto del tamano del resto. */
+.aviso-legal {
+  max-width: 72ch;
+  padding: 0.8rem 1rem;
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  color: var(--tinta-suave);
+  background: var(--gris-claro);
+  border-left: 4px solid var(--azul-neon);
+  border-radius: 0 10px 10px 0;
 }
 </style>

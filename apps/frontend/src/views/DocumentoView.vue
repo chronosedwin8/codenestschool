@@ -17,6 +17,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { etiquetaMedio } from '@codenest/shared';
 
 import { api } from '@/api/cliente';
+import { AVISO_JURISDICCION_CORTO } from '@/components/facturacion/aviso';
 import { cop, fecha } from '@/components/facturacion/formato';
 
 interface Linea {
@@ -283,10 +284,7 @@ onMounted(async () => {
 
         <footer class="pie">
           <p v-if="doc.emisor.notaPie" class="texto-largo">{{ doc.emisor.notaPie }}</p>
-          <p v-if="tipo === 'factura'" class="pie__legal">
-            Documento comercial emitido por {{ doc.emisor.razonSocial }}. No reemplaza la factura electrónica de
-            venta ante la DIAN.
-          </p>
+          <p v-if="tipo === 'factura'" class="pie__legal">{{ AVISO_JURISDICCION_CORTO }}</p>
           <p v-else class="pie__legal">
             Cotización válida hasta la fecha indicada. Los precios están en pesos colombianos.
           </p>

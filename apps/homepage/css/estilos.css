@@ -1035,3 +1035,12 @@ img {
     padding: 1.15rem;
   }
 }
+
+.bloque__nota {
+  margin: 0;
+  padding: 0.75rem 0.95rem;
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+  background: var(--gris-claro);
+  border-radius: 14px;
+}
