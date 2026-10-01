@@ -33,11 +33,13 @@ import {
   panoramaDeAula,
   pinAleatorio,
   prepararPin,
+  seguimientoDeAula,
   type Actor,
 } from '../services/docente.service.js';
 import { descifrarPin, hayClaveDePin, pinAImagenes } from '../services/pin-visible.service.js';
 import {
   ErrorPhidias,
+  buscarPorCodigos,
   filtrarPorSeccion,
   matriculas,
   phidiasConfigurado,
@@ -78,6 +80,14 @@ const asignacionSchema = z
     titulo: z.string().max(200).optional(),
     instrucciones: z.string().max(2000).optional(),
     fechaLimite: z.coerce.date().optional(),
+    /**
+     * A quien va dirigida. Vacio o ausente: a todo el grupo.
+     *
+     * Son dos cosas distintas en la misma ruta porque para el docente es la
+     * misma accion con otro destinatario, y partirla en dos rutas obligaria a
+     * mantener dos veces las mismas comprobaciones.
+     */
+    ninoIds: z.array(z.number().int().positive()).max(60).optional(),
   })
   .refine((d) => d.mundoNumero !== undefined || d.actividadId !== undefined, {
     message: 'Indica un mundo o una actividad',
@@ -546,10 +556,49 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
           creadoEn: true,
           mundo: { select: { numero: true, nombre: true } },
           actividad: { select: { id: true, nombre: true, numeroEnMundo: true } },
+          destinatarios: { select: { nino: { select: { id: true, nombre: true } } } },
         },
       });
-      return reply.send({ tareas });
+      return reply.send({
+        tareas: tareas.map(({ destinatarios, ...t }) => ({
+          ...t,
+          // Sin destinatarios es del grupo entero. Se dice con una palabra y no
+          // con una lista vacia, que en la pantalla no se distingue de un fallo.
+          alcance: destinatarios.length > 0 ? 'estudiantes' : 'grupo',
+          destinatarios: destinatarios.map((d) => d.nino),
+        })),
+      });
     });
+  });
+
+  /**
+   * Las actividades de un mundo, para elegir una concreta al asignar.
+   *
+   * Es parecida a la del curriculo pero sin el progreso de quien pregunta: al
+   * docente le da igual por donde va el, y mezclar las dos cosas acaba
+   * ensenando su avance como si fuera el de la clase.
+   */
+  fastify.get('/mundos/:numero/actividades', { preHandler: soloDocentes }, async (request, reply) => {
+    const numero = Number((request.params as { numero: string }).numero);
+    if (!Number.isInteger(numero) || numero < 1 || numero > 30) {
+      return reply.code(400).send({ error: 'Numero de mundo invalido' });
+    }
+
+    const mundo = await fastify.prisma.world.findUnique({
+      where: { numero },
+      select: {
+        numero: true,
+        nombre: true,
+        actividades: {
+          where: { activo: true },
+          orderBy: { numeroEnMundo: 'asc' },
+          select: { id: true, numeroEnMundo: true, nombre: true, tipo: true },
+        },
+      },
+    });
+    if (!mundo) return reply.code(404).send({ error: 'Ese mundo no existe' });
+
+    return reply.send(mundo);
   });
 
   /** Asigna un mundo entero o una actividad concreta al grupo. */
@@ -561,7 +610,23 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
     }
 
     return responder(reply, async () => {
-      await aulaPermitida(fastify.prisma, aulaId, actorDe(request));
+      const actor = actorDe(request);
+      await aulaPermitida(fastify.prisma, aulaId, actor);
+
+      // Si la tarea va a unos pocos, tienen que estar en ESTE grupo: asignar a
+      // un estudiante de otra clase daria una tarea que su docente no ve.
+      const destinatarios = [...new Set(datos.data.ninoIds ?? [])];
+      if (destinatarios.length > 0) {
+        const delGrupo = await fastify.prisma.enrollment.findMany({
+          where: { aulaId, ninoId: { in: destinatarios } },
+          select: { ninoId: true },
+        });
+        if (delGrupo.length !== destinatarios.length) {
+          return reply
+            .code(400)
+            .send({ error: 'Alguno de los estudiantes elegidos no esta en este grupo' });
+        }
+      }
 
       let mundoId: number | null = null;
       if (datos.data.mundoNumero !== undefined) {
@@ -590,6 +655,9 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
           titulo: datos.data.titulo ?? null,
           instrucciones: datos.data.instrucciones ?? null,
           fechaLimite: datos.data.fechaLimite ?? null,
+          ...(destinatarios.length > 0
+            ? { destinatarios: { create: destinatarios.map((ninoId) => ({ ninoId })) } }
+            : {}),
         },
         select: {
           id: true,
@@ -597,10 +665,17 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
           fechaLimite: true,
           mundo: { select: { numero: true, nombre: true } },
           actividad: { select: { id: true, nombre: true } },
+          destinatarios: { select: { nino: { select: { id: true, nombre: true } } } },
         },
       });
 
-      return reply.code(201).send({ tarea });
+      return reply.code(201).send({
+        tarea: {
+          ...tarea,
+          alcance: destinatarios.length > 0 ? 'estudiantes' : 'grupo',
+          destinatarios: tarea.destinatarios.map((d) => d.nino),
+        },
+      });
     });
   });
 
@@ -625,6 +700,26 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
 
   const configPhidias = { baseUrl: config.PHIDIAS_BASE_URL, token: config.PHIDIAS_TOKEN };
 
+  /**
+   * Si esta persona puede consultar el sistema academico del colegio.
+   *
+   * Se pregunta a la base en cada llamada y no al token: el token dura dias, y
+   * un permiso que se quita esta tarde tiene que dejar de valer esta tarde, no
+   * cuando al docente le caduque la sesion.
+   */
+  const puedeUsarPhidias = async (usuarioId: number, rol: string): Promise<boolean> => {
+    if (rol === 'admin') return true;
+    const quien = await fastify.prisma.user.findUnique({
+      where: { id: usuarioId },
+      select: { phidiasHabilitado: true },
+    });
+    return quien?.phidiasHabilitado ?? false;
+  };
+
+  const SIN_PERMISO_PHIDIAS =
+    'Tu cuenta no tiene habilitada la importacion desde el sistema academico del colegio. ' +
+    'Pidela al administrador de CodeNest, o añade a los estudiantes pegando una lista.';
+
   /** Traduce los fallos de Phidias sin dejar escapar detalles internos. */
   const conPhidias = async <T>(
     reply: { code: (n: number) => { send: (c: unknown) => unknown } },
@@ -645,13 +740,72 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
    * Es lo primero que ve el docente al importar: elige de aqui una seccion
    * entera, o entra en ella para escoger nombre a nombre.
    */
-  fastify.get('/phidias/cursos', { preHandler: soloDocentes }, async (_request, reply) => {
+  fastify.get('/phidias/cursos', { preHandler: soloDocentes }, async (request, reply) => {
+    // El permiso se calcula SIEMPRE, incluso sin conexion configurada: es una
+    // propiedad de la cuenta, y la pantalla tiene que poder decir cual de las
+    // dos cosas falta.
+    const habilitadoAqui = await puedeUsarPhidias(request.user.id, request.user.rol);
     if (!phidiasConfigurado(configPhidias)) {
-      return reply.send({ disponible: false, secciones: [] });
+      return reply.send({ disponible: false, habilitado: habilitadoAqui, secciones: [] });
+    }
+    // Se distingue "el servidor no tiene conexion" de "tu cuenta no la tiene":
+    // lo que hay que hacer para arreglarlo no es lo mismo, y sin decirlo el
+    // docente se queda mirando una pantalla vacia.
+    if (!habilitadoAqui) {
+      return reply.send({
+        disponible: true,
+        habilitado: false,
+        secciones: [],
+        mensaje: SIN_PERMISO_PHIDIAS,
+      });
     }
     return conPhidias(reply, async () => {
       const { secciones } = await matriculas(configPhidias);
-      return reply.send({ disponible: true, secciones });
+      return reply.send({ disponible: true, habilitado: true, secciones });
+    });
+  });
+
+  /**
+   * Los estudiantes que corresponden a unos codigos.
+   *
+   * Va por POST y no por la query a proposito: lo que se teclea aqui puede ser
+   * el numero de documento de un menor, y la query de una peticion acaba en el
+   * registro de accesos del servidor. El codigo se usa para buscar y no vuelve
+   * dentro de la respuesta.
+   */
+  fastify.post('/phidias/buscar', { preHandler: soloDocentes }, async (request, reply) => {
+    const datos = z
+      .object({ codigos: z.array(z.string().trim().min(2).max(40)).min(1).max(100) })
+      .safeParse(request.body);
+    if (!datos.success) {
+      return reply.code(400).send({ error: 'Escribe al menos un codigo' });
+    }
+    // El permiso primero: a quien no lo tiene no se le dice ni si este
+    // servidor esta conectado con el colegio.
+    if (!(await puedeUsarPhidias(request.user.id, request.user.rol))) {
+      return reply.code(403).send({ error: SIN_PERMISO_PHIDIAS });
+    }
+    if (!phidiasConfigurado(configPhidias)) {
+      return reply.code(503).send({ error: 'Este servidor no tiene conexion con el colegio' });
+    }
+
+    return conPhidias(reply, async () => {
+      const datosPhidias = await matriculas(configPhidias);
+      const { encontrados, noEncontrados } = buscarPorCodigos(datosPhidias, datos.data.codigos);
+
+      const conocidos = await fastify.prisma.user.findMany({
+        where: {
+          origenExterno: 'phidias',
+          origenExternoId: { in: encontrados.map((e) => String(e.id)) },
+        },
+        select: { origenExternoId: true },
+      });
+      const yaEstan = new Set(conocidos.map((c) => c.origenExternoId));
+
+      return reply.send({
+        encontrados: encontrados.map((e) => ({ ...e, yaImportado: yaEstan.has(String(e.id)) })),
+        noEncontrados,
+      });
     });
   });
 
@@ -670,6 +824,9 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
       .safeParse(request.query);
     if (!consulta.success) return reply.code(400).send({ error: 'Consulta invalida' });
 
+    if (!(await puedeUsarPhidias(request.user.id, request.user.rol))) {
+      return reply.code(403).send({ error: SIN_PERMISO_PHIDIAS });
+    }
     if (!phidiasConfigurado(configPhidias)) {
       return reply.send({ disponible: false, estudiantes: [] });
     }
@@ -718,19 +875,28 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
       .object({
         seccionIds: z.array(z.number().int().positive()).max(60).optional(),
         estudianteIds: z.array(z.number().int().positive()).max(400).optional(),
+        /** Codigos tecleados por el docente, para los que llegan de uno en uno. */
+        codigos: z.array(z.string().trim().min(2).max(40)).max(100).optional(),
         pinComun: pinSchema.optional(),
       })
-      .refine((d) => (d.seccionIds?.length ?? 0) + (d.estudianteIds?.length ?? 0) > 0, {
-        message: 'Elige al menos una seccion o un estudiante',
-      })
+      .refine(
+        (d) =>
+          (d.seccionIds?.length ?? 0) + (d.estudianteIds?.length ?? 0) + (d.codigos?.length ?? 0) >
+          0,
+        { message: 'Elige al menos una seccion, un estudiante o un codigo' },
+      )
       .safeParse(request.body);
     if (!datos.success) {
       return reply.code(400).send({ error: 'Datos invalidos', detalles: datos.error.flatten() });
     }
+    if (!(await puedeUsarPhidias(request.user.id, request.user.rol))) {
+      return reply.code(403).send({ error: SIN_PERMISO_PHIDIAS });
+    }
 
     return conPhidias(reply, async () => {
       const aula = await aulaPermitida(fastify.prisma, aulaId, actorDe(request));
-      const { estudiantes } = await matriculas(configPhidias);
+      const datosPhidias = await matriculas(configPhidias);
+      const { estudiantes } = datosPhidias;
 
       // Un estudiante puede llegar por su seccion y ademas suelto: se juntan por
       // identificador para no intentar crearlo dos veces en la misma llamada.
@@ -741,8 +907,25 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
       const sueltos = new Set(datos.data.estudianteIds ?? []);
       for (const e of estudiantes) if (sueltos.has(e.id)) elegidos.set(e.id, e);
 
+      // Y los que llegan por codigo. Si alguno no existe no se cancela la
+      // importacion: se traen los que si, y se dice cual no se encontro.
+      const codigosFallidos =
+        datos.data.codigos && datos.data.codigos.length > 0
+          ? (() => {
+              const { encontrados, noEncontrados } = buscarPorCodigos(
+                datosPhidias,
+                datos.data.codigos,
+              );
+              for (const e of encontrados) elegidos.set(e.id, e);
+              return noEncontrados;
+            })()
+          : [];
+
       if (elegidos.size === 0) {
-        return reply.code(404).send({ error: 'Ninguno de los elegidos esta matriculado' });
+        return reply.code(404).send({
+          error: 'Ninguno de los elegidos esta matriculado',
+          ...(codigosFallidos.length > 0 ? { codigosSinEncontrar: codigosFallidos } : {}),
+        });
       }
 
       const resultado = await importarEstudiantes(fastify.prisma, {
@@ -768,7 +951,10 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
         ip: request.ip,
       });
 
-      return reply.code(201).send(resultado);
+      return reply.code(201).send({
+        ...resultado,
+        ...(codigosFallidos.length > 0 ? { codigosSinEncontrar: codigosFallidos } : {}),
+      });
     });
   });
 
@@ -791,6 +977,31 @@ export const docenteRoutes: FastifyPluginAsync = async (fastify: FastifyInstance
         estudiantes,
         ...panorama,
       });
+    });
+  });
+
+  /**
+   * La matriz de seguimiento: cada estudiante por cada cosa asignada.
+   *
+   * Es la tabla que un docente mira antes de entrar a clase. Una celda vacia
+   * significa que a ese estudiante no se le asigno eso, no que no lo haya
+   * hecho: son dos respuestas distintas y la tabla no las confunde.
+   */
+  fastify.get('/aulas/:aulaId/seguimiento', { preHandler: soloDocentes }, async (request, reply) => {
+    const aulaId = Number((request.params as { aulaId: string }).aulaId);
+
+    return responder(reply, async () => {
+      const aula = await aulaPermitida(fastify.prisma, aulaId, actorDe(request));
+      const seguimiento = await seguimientoDeAula(fastify.prisma, aulaId);
+
+      await anotarAcceso(fastify.prisma, {
+        actorId: request.user.id,
+        accion: 'ver_seguimiento',
+        recurso: `aula:${aulaId} (${seguimiento.filas.length})`,
+        ip: request.ip,
+      });
+
+      return reply.send({ aula: { id: aula.id, nombre: aula.nombre }, ...seguimiento });
     });
   });
 

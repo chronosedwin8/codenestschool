@@ -11,6 +11,7 @@ import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { api, borrarToken } from '@/api/cliente';
+import AdminColegios from '@/components/admin/AdminColegios.vue';
 import AdminCotizaciones from '@/components/admin/AdminCotizaciones.vue';
 import AdminEmpresa from '@/components/admin/AdminEmpresa.vue';
 import AdminEquipo from '@/components/admin/AdminEquipo.vue';
@@ -21,7 +22,15 @@ import AdminResumen from '@/components/admin/AdminResumen.vue';
 import type { EntradaEditor } from '@/components/facturacion/EditorDocumento.vue';
 import '@/styles/adultos.css';
 
-type Pestana = 'resumen' | 'planes' | 'pagos' | 'facturas' | 'cotizaciones' | 'equipo' | 'empresa';
+type Pestana =
+  | 'resumen'
+  | 'planes'
+  | 'pagos'
+  | 'facturas'
+  | 'cotizaciones'
+  | 'colegios'
+  | 'equipo'
+  | 'empresa';
 
 const PESTANAS: readonly { clave: Pestana; nombre: string }[] = [
   { clave: 'resumen', nombre: 'Resumen' },
@@ -29,6 +38,7 @@ const PESTANAS: readonly { clave: Pestana; nombre: string }[] = [
   { clave: 'pagos', nombre: 'Pagos y licencias' },
   { clave: 'facturas', nombre: 'Facturas' },
   { clave: 'cotizaciones', nombre: 'Cotizaciones' },
+  { clave: 'colegios', nombre: 'Colegios' },
   { clave: 'equipo', nombre: 'Equipo' },
   { clave: 'empresa', nombre: 'Empresa' },
 ];
@@ -94,6 +104,7 @@ onMounted(cargarPlanes);
       @borrador-usado="borradorFactura = null"
     />
     <AdminCotizaciones v-else-if="pestana === 'cotizaciones'" :planes="planes" @facturar="facturar" />
+    <AdminColegios v-else-if="pestana === 'colegios'" />
     <AdminEquipo v-else-if="pestana === 'equipo'" />
     <AdminEmpresa v-else />
   </div>

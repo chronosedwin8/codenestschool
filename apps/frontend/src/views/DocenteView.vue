@@ -19,6 +19,7 @@ import { api } from '@/api/cliente';
 import PanelAvance from '@/components/docente/PanelAvance.vue';
 import PanelCredenciales from '@/components/docente/PanelCredenciales.vue';
 import PanelEstudiantes from '@/components/docente/PanelEstudiantes.vue';
+import PanelSeguimiento from '@/components/docente/PanelSeguimiento.vue';
 import PanelTareas from '@/components/docente/PanelTareas.vue';
 import PanelJuegos from '@/components/docente/PanelJuegos.vue';
 import PanelMecanografia from '@/components/docente/PanelMecanografia.vue';
@@ -34,12 +35,20 @@ export interface Aula {
   readonly docente: { readonly id: number; readonly nombre: string };
 }
 
-type Pestana = 'estudiantes' | 'credenciales' | 'tareas' | 'avance' | 'juegos' | 'teclado';
+type Pestana =
+  | 'estudiantes'
+  | 'credenciales'
+  | 'tareas'
+  | 'seguimiento'
+  | 'avance'
+  | 'juegos'
+  | 'teclado';
 
 const PESTANAS: { clave: Pestana; etiqueta: string }[] = [
   { clave: 'estudiantes', etiqueta: 'Estudiantes' },
   { clave: 'credenciales', etiqueta: 'Credenciales' },
   { clave: 'tareas', etiqueta: 'Tareas' },
+  { clave: 'seguimiento', etiqueta: 'Seguimiento' },
   { clave: 'avance', etiqueta: 'Avance' },
   { clave: 'juegos', etiqueta: 'Juegos' },
   { clave: 'teclado', etiqueta: 'Mecanografia' },
@@ -190,6 +199,11 @@ onMounted(() => void cargarAulas());
         :puede-ver-pines="puedeVerPines"
       />
       <PanelTareas v-else-if="pestana === 'tareas'" :aula="aula" @cambio="cargarAulas(aula.id)" />
+      <!--
+        Seguimiento es la matriz de lo asignado; Avance es por donde va el grupo
+        en el juego entero. Son dos preguntas distintas y tienen dos pestañas.
+      -->
+      <PanelSeguimiento v-else-if="pestana === 'seguimiento'" :aula="aula" />
       <!--
         Los juegos no dependen del grupo elegido: la lista es de todos sus
         grupos, porque lo que el docente quiere ver de un vistazo es quien ha

@@ -511,3 +511,224 @@ describe('quien puede jugar', () => {
     expect(sesion.statusCode).toBe(201);
   });
 });
+
+describe('asignar a unos pocos y seguirlo', () => {
+  /** Los dos primeros de la lista: a ellos se les manda el repaso. */
+  let elegidos: { id: number; nombre: string }[] = [];
+  let tareaDeTodos = 0;
+  let tareaDePocos = 0;
+
+  it('una tarea puede ir solo a algunos estudiantes', async () => {
+    const lista = await app.inject({
+      method: 'GET',
+      url: `/api/docente/aulas/${aulaId}/estudiantes`,
+      headers: como(docente.token),
+    });
+    elegidos = (lista.json() as { estudiantes: { id: number; nombre: string }[] }).estudiantes.slice(
+      0,
+      2,
+    );
+
+    const actividad = await app.prisma.activity.findFirst({
+      where: { numeroGlobal: 2 },
+      select: { id: true },
+    });
+
+    const creada = await app.inject({
+      method: 'POST',
+      url: `/api/docente/aulas/${aulaId}/tareas`,
+      headers: como(docente.token),
+      payload: {
+        actividadId: actividad!.id,
+        titulo: 'Repaso del martes',
+        ninoIds: elegidos.map((e) => e.id),
+      },
+    });
+
+    expect(creada.statusCode).toBe(201);
+    const { tarea } = creada.json() as {
+      tarea: { id: number; alcance: string; destinatarios: { id: number }[] };
+    };
+    tareaDePocos = tarea.id;
+    expect(tarea.alcance).toBe('estudiantes');
+    expect(tarea.destinatarios.map((d) => d.id).sort()).toEqual(elegidos.map((e) => e.id).sort());
+  });
+
+  it('no se puede asignar a un estudiante de otro grupo', async () => {
+    const otroGrupo = await app.inject({
+      method: 'POST',
+      url: '/api/docente/aulas',
+      headers: como(docente.token),
+      payload: { nombre: 'Grupo de al lado' },
+    });
+    const otroId = (otroGrupo.json() as { aula: { id: number } }).aula.id;
+
+    const respuesta = await app.inject({
+      method: 'POST',
+      url: `/api/docente/aulas/${otroId}/tareas`,
+      headers: como(docente.token),
+      payload: { mundoNumero: 1, ninoIds: [elegidos[0]!.id] },
+    });
+
+    expect(respuesta.statusCode).toBe(400);
+    expect((respuesta.json() as { error: string }).error).toContain('no esta en este grupo');
+  });
+
+  it('la matriz solo tiene celda para quien recibio la tarea', async () => {
+    const delGrupo = await app.inject({
+      method: 'POST',
+      url: `/api/docente/aulas/${aulaId}/tareas`,
+      headers: como(docente.token),
+      payload: { mundoNumero: 1, titulo: 'Mundo uno para todos' },
+    });
+    tareaDeTodos = (delGrupo.json() as { tarea: { id: number } }).tarea.id;
+
+    const respuesta = await app.inject({
+      method: 'GET',
+      url: `/api/docente/aulas/${aulaId}/seguimiento`,
+      headers: como(docente.token),
+    });
+
+    expect(respuesta.statusCode).toBe(200);
+    const datos = respuesta.json() as {
+      asignaciones: { id: number; alcance: string; actividades: number }[];
+      filas: { id: number; celdas: Record<string, { porcentaje: number; total: number }> }[];
+      resumen: { estudiantes: number; sinEmpezar: number };
+    };
+
+    const cabecera = datos.asignaciones.find((a) => a.id === tareaDePocos)!;
+    expect(cabecera.alcance).toBe('estudiantes');
+    expect(cabecera.actividades).toBe(1);
+    expect(datos.asignaciones.find((a) => a.id === tareaDeTodos)!.actividades).toBe(20);
+
+    const elegido = datos.filas.find((f) => f.id === elegidos[0]!.id)!;
+    const resto = datos.filas.find((f) => !elegidos.some((e) => e.id === f.id))!;
+    expect(elegido.celdas[String(tareaDePocos)]).toBeDefined();
+    // Al que no se le asigno no le sale vacia: no le sale.
+    expect(resto.celdas[String(tareaDePocos)]).toBeUndefined();
+    expect(resto.celdas[String(tareaDeTodos)]).toBeDefined();
+    // Todos tienen el mundo uno asignado, asi que todos cuentan.
+    expect(datos.resumen.estudiantes).toBe(datos.filas.length);
+    expect(datos.resumen.sinEmpezar).toBe(datos.filas.length);
+  });
+
+  it('el porcentaje sube con lo que el estudiante termina', async () => {
+    const actividades = await app.prisma.activity.findMany({
+      where: { mundo: { numero: 1 } },
+      orderBy: { numeroEnMundo: 'asc' },
+      select: { id: true },
+      take: 20,
+    });
+    const quien = elegidos[0]!.id;
+
+    // Cinco de las veinte terminadas, y una empezada sin terminar: las dos
+    // senales que la matriz tiene que distinguir.
+    await app.prisma.userActivityProgress.createMany({
+      data: actividades.slice(0, 5).map((a) => ({
+        usuarioId: quien,
+        actividadId: a.id,
+        completada: true,
+        mejorEstrellas: 3,
+        intentosTotales: 1,
+      })),
+      skipDuplicates: true,
+    });
+    await app.prisma.userActivityProgress.create({
+      data: {
+        usuarioId: elegidos[1]!.id,
+        actividadId: actividades[0]!.id,
+        completada: false,
+        mejorEstrellas: 0,
+        intentosTotales: 4,
+      },
+    });
+
+    const respuesta = await app.inject({
+      method: 'GET',
+      url: `/api/docente/aulas/${aulaId}/seguimiento`,
+      headers: como(docente.token),
+    });
+    const datos = respuesta.json() as {
+      filas: {
+        id: number;
+        celdas: Record<string, { porcentaje: number; estrellas: number; empezada: boolean }>;
+      }[];
+      resumen: { iniciando: number; enProgreso: number; promedio: number };
+    };
+
+    const celda = datos.filas.find((f) => f.id === quien)!.celdas[String(tareaDeTodos)]!;
+    expect(celda.porcentaje).toBe(25);
+    expect(celda.estrellas).toBe(15);
+
+    const empezada = datos.filas.find((f) => f.id === elegidos[1]!.id)!.celdas[
+      String(tareaDeTodos)
+    ]!;
+    expect(empezada.porcentaje).toBe(0);
+    expect(empezada.empezada).toBe(true);
+
+    expect(datos.resumen.iniciando).toBe(1);
+    expect(datos.resumen.enProgreso).toBe(1);
+    expect(datos.resumen.promedio).toBeGreaterThan(0);
+  });
+
+  it('el seguimiento de un grupo ajeno no existe', async () => {
+    const respuesta = await app.inject({
+      method: 'GET',
+      url: `/api/docente/aulas/${aulaId}/seguimiento`,
+      headers: como(ajeno.token),
+    });
+
+    expect(respuesta.statusCode).toBe(404);
+  });
+});
+
+describe('el permiso para consultar el colegio', () => {
+  it('un docente nuevo no lo tiene', async () => {
+    const respuesta = await app.inject({
+      method: 'GET',
+      url: '/api/docente/phidias/cursos',
+      headers: como(docente.token),
+    });
+
+    expect(respuesta.statusCode).toBe(200);
+    expect((respuesta.json() as { habilitado: boolean }).habilitado).toBe(false);
+  });
+
+  it('y sin el no puede buscar por codigo, ni siquiera saber si hay conexion', async () => {
+    const respuesta = await app.inject({
+      method: 'POST',
+      url: '/api/docente/phidias/buscar',
+      headers: como(docente.token),
+      payload: { codigos: ['1234567'] },
+    });
+
+    expect(respuesta.statusCode).toBe(403);
+  });
+
+  it('ni importar', async () => {
+    const respuesta = await app.inject({
+      method: 'POST',
+      url: `/api/docente/aulas/${aulaId}/importar`,
+      headers: como(docente.token),
+      payload: { codigos: ['1234567'] },
+    });
+
+    expect(respuesta.statusCode).toBe(403);
+  });
+
+  it('cuando se lo dan, la pantalla lo sabe en el momento', async () => {
+    await app.prisma.user.update({
+      where: { id: docente.id },
+      data: { phidiasHabilitado: true },
+    });
+
+    // El mismo token de antes: el permiso no espera a que caduque la sesion.
+    const respuesta = await app.inject({
+      method: 'GET',
+      url: '/api/docente/phidias/cursos',
+      headers: como(docente.token),
+    });
+
+    expect((respuesta.json() as { habilitado: boolean }).habilitado).toBe(true);
+  });
+});

@@ -271,6 +271,14 @@ model User {
 
   institucionId Int?     @map("institucion_id")
   activo        Boolean  @default(true)
+
+  /// Si este docente puede traer estudiantes del sistema academico del colegio.
+  ///
+  /// Apagado por defecto a proposito: ese token abre el expediente de todos los
+  /// menores matriculados, y el permiso lo da el administrador uno a uno. Los
+  /// `admin` de la plataforma no lo necesitan.
+  phidiasHabilitado Boolean @default(false) @map("phidias_habilitado")
+
   creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
   actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz(6)
 
@@ -292,6 +300,7 @@ model User {
   metricas           UserMetricDaily[]
 
   // Relaciones tutor <-> nino
+  asignacionesRecibidas    AssignmentTarget[]
   ninosACargo              GuardianLink[]    @relation("TutorDeNinos")
   tutores                  GuardianLink[]    @relation("NinoDeTutores")
   consentimientosComoNino  ParentalConsent[] @relation("ConsentimientoNino")
@@ -431,14 +440,35 @@ model Assignment {
   fechaLimite   DateTime? @map("fecha_limite") @db.Date
   creadoEn      DateTime  @default(now()) @map("creado_en") @db.Timestamptz(6)
 
-  docente   User       @relation("DocenteAsignaciones", fields: [docenteId], references: [id], onDelete: Cascade)
-  aula      Classroom? @relation(fields: [aulaId], references: [id], onDelete: Cascade)
-  mundo     World?     @relation(fields: [mundoId], references: [id])
-  actividad Activity?  @relation(fields: [actividadId], references: [id])
+  docente       User               @relation("DocenteAsignaciones", fields: [docenteId], references: [id], onDelete: Cascade)
+  aula          Classroom?         @relation(fields: [aulaId], references: [id], onDelete: Cascade)
+  mundo         World?             @relation(fields: [mundoId], references: [id])
+  actividad     Activity?          @relation(fields: [actividadId], references: [id])
+  destinatarios AssignmentTarget[]
 
   @@index([aulaId])
   @@index([docenteId])
   @@map("asignaciones")
+}
+
+/// A quien va dirigida una asignacion dentro del grupo.
+///
+/// Sin ninguna fila, la tarea es de todo el grupo. Con filas, es solo de esos
+/// estudiantes: el repaso que necesitan tres, no los treinta. Se modela como
+/// lista aparte y no como un segundo tipo de asignacion para que el seguimiento
+/// sea uno solo y no dos tablas que se parecen.
+model AssignmentTarget {
+  id           Int      @id @default(autoincrement())
+  asignacionId Int      @map("asignacion_id")
+  ninoId       Int      @map("nino_id")
+  creadoEn     DateTime @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  asignacion Assignment @relation(fields: [asignacionId], references: [id], onDelete: Cascade)
+  nino       User       @relation(fields: [ninoId], references: [id], onDelete: Cascade)
+
+  @@unique([asignacionId, ninoId])
+  @@index([ninoId])
+  @@map("asignaciones_estudiantes")
 }
 
 // ────────────────────────── Audio (ElevenLabs) ────────────────────────────

@@ -683,3 +683,132 @@ export async function activarLicenciaDeCotizacion(
     return { licenciaId: licencia.id, cuentaNueva, codigoInstitucion };
   });
 }
+
+// ─────────────────────── Licencias otorgadas a mano ───────────────────────
+
+/** Quien puede ser titular de una licencia. Un nino nunca lo es. */
+const TITULARES = ['tutor', 'docente', 'admin_escuela', 'admin'] as const;
+
+export interface LicenciaOtorgada {
+  readonly licenciaId: number;
+  readonly planNombre: string;
+  readonly inicioVigencia: Date | null;
+  readonly finVigencia: Date | null;
+  readonly codigoAcceso: string | null;
+  readonly renuevaA: number | null;
+}
+
+/**
+ * Da un plan a alguien sin que medie un pago.
+ *
+ * Es lo que hace falta para un colegio que paga por transferencia, para un
+ * piloto y para el docente al que se le da acceso mientras se firma el
+ * contrato. Pasa por el MISMO camino que una compra (`activarLicenciaPagada`),
+ * y por eso hereda sus dos reglas: encadena con la licencia vigente del titular
+ * en vez de pisarla, y una renovacion empieza cuando acaba la anterior, no hoy.
+ *
+ * `dias` existe porque un piloto dura lo que dura, no 365; si no se indica,
+ * vale la vigencia del plan. Queda anotado quien la otorgo en el registro del
+ * servidor: no hay pago que lo explique, asi que tiene que explicarlo alguien.
+ */
+export async function otorgarLicencia(
+  prisma: PrismaClient,
+  datos: {
+    readonly planId: number;
+    readonly titularId: number;
+    readonly institucionId?: number | null;
+    readonly dias?: number;
+  },
+): Promise<LicenciaOtorgada> {
+  const [plan, titular] = await Promise.all([
+    prisma.plan.findUnique({ where: { id: datos.planId } }),
+    prisma.user.findUnique({
+      where: { id: datos.titularId },
+      select: { id: true, rol: true, activo: true, institucionId: true },
+    }),
+  ]);
+  if (!plan) throw new ErrorCobro('Ese plan no existe', 404);
+  if (!plan.activo) throw new ErrorCobro('Ese plan esta retirado: activalo antes de asignarlo', 409);
+  if (!titular) throw new ErrorCobro('Esa persona no existe', 404);
+  if (!(TITULARES as readonly string[]).includes(titular.rol)) {
+    throw new ErrorCobro('Un estudiante no puede ser titular de una licencia', 409);
+  }
+  if (!titular.activo) {
+    throw new ErrorCobro('Esa cuenta esta desactivada: reactivala antes de darle un plan', 409);
+  }
+
+  const institucionId =
+    datos.institucionId === undefined ? titular.institucionId : datos.institucionId;
+  if (institucionId !== null) {
+    const existe = await prisma.institution.findUnique({ where: { id: institucionId } });
+    if (!existe) throw new ErrorCobro('Esa institucion no existe', 404);
+  }
+
+  return prisma.$transaction(async (tx) => {
+    // Si ya tiene una vigente sin renovar, esta la prolonga en vez de competir
+    // con ella: dos licencias activas del mismo titular son una contabilidad
+    // imposible de explicar.
+    const vigentes = await tx.license.findMany({
+      where: { titularId: titular.id, estado: 'activa', renovacion: null },
+      orderBy: { finVigencia: 'desc' },
+      take: 1,
+    });
+    const anterior =
+      vigentes[0]?.finVigencia && vigentes[0].finVigencia > new Date() ? vigentes[0] : null;
+
+    const licencia = await tx.license.create({
+      data: {
+        planId: plan.id,
+        titularId: titular.id,
+        institucionId,
+        estado: 'pendiente',
+        renovadaDeId: anterior?.id ?? null,
+        codigoAcceso: generarCodigoAcceso('LIC'),
+      },
+    });
+
+    await activarLicenciaPagada(tx, licencia.id);
+
+    if (datos.dias !== undefined) {
+      const activada = await tx.license.findUniqueOrThrow({ where: { id: licencia.id } });
+      const hasta = new Date(activada.inicioVigencia ?? new Date());
+      hasta.setDate(hasta.getDate() + datos.dias);
+      await tx.license.update({ where: { id: licencia.id }, data: { finVigencia: hasta } });
+    }
+
+    const final = await tx.license.findUniqueOrThrow({
+      where: { id: licencia.id },
+      include: { plan: { select: { nombre: true } } },
+    });
+
+    return {
+      licenciaId: final.id,
+      planNombre: final.plan.nombre,
+      inicioVigencia: final.inicioVigencia,
+      finVigencia: final.finVigencia,
+      codigoAcceso: final.codigoAcceso,
+      renuevaA: final.renovadaDeId,
+    };
+  });
+}
+
+/**
+ * Cancela una licencia otorgada a mano.
+ *
+ * No se borra: una licencia es historia, y el titular tiene derecho a ver que
+ * la tuvo. Se marca `cancelada` y deja de contar como vigente.
+ */
+export async function cancelarLicencia(prisma: PrismaClient, licenciaId: number): Promise<void> {
+  const licencia = await prisma.license.findUnique({
+    where: { id: licenciaId },
+    include: { pagos: { where: { estado: 'aprobado' }, select: { id: true } } },
+  });
+  if (!licencia) throw new ErrorCobro('Esa licencia no existe', 404);
+  if (licencia.pagos.length > 0) {
+    throw new ErrorCobro(
+      'Esta licencia tiene un pago aprobado: reembolsa el pago en vez de cancelar la licencia',
+      409,
+    );
+  }
+  await prisma.license.update({ where: { id: licenciaId }, data: { estado: 'cancelada' } });
+}

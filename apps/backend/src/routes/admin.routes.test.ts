@@ -107,6 +107,9 @@ afterAll(async () => {
   await app.prisma.institution.deleteMany({
     where: { id: { in: creados.map((u) => u.institucionId).filter((x): x is number => x !== null) } },
   });
+  // Los colegios creados por el panel en esta ejecucion llevan la marca en el
+  // nombre: se borran por ahi, que es lo unico que los distingue.
+  await app.prisma.institution.deleteMany({ where: { nombre: { contains: marca } } });
   if (emisorPrevio) {
     await app.prisma.setting.upsert({
       where: { clave: 'emisor' },
@@ -456,5 +459,188 @@ describe('cotizaciones', () => {
     });
     expect(conMotivo.statusCode).toBe(200);
     expect(expiradas.length).toBe(antes + 1);
+  });
+});
+
+describe('colegios y planes', () => {
+  let colegioId = 0;
+  let docenteId = 0;
+
+  it('el administrador crea un colegio y recibe su codigo de acceso', async () => {
+    const r = await app.inject({
+      method: 'POST',
+      url: '/api/admin/instituciones',
+      headers: admin.auth,
+      payload: {
+        nombre: `Colegio Nuevo ${marca}`,
+        nit: `9001${marca.slice(-5)}`,
+        ciudad: 'Bogotá',
+        maxEstudiantes: 500,
+      },
+    });
+
+    expect(r.statusCode).toBe(201);
+    const { colegio } = r.json() as {
+      colegio: { id: number; codigoAcceso: string; maxEstudiantes: number };
+    };
+    colegioId = colegio.id;
+    expect(colegio.codigoAcceso).toMatch(/^COL/);
+    expect(colegio.maxEstudiantes).toBe(500);
+  });
+
+  it('el mismo NIT no entra dos veces', async () => {
+    const r = await app.inject({
+      method: 'POST',
+      url: '/api/admin/instituciones',
+      headers: admin.auth,
+      payload: { nombre: `Copia ${marca}`, nit: `9001${marca.slice(-5)}` },
+    });
+
+    expect(r.statusCode).toBe(409);
+  });
+
+  it('sale en la lista con lo que hay dentro', async () => {
+    const r = await app.inject({ method: 'GET', url: '/api/admin/instituciones', headers: admin.auth });
+    const { instituciones } = r.json() as {
+      instituciones: { id: number; estudiantes: number; adultos: number; grupos: number }[];
+    };
+    const mio = instituciones.find((i) => i.id === colegioId)!;
+    expect(mio.estudiantes).toBe(0);
+    expect(mio.grupos).toBe(0);
+  });
+
+  it('un tutor no crea colegios', async () => {
+    const r = await app.inject({
+      method: 'POST',
+      url: '/api/admin/instituciones',
+      headers: tutor.auth,
+      payload: { nombre: 'Colegio de nadie' },
+    });
+
+    expect(r.statusCode).toBe(403);
+  });
+
+  it('da un plan a un docente, y el docente lo ve como propio', async () => {
+    const email = `conplan.${marca}@colegio.local`;
+    correosCreados.push(email);
+    const creado = await app.inject({
+      method: 'POST',
+      url: '/api/admin/equipo',
+      headers: admin.auth,
+      payload: { nombre: 'Docente Con Plan', email, rol: 'docente', institucionId: colegioId },
+    });
+    const d = creado.json() as { miembro: { id: number }; passwordTemporal: string };
+    docenteId = d.miembro.id;
+
+    const plan = await app.prisma.plan.findFirstOrThrow({ where: { activo: true } });
+    const dado = await app.inject({
+      method: 'POST',
+      url: '/api/admin/licencias',
+      headers: admin.auth,
+      payload: { planId: plan.id, titularId: docenteId, dias: 30 },
+    });
+
+    expect(dado.statusCode).toBe(201);
+    const { licencia } = dado.json() as {
+      licencia: { licenciaId: number; finVigencia: string; codigoAcceso: string };
+    };
+    // Treinta dias y no los del plan: un piloto dura lo que dura.
+    const dias = Math.round(
+      (new Date(licencia.finVigencia).getTime() - Date.now()) / 86_400_000,
+    );
+    expect(dias).toBe(30);
+    expect(licencia.codigoAcceso).toMatch(/^LIC/);
+
+    // Y la ve en su portal, igual que si la hubiera comprado.
+    const entra = await app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: { email, password: d.passwordTemporal },
+    });
+    const suyo = await app.inject({
+      method: 'GET',
+      url: '/api/portal/suscripcion',
+      headers: { authorization: `Bearer ${(entra.json() as { token: string }).token}` },
+    });
+    expect(suyo.statusCode).toBe(200);
+    expect(JSON.stringify(suyo.json())).toContain(plan.nombre);
+  });
+
+  it('el plan sale en la lista del equipo y se puede retirar', async () => {
+    const lista = await app.inject({ method: 'GET', url: '/api/admin/equipo', headers: admin.auth });
+    const miembro = (
+      lista.json() as {
+        miembros: { id: number; licencias: { id: number; estado: string; pagada: boolean }[] }[];
+      }
+    ).miembros.find((m) => m.id === docenteId)!;
+
+    expect(miembro.licencias[0]!.estado).toBe('activa');
+    // No tiene pago: se puede retirar sin reembolsar nada.
+    expect(miembro.licencias[0]!.pagada).toBe(false);
+
+    const retirada = await app.inject({
+      method: 'POST',
+      url: `/api/admin/licencias/${miembro.licencias[0]!.id}/cancelar`,
+      headers: admin.auth,
+    });
+    expect(retirada.statusCode).toBe(200);
+  });
+
+  it('un estudiante no puede ser titular de un plan', async () => {
+    const nino = await app.prisma.user.create({
+      data: { usuario: `nino.plan.${marca}`, nombre: 'Nino Prueba', rol: 'nino' },
+    });
+    usuarios.push(nino.id);
+    const plan = await app.prisma.plan.findFirstOrThrow({ where: { activo: true } });
+
+    const r = await app.inject({
+      method: 'POST',
+      url: '/api/admin/licencias',
+      headers: admin.auth,
+      payload: { planId: plan.id, titularId: nino.id },
+    });
+
+    expect(r.statusCode).toBe(409);
+  });
+
+  it('el permiso de Phidias se enciende y se apaga desde la lista', async () => {
+    const encendido = await app.inject({
+      method: 'PATCH',
+      url: `/api/admin/equipo/${docenteId}`,
+      headers: admin.auth,
+      payload: { phidiasHabilitado: true },
+    });
+    expect(encendido.statusCode).toBe(200);
+    expect((encendido.json() as { miembro: { phidiasHabilitado: boolean } }).miembro.phidiasHabilitado).toBe(true);
+
+    const apagado = await app.inject({
+      method: 'PATCH',
+      url: `/api/admin/equipo/${docenteId}`,
+      headers: admin.auth,
+      payload: { phidiasHabilitado: false },
+    });
+    expect((apagado.json() as { miembro: { phidiasHabilitado: boolean } }).miembro.phidiasHabilitado).toBe(false);
+  });
+
+  it('bajar el cupo por debajo de los que ya estan dentro se rechaza', async () => {
+    const nino = await app.prisma.user.create({
+      data: {
+        usuario: `nino.cupo.${marca}`,
+        nombre: 'Nino Matriculado',
+        rol: 'nino',
+        institucionId: colegioId,
+      },
+    });
+    usuarios.push(nino.id);
+
+    const r = await app.inject({
+      method: 'PATCH',
+      url: `/api/admin/instituciones/${colegioId}`,
+      headers: admin.auth,
+      payload: { maxEstudiantes: 0 },
+    });
+
+    // Cero no es un cupo valido; con uno de dentro, tampoco vale menos de uno.
+    expect([400, 409]).toContain(r.statusCode);
   });
 });

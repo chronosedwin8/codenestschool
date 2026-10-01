@@ -783,3 +783,241 @@ export async function panoramaDeAula(
 
   return { necesitanApoyo, destacados, actividadesDificiles };
 }
+
+// ───────────────────── Seguimiento por asignacion ──────────────────────────
+
+export interface CeldaSeguimiento {
+  /** Cuanto de la asignacion lleva terminado, de 0 a 100. */
+  readonly porcentaje: number;
+  readonly completadas: number;
+  readonly total: number;
+  readonly estrellas: number;
+  readonly intentos: number;
+  /** Ha entrado y no ha terminado nada. No es lo mismo que no haber entrado. */
+  readonly empezada: boolean;
+}
+
+export interface FilaSeguimiento {
+  readonly id: number;
+  readonly nombre: string;
+  readonly usuario: string;
+  /** Solo las asignaciones que le tocan a este estudiante. */
+  readonly celdas: Record<number, CeldaSeguimiento>;
+  readonly porcentaje: number;
+}
+
+export interface AsignacionSeguimiento {
+  readonly id: number;
+  readonly titulo: string;
+  readonly tipo: 'mundo' | 'actividad';
+  readonly mundo: number | null;
+  readonly actividad: number | null;
+  readonly fechaLimite: Date | null;
+  readonly actividades: number;
+  readonly alcance: 'grupo' | 'estudiantes';
+  readonly destinatarios: number;
+}
+
+export interface SeguimientoAula {
+  readonly asignaciones: AsignacionSeguimiento[];
+  readonly filas: FilaSeguimiento[];
+  readonly resumen: {
+    readonly estudiantes: number;
+    readonly terminaronTodo: number;
+    readonly enProgreso: number;
+    readonly iniciando: number;
+    readonly sinEmpezar: number;
+    readonly promedio: number;
+  };
+}
+
+/**
+ * La matriz de estudiantes por asignacion.
+ *
+ * Es la pregunta que un docente hace mirando la clase entera: quien lleva hecho
+ * lo que le pedi. Por eso cada celda es el porcentaje de ESA asignacion y no de
+ * todo el juego: un nino puede ir por el mundo nueve y no haber tocado el
+ * repaso que se le mando el martes.
+ *
+ * Una asignacion dirigida a tres estudiantes solo tiene celda para esos tres;
+ * los demas no la ven en blanco, no la ven: es distinto.
+ *
+ * Toda la tabla sale de cuatro consultas, no de una por celda: treinta
+ * estudiantes por diez asignaciones son trescientas celdas.
+ */
+export async function seguimientoDeAula(
+  prisma: PrismaClient,
+  aulaId: number,
+): Promise<SeguimientoAula> {
+  const [inscripciones, asignaciones] = await Promise.all([
+    prisma.enrollment.findMany({
+      where: { aulaId },
+      orderBy: { nino: { nombre: 'asc' } },
+      select: { nino: { select: { id: true, nombre: true, usuario: true } } },
+    }),
+    prisma.assignment.findMany({
+      where: { aulaId },
+      orderBy: { creadoEn: 'asc' },
+      select: {
+        id: true,
+        titulo: true,
+        fechaLimite: true,
+        mundoId: true,
+        actividadId: true,
+        mundo: { select: { numero: true, nombre: true } },
+        actividad: {
+          select: {
+            id: true,
+            nombre: true,
+            numeroEnMundo: true,
+            mundo: { select: { numero: true } },
+          },
+        },
+        destinatarios: { select: { ninoId: true } },
+      },
+    }),
+  ]);
+
+  const estudiantes = inscripciones.map((i) => i.nino);
+
+  // Que actividades cuenta cada asignacion. Un mundo son las suyas (que no son
+  // siempre veinte: el curriculo crece), y una actividad es una.
+  const mundoIds = [
+    ...new Set(asignaciones.map((a) => a.mundoId).filter((n): n is number => n !== null)),
+  ];
+  const delMundo = new Map<number, number[]>();
+  if (mundoIds.length > 0) {
+    const actividades = await prisma.activity.findMany({
+      where: { mundoId: { in: mundoIds }, activo: true },
+      select: { id: true, mundoId: true },
+    });
+    for (const a of actividades) {
+      const lista = delMundo.get(a.mundoId) ?? [];
+      lista.push(a.id);
+      delMundo.set(a.mundoId, lista);
+    }
+  }
+
+  const alcanceDe = (a: (typeof asignaciones)[number]): number[] =>
+    a.actividadId !== null
+      ? [a.actividadId]
+      : a.mundoId !== null
+        ? (delMundo.get(a.mundoId) ?? [])
+        : [];
+
+  const todas = new Set<number>();
+  for (const a of asignaciones) for (const id of alcanceDe(a)) todas.add(id);
+
+  const progreso =
+    estudiantes.length > 0 && todas.size > 0
+      ? await prisma.userActivityProgress.findMany({
+          where: {
+            usuarioId: { in: estudiantes.map((e) => e.id) },
+            actividadId: { in: [...todas] },
+          },
+          select: {
+            usuarioId: true,
+            actividadId: true,
+            completada: true,
+            mejorEstrellas: true,
+            intentosTotales: true,
+          },
+        })
+      : [];
+
+  const porNinoYActividad = new Map<string, (typeof progreso)[number]>();
+  for (const p of progreso) porNinoYActividad.set(`${p.usuarioId}:${p.actividadId}`, p);
+
+  const cabeceras: AsignacionSeguimiento[] = asignaciones.map((a) => ({
+    id: a.id,
+    // Sin titulo propio vale el nombre de lo asignado, SIN el codigo: la
+    // columna ya lo lleva encima y repetirlo solo gasta el ancho que hace
+    // falta para leer el nombre.
+    titulo: a.titulo ?? a.actividad?.nombre ?? a.mundo?.nombre ?? 'Asignacion',
+    tipo: a.actividadId !== null ? 'actividad' : 'mundo',
+    mundo: a.actividad?.mundo.numero ?? a.mundo?.numero ?? null,
+    actividad: a.actividad?.numeroEnMundo ?? null,
+    fechaLimite: a.fechaLimite,
+    actividades: alcanceDe(a).length,
+    alcance: a.destinatarios.length > 0 ? 'estudiantes' : 'grupo',
+    destinatarios: a.destinatarios.length,
+  }));
+
+  const dirigidaA = new Map<number, Set<number> | null>(
+    asignaciones.map((a) => [
+      a.id,
+      a.destinatarios.length > 0 ? new Set(a.destinatarios.map((d) => d.ninoId)) : null,
+    ]),
+  );
+
+  const filas: FilaSeguimiento[] = estudiantes.map((nino) => {
+    const celdas: Record<number, CeldaSeguimiento> = {};
+    let suma = 0;
+    let cuantas = 0;
+
+    for (const a of asignaciones) {
+      const soloPara = dirigidaA.get(a.id);
+      if (soloPara && !soloPara.has(nino.id)) continue;
+
+      const ids = alcanceDe(a);
+      let completadas = 0;
+      let estrellas = 0;
+      let intentos = 0;
+      for (const actividadId of ids) {
+        const p = porNinoYActividad.get(`${nino.id}:${actividadId}`);
+        if (!p) continue;
+        if (p.completada) completadas += 1;
+        estrellas += p.mejorEstrellas;
+        intentos += p.intentosTotales;
+      }
+
+      const porcentaje = ids.length > 0 ? Math.round((completadas / ids.length) * 100) : 0;
+      celdas[a.id] = {
+        porcentaje,
+        completadas,
+        total: ids.length,
+        estrellas,
+        intentos,
+        empezada: completadas === 0 && intentos > 0,
+      };
+      suma += porcentaje;
+      cuantas += 1;
+    }
+
+    return {
+      id: nino.id,
+      nombre: nino.nombre,
+      usuario: nino.usuario,
+      celdas,
+      porcentaje: cuantas > 0 ? Math.round(suma / cuantas) : 0,
+    };
+  });
+
+  // Los contadores de arriba cuentan estudiantes CON algo asignado: decir que
+  // veinte no han empezado cuando no se les ha pedido nada seria mentir.
+  const conTarea = filas.filter((f) => Object.keys(f.celdas).length > 0);
+  const celdasDe = (f: FilaSeguimiento): CeldaSeguimiento[] => Object.values(f.celdas);
+  const terminaronTodo = conTarea.filter((f) => celdasDe(f).every((c) => c.porcentaje === 100)).length;
+  const iniciando = conTarea.filter(
+    (f) => celdasDe(f).every((c) => c.completadas === 0) && celdasDe(f).some((c) => c.empezada),
+  ).length;
+  const sinEmpezar = conTarea.filter((f) =>
+    celdasDe(f).every((c) => c.completadas === 0 && !c.empezada),
+  ).length;
+
+  return {
+    asignaciones: cabeceras,
+    filas,
+    resumen: {
+      estudiantes: conTarea.length,
+      terminaronTodo,
+      enProgreso: conTarea.length - terminaronTodo - iniciando - sinEmpezar,
+      iniciando,
+      sinEmpezar,
+      promedio:
+        conTarea.length > 0
+          ? Math.round(conTarea.reduce((t, f) => t + f.porcentaje, 0) / conTarea.length)
+          : 0,
+    },
+  };
+}

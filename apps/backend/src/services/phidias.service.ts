@@ -93,13 +93,38 @@ function fechaDe(valor: unknown): string | null {
   return fecha.toISOString().slice(0, 10);
 }
 
+/**
+ * Un codigo tal y como lo teclea un docente, reducido a lo que importa.
+ *
+ * Un numero de documento se escribe de seis formas distintas ("1.234.567",
+ * "1 234 567", "1234567-0") y el que lo dicta en voz alta no sabe cual eligio
+ * el colegio. Se comparan solo letras y numeros, sin acentos y en minuscula.
+ */
+function clave(valor: string): string {
+  return valor
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
 /** Aplana la jerarquia nivel -> curso -> seccion -> estudiantes. */
 function normalizar(crudo: readonly RespuestaCruda[]): {
   secciones: SeccionPhidias[];
   estudiantes: EstudiantePhidias[];
+  codigos: Map<string, number>;
 } {
   const secciones: SeccionPhidias[] = [];
   const estudiantes: EstudiantePhidias[] = [];
+  /**
+   * Codigo tecleable -> identificador en Phidias.
+   *
+   * El numero de documento entra AQUI y no en `EstudiantePhidias`: sirve para
+   * encontrar a un nino cuando el docente lo dicta, y no tiene por que viajar
+   * al navegador ni guardarse en ninguna parte. El indice vive y muere con la
+   * cache de este modulo.
+   */
+  const codigos = new Map<string, number>();
 
   for (const nivel of crudo) {
     for (const curso of nivel.courses ?? []) {
@@ -125,6 +150,13 @@ function normalizar(crudo: readonly RespuestaCruda[]): {
             [texto(bruto.lastname1), texto(bruto.lastname2)].filter(Boolean).join(' ');
           const nombre = texto(bruto.firstname);
           const email = texto(bruto.email);
+
+          for (const posible of [id, bruto.document, bruto.code, bruto.username]) {
+            const c = clave(texto(posible));
+            // Un codigo de una o dos cifras no identifica a nadie: lo tiene
+            // media clase por casualidad y traeria al nino equivocado.
+            if (c.length >= 3 && !codigos.has(c)) codigos.set(c, id);
+          }
 
           estudiantes.push({
             id,
@@ -154,7 +186,7 @@ function normalizar(crudo: readonly RespuestaCruda[]): {
       porApellido.compare(a.nombre, b.nombre),
   );
 
-  return { secciones, estudiantes };
+  return { secciones, estudiantes, codigos };
 }
 
 export interface ConfigPhidias {
@@ -166,9 +198,16 @@ export function phidiasConfigurado(config: ConfigPhidias): boolean {
   return Boolean(config.baseUrl && config.token);
 }
 
+export interface Matriculas {
+  readonly secciones: SeccionPhidias[];
+  readonly estudiantes: EstudiantePhidias[];
+  /** Indice interno de codigos; no se devuelve nunca al navegador. */
+  readonly codigos: Map<string, number>;
+}
+
 interface Cache {
   readonly momento: number;
-  readonly datos: { secciones: SeccionPhidias[]; estudiantes: EstudiantePhidias[] };
+  readonly datos: Matriculas;
 }
 
 let cache: Cache | null = null;
@@ -185,7 +224,7 @@ export function olvidarCachePhidias(): void {
 export async function matriculas(
   config: ConfigPhidias,
   opciones: { readonly refrescar?: boolean; readonly year?: number } = {},
-): Promise<{ secciones: SeccionPhidias[]; estudiantes: EstudiantePhidias[] }> {
+): Promise<Matriculas> {
   if (!phidiasConfigurado(config)) {
     throw new ErrorPhidias(503, 'El colegio no tiene configurada la conexion con Phidias');
   }
@@ -236,4 +275,34 @@ export function filtrarPorSeccion(
 ): EstudiantePhidias[] {
   const buscadas = new Set(seccionIds);
   return estudiantes.filter((e) => buscadas.has(e.seccionId));
+}
+
+/**
+ * Los estudiantes que corresponden a unos codigos dictados por el docente.
+ *
+ * Es la forma de armar un grupo de refuerzo sin recorrer veinte cursos: se
+ * teclean los codigos que vienen en la lista de matricula y se van anadiendo.
+ * Lo que no aparece se devuelve tal y como se escribio, para que el docente vea
+ * cual se equivoco y no un "algo fallo" que no dice nada.
+ *
+ * El codigo NO vuelve dentro del estudiante: solo sirve para encontrarlo.
+ */
+export function buscarPorCodigos(
+  datos: Matriculas,
+  codigos: readonly string[],
+): { encontrados: EstudiantePhidias[]; noEncontrados: string[] } {
+  const porId = new Map(datos.estudiantes.map((e) => [e.id, e]));
+  const encontrados = new Map<number, EstudiantePhidias>();
+  const noEncontrados: string[] = [];
+
+  for (const crudo of codigos) {
+    const escrito = crudo.trim();
+    if (escrito.length === 0) continue;
+    const id = datos.codigos.get(clave(escrito));
+    const estudiante = id === undefined ? undefined : porId.get(id);
+    if (estudiante) encontrados.set(estudiante.id, estudiante);
+    else noEncontrados.push(escrito);
+  }
+
+  return { encontrados: [...encontrados.values()], noEncontrados };
 }

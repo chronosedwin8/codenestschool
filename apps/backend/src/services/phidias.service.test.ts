@@ -16,6 +16,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   ErrorPhidias,
+  buscarPorCodigos,
   filtrarPorSeccion,
   matriculas,
   olvidarCachePhidias,
@@ -224,5 +225,60 @@ describe('cuando el colegio no responde bien', () => {
     }) as typeof fetch;
 
     await expect(matriculas(CONFIG)).rejects.toThrow(/no se pudo hablar/i);
+  });
+});
+
+describe('buscar por codigo', () => {
+  it('encuentra por numero de documento, aunque se escriba con puntos', async () => {
+    conRespuesta(RESPUESTA);
+    const datos = await matriculas(CONFIG);
+
+    const { encontrados, noEncontrados } = buscarPorCodigos(datos, ['1.234.567']);
+
+    expect(noEncontrados).toEqual([]);
+    expect(encontrados).toHaveLength(1);
+    expect(encontrados[0]!.id).toBe(3720);
+    // El codigo sirve para encontrarlo y no vuelve dentro de el: el documento
+    // de un menor no tiene por que viajar al navegador.
+    expect(Object.keys(encontrados[0]!)).not.toContain('document');
+  });
+
+  it('tambien por el identificador del colegio', async () => {
+    conRespuesta(RESPUESTA);
+    const datos = await matriculas(CONFIG);
+
+    const { encontrados } = buscarPorCodigos(datos, ['4000']);
+
+    expect(encontrados.map((e) => e.listado)).toEqual(['Zapata Diaz, Bruno']);
+  });
+
+  it('devuelve tal cual lo que no encontro, para poder corregirlo', async () => {
+    conRespuesta(RESPUESTA);
+    const datos = await matriculas(CONFIG);
+
+    const { encontrados, noEncontrados } = buscarPorCodigos(datos, ['4000', '99999', ' ', 'XYZ']);
+
+    expect(encontrados).toHaveLength(1);
+    expect(noEncontrados).toEqual(['99999', 'XYZ']);
+  });
+
+  it('el mismo estudiante dos veces entra una sola', async () => {
+    conRespuesta(RESPUESTA);
+    const datos = await matriculas(CONFIG);
+
+    const { encontrados } = buscarPorCodigos(datos, ['4000', '4000']);
+
+    expect(encontrados).toHaveLength(1);
+  });
+
+  it('junta estudiantes de secciones distintas en una sola lista', async () => {
+    conRespuesta(RESPUESTA);
+    const datos = await matriculas(CONFIG);
+
+    // Uno de KIN1 y uno de P1: es el grupo de refuerzo, que es justo el caso
+    // que antes obligaba a recorrer curso por curso.
+    const { encontrados } = buscarPorCodigos(datos, ['3721', '4000']);
+
+    expect(encontrados.map((e) => e.seccion).sort()).toEqual(['KIN1', 'P1']);
   });
 });
