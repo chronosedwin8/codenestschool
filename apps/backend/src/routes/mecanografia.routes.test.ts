@@ -351,13 +351,18 @@ describe('la practica', () => {
 });
 
 describe('quien puede entrar', () => {
-  it('el docente no practica, pero ve a su grupo', async () => {
+  it('el docente practica Y ve a su grupo', async () => {
+    // Practicar es parte de preparar la clase: el docente tiene su propia isla,
+    // y lo suyo no se mezcla con la tabla del aula, que sale de los inscritos.
     const suya = await app.inject({
       method: 'GET',
       url: '/api/mecanografia',
       headers: como(docente.token),
     });
-    expect(suya.statusCode).toBe(403);
+    expect(suya.statusCode).toBe(200);
+    expect((suya.json() as { resumen: { leccionesTotales: number } }).resumen.leccionesTotales).toBe(
+      LECCIONES.length,
+    );
 
     const aula = await app.inject({
       method: 'GET',

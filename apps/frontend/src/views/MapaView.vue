@@ -20,7 +20,7 @@ import BotonJuguete from '@/components/BotonJuguete.vue';
 import Cinematica from '@/components/Cinematica.vue';
 import FuzzAvatar from '@/components/FuzzAvatar.vue';
 import { CLAVE_APERTURA, claveEntrada, yaSeVio } from '@/composables/cinematicas';
-import { api } from '@/api/cliente';
+import { api, rolDelToken } from '@/api/cliente';
 import { useAudioStore } from '@/stores/audio';
 import { useTiendaStore } from '@/stores/tienda';
 
@@ -50,6 +50,16 @@ interface Actividad {
 
 const audio = useAudioStore();
 const tienda = useTiendaStore();
+
+/**
+ * Un docente o un administrador juegan para preparar la clase, no para competir.
+ * Se les dice en pantalla que su avance es suyo y no cuenta para ningun grupo:
+ * si no, el primero que vea sus estrellas en el mapa se preguntara si se estan
+ * mezclando con las de sus estudiantes.
+ */
+const rol = rolDelToken();
+const esAdultoDelColegio = ['docente', 'admin_escuela', 'admin'].includes(rol ?? '');
+const rutaDeVuelta = rol === 'admin' ? '/admin' : '/portal/docente';
 
 const mundos = ref<Mundo[]>([]);
 const cargando = ref(true);
@@ -183,6 +193,14 @@ onMounted(cargar);
       :recordar-como="cinematica.clave"
       @terminada="alTerminarCinematica"
     />
+
+    <p v-if="esAdultoDelColegio" class="modo-docente" role="status">
+      <span>
+        Estás jugando con tu cuenta del colegio: puedes hacer todas las actividades y tu avance
+        <strong>no cuenta para ningún grupo</strong>.
+      </span>
+      <RouterLink class="modo-docente__volver" :to="rutaDeVuelta">Volver a mi panel</RouterLink>
+    </p>
 
     <header class="mapa__cabecera">
       <FuzzAvatar
@@ -335,6 +353,31 @@ onMounted(cargar);
   max-width: 980px;
   margin: 0 auto;
   padding: var(--espacio-5) var(--espacio-4) var(--espacio-8);
+}
+
+.modo-docente {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto 1rem;
+  padding: 0.7rem 1.1rem;
+  font-size: var(--texto-xs);
+  font-weight: 700;
+  color: var(--tinta);
+  background: rgb(255 255 255 / 0.75);
+  border-radius: var(--radio-md);
+}
+
+.modo-docente__volver {
+  padding: 0.35rem 0.9rem;
+  color: white;
+  text-decoration: none;
+  background: var(--azul-neon-oscuro);
+  border-radius: var(--radio-total);
+  white-space: nowrap;
 }
 
 .mapa__cabecera {

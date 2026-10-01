@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 /**
  * Servicio de autenticacion.
  *
@@ -116,6 +117,17 @@ export async function generarUsuarioLibre(
  * Codigo de acceso corto y legible para aulas y licencias.
  * Alfabeto sin caracteres que se confunden (0/O, 1/I/L).
  */
+/**
+ * Contrasena temporal para una cuenta que crea otra persona.
+ *
+ * Sin caracteres que se confunden al dictarlos por telefono (0/O, 1/l/I): estas
+ * claves se leen en voz alta o se copian a mano mas veces de lo que parece.
+ */
+export function generarPasswordTemporal(): string {
+  const alfabeto = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from(randomBytes(14), (b) => alfabeto[b % alfabeto.length]).join('');
+}
+
 export function generarCodigoAcceso(prefijo: string): string {
   const alfabeto = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   let cuerpo = '';

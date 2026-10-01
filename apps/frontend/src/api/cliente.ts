@@ -45,6 +45,26 @@ export function borrarToken(): void {
   }
 }
 
+/**
+ * El rol que lleva el token, sin verificarlo.
+ *
+ * Sirve para decidir que se muestra, nunca a que datos se accede: eso lo decide
+ * el servidor. Manipular el token solo consigue ver una pantalla que la API va
+ * a rechazar igual.
+ */
+export function rolDelToken(): string | null {
+  const token = leerToken();
+  if (!token) return null;
+  try {
+    const carga = token.split('.')[1];
+    if (!carga) return null;
+    const json = atob(carga.replace(/-/g, '+').replace(/_/g, '/'));
+    return (JSON.parse(json) as { rol?: string }).rol ?? null;
+  } catch {
+    return null;
+  }
+}
+
 interface RespuestaError {
   readonly error?: string;
   readonly mensaje?: string;
@@ -52,7 +72,7 @@ interface RespuestaError {
 }
 
 async function peticion<T>(
-  metodo: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  metodo: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   ruta: string,
   cuerpo?: unknown,
 ): Promise<T> {
@@ -89,5 +109,6 @@ export const api = {
   get: <T>(ruta: string): Promise<T> => peticion<T>('GET', ruta),
   post: <T>(ruta: string, cuerpo?: unknown): Promise<T> => peticion<T>('POST', ruta, cuerpo),
   put: <T>(ruta: string, cuerpo?: unknown): Promise<T> => peticion<T>('PUT', ruta, cuerpo),
+  patch: <T>(ruta: string, cuerpo?: unknown): Promise<T> => peticion<T>('PATCH', ruta, cuerpo),
   delete: <T>(ruta: string): Promise<T> => peticion<T>('DELETE', ruta),
 };

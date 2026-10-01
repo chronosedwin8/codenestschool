@@ -28,7 +28,7 @@ import {
   traducirEstado,
   type PagoMercadoPago,
 } from '../lib/mercadopago.js';
-import { generarCodigoAcceso, hashPassword } from './auth.service.js';
+import { generarCodigoAcceso, generarPasswordTemporal, hashPassword } from './auth.service.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -554,12 +554,6 @@ export async function registrarPagoManual(
   });
 }
 
-function passwordTemporal(): string {
-  // Sin caracteres que se confunden al dictarlos por telefono (0/O, 1/l/I).
-  const alfabeto = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const bytes = randomBytes(14);
-  return Array.from(bytes, (b) => alfabeto[b % alfabeto.length]).join('');
-}
 
 /**
  * Activa la licencia que vende una cotizacion pagada.
@@ -628,7 +622,7 @@ export async function activarLicenciaDeCotizacion(
         });
         institucionId = inst.id;
       }
-      const clave = passwordTemporal();
+      const clave = generarPasswordTemporal();
       usuario = await tx.user.create({
         data: {
           usuario: cliente.email,

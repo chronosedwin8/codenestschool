@@ -58,6 +58,25 @@ declare module 'fastify' {
 /** Un admin de la plataforma pasa por encima de las comprobaciones de rol. */
 const ES_ADMIN = (rol: TokenUsuario['rol']): boolean => rol === 'admin';
 
+/**
+ * Quien puede jugar: los estudiantes y los adultos del colegio.
+ *
+ * Los docentes y los administradores juegan y hacen las actividades porque
+ * tienen que prepararlas: no se puede explicar el lunes un mundo que no se ha
+ * jugado. Su progreso es suyo y no entra en ninguna estadistica de aula, que se
+ * calculan sobre los estudiantes inscritos.
+ *
+ * El tutor (la familia) se queda fuera: su cuenta sirve para acompanar y pagar,
+ * y si jugara con ella, su progreso se confundiria con el de su hijo en el
+ * mismo portal. Para probar el juego, que entre con la cuenta del estudiante.
+ */
+const ROLES_QUE_JUEGAN = new Set<TokenUsuario['rol']>([
+  'nino',
+  'docente',
+  'admin_escuela',
+  'admin',
+]);
+
 async function plugin(fastify: FastifyInstance): Promise<void> {
   const config = cargarConfig();
 
@@ -81,12 +100,10 @@ async function plugin(fastify: FastifyInstance): Promise<void> {
       await reply.code(401).send({ error: 'No autenticado' });
       return;
     }
-    // Sin excepcion para el admin, a diferencia de `exigirRol`: el objetivo aqui
-    // no es el permiso sino que el progreso pertenezca a quien juega de verdad.
-    if (request.user.rol !== 'nino') {
+    if (!ROLES_QUE_JUEGAN.has(request.user.rol)) {
       await reply.code(403).send({
         error: 'Sin permiso',
-        mensaje: 'Las actividades son para las cuentas de estudiante',
+        mensaje: 'Para jugar, entra con la cuenta del estudiante.',
       });
     }
   });

@@ -101,6 +101,8 @@ afterAll(async () => {
   await app.prisma.invoice.deleteMany({ where: { OR: [{ creadoPorId: admin.id }, { cotizacionId: { in: cotIds } }] } });
   await app.prisma.payment.deleteMany({ where: { OR: [{ usuarioId: { in: ids } }, { cotizacionId: { in: cotIds } }] } });
   await app.prisma.quote.deleteMany({ where: { id: { in: cotIds } } });
+  // Los grupos van antes que sus docentes: la clave foranea no deja al reves.
+  await app.prisma.classroom.deleteMany({ where: { docenteId: { in: ids } } });
   await app.prisma.user.deleteMany({ where: { id: { in: ids } } });
   await app.prisma.institution.deleteMany({
     where: { id: { in: creados.map((u) => u.institucionId).filter((x): x is number => x !== null) } },
@@ -129,6 +131,89 @@ describe('acceso', () => {
     expect(d.configuracion.emisor).toBe(false);
     expect(d.configuracion.firmaWebhook).toBe(true);
     expect(d.configuracion.urlWebhook).toMatch(/\/api\/pagos\/webhook$/);
+  });
+});
+
+describe('equipo', () => {
+  let creadoId = 0;
+
+  it('el administrador crea un profesor y recibe su contrasena una vez', async () => {
+    const email = `profe.${marca}@colegio.local`;
+    correosCreados.push(email);
+    const r = await app.inject({
+      method: 'POST',
+      url: '/api/admin/equipo',
+      headers: admin.auth,
+      payload: { nombre: 'Marta Docente', email, rol: 'docente' },
+    });
+    expect(r.statusCode).toBe(201);
+    const d = r.json() as { miembro: { id: number; rol: string }; passwordTemporal: string };
+    creadoId = d.miembro.id;
+    expect(d.miembro.rol).toBe('docente');
+    expect(d.passwordTemporal.length).toBeGreaterThan(10);
+
+    // Y con esa contrasena entra de verdad.
+    const entra = await app.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: { email, password: d.passwordTemporal },
+    });
+    expect(entra.statusCode).toBe(200);
+
+    // Que es lo que hacia falta: ya puede crear su grupo.
+    const aula = await app.inject({
+      method: 'POST',
+      url: '/api/docente/aulas',
+      headers: { authorization: `Bearer ${(entra.json() as { token: string }).token}` },
+      payload: { nombre: `Grupo ${marca}`, grado: '5' },
+    });
+    expect(aula.statusCode).toBe(201);
+  });
+
+  it('no se crean dos cuentas con el mismo correo', async () => {
+    const email = `repe.${marca}@colegio.local`;
+    correosCreados.push(email);
+    const cuerpo = { nombre: 'Repetida', email, rol: 'docente' };
+    expect((await app.inject({ method: 'POST', url: '/api/admin/equipo', headers: admin.auth, payload: cuerpo })).statusCode).toBe(201);
+    const otra = await app.inject({ method: 'POST', url: '/api/admin/equipo', headers: admin.auth, payload: cuerpo });
+    expect(otra.statusCode).toBe(409);
+  });
+
+  it('un tutor no puede crear profesores', async () => {
+    const r = await app.inject({
+      method: 'POST',
+      url: '/api/admin/equipo',
+      headers: tutor.auth,
+      payload: { nombre: 'X', email: `cuela.${marca}@colegio.local`, rol: 'admin' },
+    });
+    expect(r.statusCode).toBe(403);
+  });
+
+  it('el administrador no puede desactivarse ni cambiarse el rol a si mismo', async () => {
+    for (const cambio of [{ activo: false }, { rol: 'docente' }]) {
+      const r = await app.inject({ method: 'PATCH', url: `/api/admin/equipo/${admin.id}`, headers: admin.auth, payload: cambio });
+      expect(r.statusCode).toBe(409);
+    }
+  });
+
+  it('nunca se queda la plataforma sin un administrador activo', async () => {
+    // Se asciende al docente creado y se degrada: con dos admins ya se puede.
+    const subir = await app.inject({ method: 'PATCH', url: `/api/admin/equipo/${creadoId}`, headers: admin.auth, payload: { rol: 'admin' } });
+    expect(subir.statusCode).toBe(200);
+    const bajar = await app.inject({ method: 'PATCH', url: `/api/admin/equipo/${creadoId}`, headers: admin.auth, payload: { rol: 'docente' } });
+    expect(bajar.statusCode).toBe(200);
+  });
+
+  it('desactivar quita el acceso sin borrar nada', async () => {
+    const apagar = await app.inject({ method: 'PATCH', url: `/api/admin/equipo/${creadoId}`, headers: admin.auth, payload: { activo: false } });
+    expect(apagar.statusCode).toBe(200);
+    const lista = (await app.inject({ method: 'GET', url: '/api/admin/equipo', headers: admin.auth })).json() as {
+      miembros: { id: number; activo: boolean; aulas: number }[];
+    };
+    const suyo = lista.miembros.find((m) => m.id === creadoId)!;
+    expect(suyo.activo).toBe(false);
+    // Su grupo sigue existiendo.
+    expect(suyo.aulas).toBe(1);
   });
 });
 

@@ -390,36 +390,47 @@ describe('mover estudiantes entre grupos', () => {
 });
 
 /**
- * Jugar es de los estudiantes.
+ * Quien puede jugar.
  *
- * Un adulto que abre una sesion y envia un programa no comete una travesura: se
- * crea progreso, estrellas y monedas en SU cuenta, y ese ruido acaba en los
- * agregados del aula, que es justo lo que el docente mira para decidir a quien
- * se sienta al lado.
+ * Los estudiantes y los adultos del colegio: un docente no puede explicar el
+ * lunes un mundo que no ha jugado, y un administrador tiene que poder ver lo
+ * que vende. Su progreso es suyo y no entra en los agregados del aula, que se
+ * calculan sobre los estudiantes inscritos.
  *
- * Se comprueba con un administrador a proposito. `exigirRol` deja pasar siempre
- * al admin —y para las rutas administrativas esta bien— asi que si estas rutas
- * usaran esa guarda, la prueba lo cazaria.
+ * La familia no: su cuenta sirve para acompanar y pagar, y jugar con ella
+ * mezclaria su progreso con el de su hijo en el mismo portal.
  */
-describe('las actividades son para las cuentas de estudiante', () => {
-  it('un docente no puede abrir una sesion de juego', async () => {
-    const actividad = await app.prisma.activity.findFirst({
+describe('quien puede jugar', () => {
+  async function primeraActividad(): Promise<number> {
+    const actividad = await app.prisma.activity.findFirstOrThrow({
       where: { numeroGlobal: 1 },
       select: { id: true },
     });
+    return actividad.id;
+  }
 
-    const respuesta = await app.inject({
+  const abrirSesion = async (token: string) =>
+    app.inject({
       method: 'POST',
       url: '/api/sesiones',
-      headers: como(docente.token),
-      payload: { actividadId: actividad!.id, editor: 'comandos', lenguaje: 'comandos' },
+      headers: como(token),
+      payload: { actividadId: await primeraActividad(), editor: 'comandos', lenguaje: 'comandos' },
     });
 
-    expect(respuesta.statusCode).toBe(403);
+  it('un docente abre una sesion de juego y manda su telemetria', async () => {
+    expect((await abrirSesion(docente.token)).statusCode).toBe(201);
+
+    const telemetria = await app.inject({
+      method: 'POST',
+      url: '/api/telemetria/eventos',
+      headers: como(docente.token),
+      payload: { eventos: [{ evento: 'actividad_iniciada', datos: {} }] },
+    });
+    expect(telemetria.statusCode).toBe(200);
   });
 
-  it('ni siquiera un administrador de la plataforma', async () => {
-    const admin = await app.inject({
+  it('un administrador tambien', async () => {
+    const alta = await app.inject({
       method: 'POST',
       url: '/api/auth/registro',
       payload: {
@@ -429,9 +440,9 @@ describe('las actividades son para las cuentas de estudiante', () => {
         rol: 'tutor',
       },
     });
-    const datos = admin.json() as { usuario: { id: number } };
+    const datos = alta.json() as { usuario: { id: number } };
     creados.push(datos.usuario.id);
-    // Se asciende a admin por la base: no hay ruta publica para crear uno.
+    // Se asciende por la base: no hay ruta publica para crear un admin.
     await app.prisma.user.update({ where: { id: datos.usuario.id }, data: { rol: 'admin' } });
 
     const acceso = await app.inject({
@@ -439,29 +450,26 @@ describe('las actividades son para las cuentas de estudiante', () => {
       url: '/api/auth/login',
       payload: { email: `admin.${marca}@prueba.local`, password: PASSWORD },
     });
-    const tokenAdmin = (acceso.json() as { token: string }).token;
+    expect((await abrirSesion((acceso.json() as { token: string }).token)).statusCode).toBe(201);
+  });
 
-    const actividad = await app.prisma.activity.findFirst({
-      where: { numeroGlobal: 1 },
-      select: { id: true },
-    });
-    const sesion = await app.inject({
+  it('la familia no: se le manda a la cuenta del estudiante', async () => {
+    const alta = await app.inject({
       method: 'POST',
-      url: '/api/sesiones',
-      headers: como(tokenAdmin),
-      payload: { actividadId: actividad!.id, editor: 'comandos', lenguaje: 'comandos' },
+      url: '/api/auth/registro',
+      payload: {
+        nombre: 'Tutor Prueba',
+        email: `tutor.juega.${marca}@prueba.local`,
+        password: PASSWORD,
+        rol: 'tutor',
+      },
     });
+    const datos = alta.json() as { token: string; usuario: { id: number } };
+    creados.push(datos.usuario.id);
 
+    const sesion = await abrirSesion(datos.token);
     expect(sesion.statusCode).toBe(403);
-
-    // Y tampoco puede mandar telemetria de juego.
-    const telemetria = await app.inject({
-      method: 'POST',
-      url: '/api/telemetria/eventos',
-      headers: como(tokenAdmin),
-      payload: { eventos: [{ evento: 'actividad_iniciada', datos: {} }] },
-    });
-    expect(telemetria.statusCode).toBe(403);
+    expect((sesion.json() as { mensaje: string }).mensaje).toContain('cuenta del estudiante');
   });
 
   it('pero un estudiante si', async () => {

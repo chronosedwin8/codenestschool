@@ -514,14 +514,16 @@ describe('la zona de juegos publicados', () => {
   });
 });
 
-describe('el taller es de los estudiantes', () => {
-  it('un docente no crea juegos', async () => {
+describe('quien entra al taller', () => {
+  it('un docente tambien hace juegos: es como prepara el ejemplo de la clase', async () => {
     const r = await app.inject({
       method: 'POST',
       url: '/api/proyectos',
       headers: como(docente.token),
     });
-    expect(r.statusCode).toBe(403);
+    expect(r.statusCode).toBe(201);
+    const creado = (r.json() as { proyecto: { id: number } }).proyecto;
+    await app.prisma.gameProject.delete({ where: { id: creado.id } });
   });
 
   it('sin sesion no hay taller', async () => {

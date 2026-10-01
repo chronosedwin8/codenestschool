@@ -20,6 +20,7 @@ import {
 } from '@codenest/shared/zod';
 
 import { cargarConfig, pagosConfigurados } from '../lib/env.js';
+import { generarPasswordTemporal, hashPassword } from '../services/auth.service.js';
 import { ErrorMercadoPago, obtenerPago } from '../lib/mercadopago.js';
 import {
   ErrorCobro,
@@ -57,6 +58,24 @@ const pagoManualSchema = z
   });
 
 const motivoSchema = z.object({ motivo: z.string().trim().min(5).max(500) });
+
+/** Roles que el panel puede repartir. Nunca `nino` ni `tutor`: esos nacen de otra forma. */
+const rolEquipoSchema = z.enum(['docente', 'admin_escuela', 'admin']);
+
+const nuevoMiembroSchema = z.object({
+  nombre: z.string().trim().min(2).max(150),
+  email: z.string().trim().toLowerCase().email().max(255),
+  rol: rolEquipoSchema,
+  institucionId: z.number().int().positive().nullable().optional(),
+});
+
+const cambioMiembroSchema = z
+  .object({
+    rol: rolEquipoSchema.optional(),
+    activo: z.boolean().optional(),
+    institucionId: z.number().int().positive().nullable().optional(),
+  })
+  .refine((d) => Object.keys(d).length > 0, { message: 'No hay nada que cambiar' });
 
 const estadoCotizacionSchema = z.object({
   estado: z.enum(['enviada', 'aceptada', 'anulada']),
@@ -527,6 +546,161 @@ export const adminRoutes: FastifyPluginAsync = async (fastify: FastifyInstance) 
         cotizacionId: c.id,
       },
     });
+  });
+
+  // ────────────────────────────── Equipo ──────────────────────────────
+
+  /**
+   * Las personas que trabajan en la plataforma: docentes y administradores.
+   *
+   * Un docente se crea aqui y entra con su correo del colegio (por SSO de
+   * Microsoft, si su dominio esta habilitado) o con la contrasena temporal que
+   * se muestra UNA vez. Las familias y los estudiantes no salen en esta lista:
+   * nacen de una compra o del alta que hace su docente.
+   */
+  fastify.get('/equipo', async (_request, reply) => {
+    const miembros = await fastify.prisma.user.findMany({
+      where: { rol: { in: ['docente', 'admin_escuela', 'admin'] } },
+      orderBy: [{ activo: 'desc' }, { nombre: 'asc' }],
+      select: {
+        id: true,
+        nombre: true,
+        email: true,
+        rol: true,
+        activo: true,
+        origenExterno: true,
+        creadoEn: true,
+        ultimaActividad: true,
+        institucion: { select: { id: true, nombre: true } },
+        _count: { select: { aulasComoDocente: true } },
+      },
+    });
+
+    return reply.send({
+      miembros: miembros.map((m) => ({
+        id: m.id,
+        nombre: m.nombre,
+        email: m.email,
+        rol: m.rol,
+        activo: m.activo,
+        // "entra" = entra con la cuenta del colegio; sin esto no se sabe si una
+        // cuenta inactiva se desactivo o es que nunca ha entrado.
+        entraCon: m.origenExterno === 'entra' ? 'Microsoft del colegio' : 'correo y contraseña',
+        institucion: m.institucion,
+        aulas: m._count.aulasComoDocente,
+        creadoEn: m.creadoEn,
+        ultimaActividad: m.ultimaActividad,
+      })),
+    });
+  });
+
+  fastify.get('/instituciones', async (_request, reply) => {
+    const instituciones = await fastify.prisma.institution.findMany({
+      orderBy: { nombre: 'asc' },
+      select: { id: true, nombre: true, ciudad: true, _count: { select: { usuarios: true } } },
+    });
+    return reply.send({
+      instituciones: instituciones.map((i) => ({
+        id: i.id,
+        nombre: i.nombre,
+        ciudad: i.ciudad,
+        personas: i._count.usuarios,
+      })),
+    });
+  });
+
+  fastify.post('/equipo', async (request, reply) => {
+    const datos = nuevoMiembroSchema.safeParse(request.body);
+    if (!datos.success) {
+      return reply.code(400).send({ error: 'Revisa los datos', detalles: datos.error.flatten() });
+    }
+    const { nombre, email, rol, institucionId } = datos.data;
+
+    const yaExiste = await fastify.prisma.user.findUnique({
+      where: { email },
+      select: { id: true, rol: true },
+    });
+    if (yaExiste) {
+      return reply.code(409).send({
+        error: `Ya hay una cuenta con ese correo (${yaExiste.rol}). Cámbiale el rol en la lista en vez de crear otra.`,
+      });
+    }
+    if (institucionId) {
+      const inst = await fastify.prisma.institution.findUnique({ where: { id: institucionId } });
+      if (!inst) return reply.code(404).send({ error: 'Esa institución no existe' });
+    }
+
+    const passwordTemporal = generarPasswordTemporal();
+    const creado = await fastify.prisma.user.create({
+      data: {
+        usuario: email,
+        email,
+        nombre,
+        rol,
+        institucionId: institucionId ?? null,
+        passwordHash: await hashPassword(passwordTemporal),
+      },
+      select: { id: true, nombre: true, email: true, rol: true },
+    });
+
+    fastify.log.info({ creadoId: creado.id, rol, admin: request.user.id }, 'Miembro del equipo creado');
+    // La contrasena se devuelve UNA vez: no se guarda en claro en ningun sitio.
+    return reply.code(201).send({ miembro: creado, passwordTemporal });
+  });
+
+  fastify.patch('/equipo/:id', async (request, reply) => {
+    const params = idSchema.safeParse(request.params);
+    const datos = cambioMiembroSchema.safeParse(request.body);
+    if (!params.success || !datos.success) {
+      return reply.code(400).send({ error: 'Datos inválidos' });
+    }
+    const miembro = await fastify.prisma.user.findUnique({ where: { id: params.data.id } });
+    if (!miembro) return reply.code(404).send({ error: 'Esa persona no existe' });
+    if (!['docente', 'admin_escuela', 'admin'].includes(miembro.rol)) {
+      return reply.code(409).send({ error: 'Esa cuenta no es del equipo' });
+    }
+    // Nadie se quita a si mismo el acceso: dejaria la plataforma sin quien entre.
+    if (miembro.id === request.user.id && (datos.data.rol !== undefined || datos.data.activo === false)) {
+      return reply.code(409).send({ error: 'No puedes cambiar tu propio rol ni desactivarte.' });
+    }
+    // Y siempre tiene que quedar un administrador activo.
+    const dejaDeSerAdmin =
+      miembro.rol === 'admin' && (datos.data.rol !== undefined && datos.data.rol !== 'admin');
+    if (miembro.rol === 'admin' && (dejaDeSerAdmin || datos.data.activo === false)) {
+      const admins = await fastify.prisma.user.count({ where: { rol: 'admin', activo: true } });
+      if (admins <= 1) {
+        return reply.code(409).send({ error: 'Es el único administrador activo: nombra otro antes.' });
+      }
+    }
+
+    const actualizado = await fastify.prisma.user.update({
+      where: { id: miembro.id },
+      data: {
+        ...(datos.data.rol !== undefined ? { rol: datos.data.rol } : {}),
+        ...(datos.data.activo !== undefined ? { activo: datos.data.activo } : {}),
+        ...(datos.data.institucionId !== undefined ? { institucionId: datos.data.institucionId } : {}),
+      },
+      select: { id: true, nombre: true, rol: true, activo: true },
+    });
+    fastify.log.info({ miembroId: miembro.id, cambios: datos.data, admin: request.user.id }, 'Equipo actualizado');
+    return reply.send({ miembro: actualizado });
+  });
+
+  /** Nueva contrasena temporal, para quien la perdio. Se muestra una vez. */
+  fastify.post('/equipo/:id/clave', async (request, reply) => {
+    const params = idSchema.safeParse(request.params);
+    if (!params.success) return reply.code(400).send({ error: 'Identificador inválido' });
+    const miembro = await fastify.prisma.user.findUnique({ where: { id: params.data.id } });
+    if (!miembro || !['docente', 'admin_escuela', 'admin'].includes(miembro.rol)) {
+      return reply.code(404).send({ error: 'Esa persona no existe' });
+    }
+    const passwordTemporal = generarPasswordTemporal();
+    await fastify.prisma.user.update({
+      where: { id: miembro.id },
+      data: { passwordHash: await hashPassword(passwordTemporal) },
+    });
+    fastify.log.info({ miembroId: miembro.id, admin: request.user.id }, 'Contrasena de equipo restablecida');
+    return reply.send({ email: miembro.email, passwordTemporal });
   });
 
   // ───────────────────────────── Datos de la empresa ─────────────────────────────

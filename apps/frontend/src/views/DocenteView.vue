@@ -107,7 +107,11 @@ onMounted(() => void cargarAulas());
         <h1>Mis grupos</h1>
         <p class="docente__sub">Estudiantes, credenciales, tareas y seguimiento.</p>
       </div>
-      <RouterLink class="enlace" to="/portal">Ir al portal</RouterLink>
+      <div class="docente__enlaces">
+        <!-- Jugar es parte de preparar la clase: desde aqui, sin cambiar de cuenta. -->
+        <RouterLink class="enlace enlace--boton" to="/mapa">Entrar al juego</RouterLink>
+        <RouterLink class="enlace" to="/portal">Ir al portal</RouterLink>
+      </div>
     </header>
 
     <p v-if="error" class="aviso aviso--grave">{{ error }}</p>
@@ -205,6 +209,22 @@ onMounted(() => void cargarAulas());
   padding: 24px 20px 64px;
   color: var(--tinta, #1e293b);
   font-size: 15px;
+}
+
+.docente__enlaces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.enlace--boton {
+  padding: 0.5rem 1rem;
+  color: white;
+  text-decoration: none;
+  background: var(--azul-neon-oscuro);
+  border-radius: var(--radio-sm);
+  font-weight: 700;
 }
 
 .docente__cabecera {

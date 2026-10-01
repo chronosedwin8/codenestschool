@@ -285,6 +285,7 @@ onMounted(cargar);
       <div class="a-acciones">
         <RouterLink v-if="esAdmin" class="a-boton" :to="{ name: 'admin' }">Administración</RouterLink>
         <RouterLink v-if="esDocente" class="a-boton a-boton--fantasma" to="/portal/docente">Mis grupos</RouterLink>
+        <RouterLink v-if="esDocente" class="a-boton a-boton--fantasma" to="/mapa">Entrar al juego</RouterLink>
         <button type="button" class="a-boton a-boton--fantasma" @click="salir">Cerrar sesión</button>
       </div>
     </header>

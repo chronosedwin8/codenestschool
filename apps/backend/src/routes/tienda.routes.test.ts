@@ -288,24 +288,26 @@ describe('el nino en la tienda', () => {
   });
 });
 
-describe('la tienda no es de los adultos', () => {
-  it('el docente no la puede abrir', async () => {
+describe('quien entra a la tienda', () => {
+  it('el docente la abre: juega, gana estrellas y las gasta en su Fuzz', async () => {
     const respuesta = await app.inject({
       method: 'GET',
       url: '/api/tienda',
       headers: como(docente.token),
     });
-    expect(respuesta.statusCode).toBe(403);
+    expect(respuesta.statusCode).toBe(200);
   });
 
-  it('el docente no puede comprar', async () => {
+  it('sin estrellas no compra, igual que un estudiante', async () => {
     const respuesta = await app.inject({
       method: 'POST',
       url: '/api/tienda/comprar',
       headers: como(docente.token),
       payload: { clave: 'color-rosa' },
     });
-    expect(respuesta.statusCode).toBe(403);
+    // 409: el articulo existe pero no le alcanza. Lo que importa es que ya no
+    // es un 403 por ser adulto.
+    expect(respuesta.statusCode).not.toBe(403);
   });
 
   it('sin sesion no hay tienda', async () => {

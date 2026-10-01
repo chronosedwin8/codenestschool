@@ -13,6 +13,7 @@ import { useRouter } from 'vue-router';
 import { api, borrarToken } from '@/api/cliente';
 import AdminCotizaciones from '@/components/admin/AdminCotizaciones.vue';
 import AdminEmpresa from '@/components/admin/AdminEmpresa.vue';
+import AdminEquipo from '@/components/admin/AdminEquipo.vue';
 import AdminFacturas from '@/components/admin/AdminFacturas.vue';
 import AdminPagos from '@/components/admin/AdminPagos.vue';
 import AdminPlanes from '@/components/admin/AdminPlanes.vue';
@@ -20,7 +21,7 @@ import AdminResumen from '@/components/admin/AdminResumen.vue';
 import type { EntradaEditor } from '@/components/facturacion/EditorDocumento.vue';
 import '@/styles/adultos.css';
 
-type Pestana = 'resumen' | 'planes' | 'pagos' | 'facturas' | 'cotizaciones' | 'empresa';
+type Pestana = 'resumen' | 'planes' | 'pagos' | 'facturas' | 'cotizaciones' | 'equipo' | 'empresa';
 
 const PESTANAS: readonly { clave: Pestana; nombre: string }[] = [
   { clave: 'resumen', nombre: 'Resumen' },
@@ -28,6 +29,7 @@ const PESTANAS: readonly { clave: Pestana; nombre: string }[] = [
   { clave: 'pagos', nombre: 'Pagos y licencias' },
   { clave: 'facturas', nombre: 'Facturas' },
   { clave: 'cotizaciones', nombre: 'Cotizaciones' },
+  { clave: 'equipo', nombre: 'Equipo' },
   { clave: 'empresa', nombre: 'Empresa' },
 ];
 
@@ -62,6 +64,7 @@ onMounted(cargarPlanes);
         <p class="a-subtitulo">Precios, pagos, facturas y cotizaciones de CodeNest School.</p>
       </div>
       <div class="a-acciones">
+        <RouterLink class="a-boton a-boton--fantasma" :to="{ name: 'mapa' }">Entrar al juego</RouterLink>
         <RouterLink class="a-boton a-boton--fantasma" :to="{ name: 'portal' }">Portal</RouterLink>
         <button type="button" class="a-boton a-boton--fantasma" @click="salir">Cerrar sesión</button>
       </div>
@@ -91,6 +94,7 @@ onMounted(cargarPlanes);
       @borrador-usado="borradorFactura = null"
     />
     <AdminCotizaciones v-else-if="pestana === 'cotizaciones'" :planes="planes" @facturar="facturar" />
+    <AdminEquipo v-else-if="pestana === 'equipo'" />
     <AdminEmpresa v-else />
   </div>
 </template>
