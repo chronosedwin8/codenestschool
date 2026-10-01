@@ -20,6 +20,7 @@ import { useRoute, useRouter } from 'vue-router';
 import type { DefinicionJuego, ObstaculoJuego, PremioJuego, ReglaJuego } from '@codenest/shared';
 
 import BotonJuguete from '@/components/BotonJuguete.vue';
+import { usePantallaCompleta } from '@/composables/usePantallaCompleta';
 import { JuegoArcade, type Marcador } from '@/game/ArcadeRuntime';
 import { useAudioStore } from '@/stores/audio';
 import { useProyectosStore } from '@/stores/proyectos';
@@ -33,6 +34,8 @@ const tienda = useProyectosStore();
 
 const pestana = ref<Pestana>('escenario');
 const lienzo = ref<HTMLElement | null>(null);
+/** Lo que se pone a pantalla completa: el juego y su boton, sin los mandos. */
+const escena = ref<HTMLElement | null>(null);
 const jugando = ref(false);
 const marcador = ref<Marcador | null>(null);
 const publicando = ref(false);
@@ -40,6 +43,19 @@ const aviso = ref<string | null>(null);
 const celebracion = ref<{ codigo: string; insignias: string[] } | null>(null);
 
 let motor: JuegoArcade | null = null;
+
+/**
+ * Pantalla completa para probar el juego como se va a jugar.
+ *
+ * Se lleva el lienzo y el boton de probar, pero no los mandos de la derecha:
+ * en pantalla completa se juega, no se configura. Al volver, todo sigue donde
+ * estaba. El aviso de cambio recalcula el tamaño del lienzo, y con el la
+ * posicion del raton, que es de lo que depende el control.
+ */
+const pantalla = usePantallaCompleta(escena, () => {
+  motor?.ajustar();
+  window.setTimeout(() => motor?.ajustar(), 350);
+});
 
 const PESTANAS: readonly { clave: Pestana; nombre: string; icono: string }[] = [
   { clave: 'escenario', nombre: 'Escenario', icono: '🖼️' },
@@ -319,25 +335,38 @@ onBeforeUnmount(() => {
     <div v-if="def && catalogo" class="tablero">
       <!-- El juego -->
       <section class="tablero__juego">
-        <div ref="lienzo" class="lienzo" />
+        <div ref="escena" class="escena" :class="{ 'escena--completa': pantalla.activa.value }">
+          <div ref="lienzo" class="lienzo" />
 
-        <div class="controles">
-          <BotonJuguete
-            :etiqueta="jugando ? 'Jugando...' : 'Probar mi juego'"
-            icono="▶"
-            tono="verde"
-            tamano="lg"
-            :deshabilitado="jugando"
-            @pulsar="probar"
-          />
-          <p v-if="marcador" class="marcador">
-            {{ marcador.puntos }} puntos · {{ '❤'.repeat(Math.max(0, marcador.vidas)) }}
-            <span v-if="marcador.terminado === 'ganado'" class="marcador__gano">¡ganaste!</span>
-            <span v-else-if="marcador.terminado === 'perdido'">fin del juego</span>
-          </p>
-          <p v-else class="marcador">
-            {{ def.control === 'teclado' ? 'Se juega con las flechas y la barra espaciadora' : 'Se juega con el raton' }}
-          </p>
+          <div class="controles">
+            <div class="controles__fila">
+              <BotonJuguete
+                :etiqueta="jugando ? 'Jugando...' : 'Probar mi juego'"
+                icono="▶"
+                tono="verde"
+                tamano="lg"
+                :deshabilitado="jugando"
+                @pulsar="probar"
+              />
+              <BotonJuguete
+                v-if="pantalla.disponible.value"
+                :etiqueta="pantalla.activa.value ? 'Salir de pantalla completa' : 'Pantalla completa'"
+                :icono="pantalla.activa.value ? '⤡' : '⛶'"
+                tono="morado"
+                tamano="lg"
+                solo-icono
+                @pulsar="pantalla.alternar()"
+              />
+            </div>
+            <p v-if="marcador" class="marcador">
+              {{ marcador.puntos }} puntos · {{ '❤'.repeat(Math.max(0, marcador.vidas)) }}
+              <span v-if="marcador.terminado === 'ganado'" class="marcador__gano">¡ganaste!</span>
+              <span v-else-if="marcador.terminado === 'perdido'">fin del juego</span>
+            </p>
+            <p v-else class="marcador">
+              {{ def.control === 'teclado' ? 'Se juega con las flechas y la barra espaciadora' : 'Se juega con el raton' }}
+            </p>
+          </div>
         </div>
 
         <!-- Publicar: el final del camino, siempre visible. -->
@@ -846,6 +875,39 @@ onBeforeUnmount(() => {
 .tablero__juego {
   display: grid;
   gap: 12px;
+}
+
+.escena {
+  display: grid;
+  gap: 12px;
+}
+
+/*
+ * A pantalla completa manda el alto: el lienzo ocupa lo que sobra y Phaser
+ * centra su dibujo dentro. El fondo se pinta aqui porque el elemento a pantalla
+ * completa es este y, sin fondo propio, el navegador lo deja en negro.
+ */
+.escena--completa {
+  width: 100vw;
+  height: 100vh;
+  grid-template-rows: 1fr auto;
+  padding: 10px 14px;
+  background: var(--fondo, #eef2ff);
+  overflow: hidden;
+}
+
+.escena--completa .lienzo {
+  min-height: 0;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.controles__fila {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .lienzo {

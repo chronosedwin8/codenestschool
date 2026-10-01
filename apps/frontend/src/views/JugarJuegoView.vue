@@ -12,6 +12,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import BotonJuguete from '@/components/BotonJuguete.vue';
 import { api } from '@/api/cliente';
+import { usePantallaCompleta } from '@/composables/usePantallaCompleta';
 import { JuegoArcade, type Marcador } from '@/game/ArcadeRuntime';
 import { useAudioStore } from '@/stores/audio';
 import { useProyectosStore, type ProyectoCompleto } from '@/stores/proyectos';
@@ -23,10 +24,23 @@ const tienda = useProyectosStore();
 
 const juego = ref<ProyectoCompleto | null>(null);
 const lienzo = ref<HTMLElement | null>(null);
+/** Lo que se pone a pantalla completa: el juego Y sus botones, no solo el lienzo. */
+const sala = ref<HTMLElement | null>(null);
 const marcador = ref<Marcador | null>(null);
 const error = ref<string | null>(null);
 
 let motor: JuegoArcade | null = null;
+
+/**
+ * Al entrar y al salir, el lienzo cambia de tamaño. Se avisa dos veces a
+ * proposito: la primera en cuanto el navegador nos devuelve el control, y la
+ * segunda cuando ya ha terminado su animacion de entrada, que en algunos
+ * equipos tarda. Sin la segunda, el juego se queda con el tamaño de antes.
+ */
+const pantalla = usePantallaCompleta(sala, () => {
+  motor?.ajustar();
+  window.setTimeout(() => motor?.ajustar(), 350);
+});
 
 function fondoDelJuego(): string | null {
   const clave = juego.value?.definicion.escenario;
@@ -78,7 +92,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <main class="jugar">
+  <main ref="sala" class="jugar" :class="{ 'jugar--completa': pantalla.activa.value }">
     <header class="jugar__cabecera">
       <BotonJuguete
         etiqueta="Volver a los juegos"
@@ -97,6 +111,14 @@ onBeforeUnmount(() => {
         tono="neutro"
         solo-icono
         @pulsar="audio.alternarSilencio()"
+      />
+      <BotonJuguete
+        v-if="pantalla.disponible.value"
+        :etiqueta="pantalla.activa.value ? 'Salir de pantalla completa' : 'Pantalla completa'"
+        :icono="pantalla.activa.value ? '⤡' : '⛶'"
+        tono="morado"
+        solo-icono
+        @pulsar="pantalla.alternar()"
       />
     </header>
 
@@ -134,6 +156,34 @@ onBeforeUnmount(() => {
   max-width: 1100px;
   margin: 0 auto;
   padding: 14px 14px 40px;
+}
+
+/*
+ * A pantalla completa manda el alto, no el ancho: el juego ocupa lo que sobra
+ * entre la cabecera y el pie, y Phaser centra su lienzo dentro. El fondo se
+ * pinta aqui porque el elemento a pantalla completa es este y, sin fondo
+ * propio, el navegador lo pone negro.
+ */
+.jugar--completa {
+  max-width: none;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--fondo, #eef2ff);
+  overflow: hidden;
+}
+
+.jugar--completa .lienzo {
+  flex: 1;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+.jugar--completa .jugar__pie {
+  margin-top: 0;
 }
 
 .jugar__cabecera {

@@ -1010,6 +1010,18 @@ export class JuegoArcade {
     this.escena = this.juego.scene.getScene('arcade') as EscenaArcade;
   }
 
+  /**
+   * Recalcula el tamaño del lienzo y, con el, el mapeo del puntero.
+   *
+   * Phaser revisa el tamaño de su contenedor por su cuenta, pero cada medio
+   * segundo. Al entrar o salir de pantalla completa eso se nota: medio segundo
+   * con el juego del tamaño anterior, y —peor— con el raton apuntando donde ya
+   * no esta. Se le avisa a mano y se acabo.
+   */
+  ajustar(): void {
+    this.juego?.scale.refresh();
+  }
+
   /** Captura del lienzo, para la portada del juego. */
   capturar(): string | null {
     const lienzo = this.juego?.canvas;
