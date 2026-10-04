@@ -187,8 +187,14 @@ onMounted(async () => {
               <p class="emisor__nombre">{{ doc.emisor.razonSocial }}</p>
               <p>NIT {{ doc.emisor.nit }}<template v-if="doc.emisor.regimen"> · {{ doc.emisor.regimen }}</template></p>
               <p>{{ doc.emisor.direccion }}, {{ doc.emisor.ciudad }}</p>
+              <!--
+                El telefono de la empresa NO se imprime aunque este guardado:
+                es una decision del negocio, y un comprobante es un documento
+                que se reenvia y se publica sin pensarlo. El contacto es el
+                correo.
+              -->
               <p>
-                {{ doc.emisor.email }}<template v-if="doc.emisor.telefono"> · {{ doc.emisor.telefono }}</template>
+                {{ doc.emisor.email }}
                 <template v-if="doc.emisor.sitioWeb"> · {{ doc.emisor.sitioWeb }}</template>
               </p>
             </div>

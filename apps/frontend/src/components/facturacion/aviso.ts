@@ -6,13 +6,11 @@
  * fiscal, que es justo donde no puede haber dos versiones.
  */
 export const AVISO_JURISDICCION =
-  'CodeNest School es una empresa con sede en los Estados Unidos y factura conforme a la ' +
-  'jurisdicción donde reside. Por eso no expide facturas electrónicas de la DIAN ni de otras ' +
-  'autoridades fiscales fuera de los Estados Unidos: los documentos que recibes son ' +
-  'comprobantes comerciales de tu pago.';
+  'CodeNest School es un servicio de Grupo Logic SAS Latinoamérica. Los documentos que recibes ' +
+  'son comprobantes comerciales de tu pago, con numeración propia: no son facturas electrónicas ' +
+  'de la DIAN. Sirven igual para tu contabilidad y para justificar el gasto.';
 
 /** La version corta, para el pie de la factura. */
 export const AVISO_JURISDICCION_CORTO =
-  'Comprobante comercial emitido por una empresa con sede en los Estados Unidos, conforme a la ' +
-  'jurisdicción donde reside. No es una factura electrónica de la DIAN ni de otra autoridad ' +
-  'fiscal fuera de los Estados Unidos.';
+  'Comprobante comercial emitido por Grupo Logic SAS Latinoamérica. No es una factura ' +
+  'electrónica de la DIAN.';

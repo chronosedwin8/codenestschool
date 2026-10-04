@@ -108,8 +108,8 @@ onMounted(cargar);
       <button v-if="!editor" type="button" class="a-boton" @click="abrirEditor(null)">Nueva factura</button>
     </div>
     <p class="a-subtitulo nota">
-      Comprobantes comerciales con numeración propia. CodeNest School factura desde los Estados Unidos:
-      no son facturas electrónicas de la DIAN, y así se lo dice el portal a cada cliente.
+      Comprobantes comerciales con numeración propia, emitidos por Grupo Logic SAS Latinoamérica: no son facturas
+      electrónicas de la DIAN, y así se lo dice el portal a cada cliente.
     </p>
     <p v-if="mensaje" class="a-aviso" :class="`a-aviso--${mensaje.tono}`" role="status">{{ mensaje.texto }}</p>
 
