@@ -644,6 +644,39 @@ img {
   color: var(--blanco);
 }
 
+/*
+ * Los tres documentos legales, en una fila y en TODAS las paginas.
+ *
+ * No es decoracion: una pasarela de pago no aprueba un dominio si desde su
+ * portada no se llega a los terminos, al aviso de privacidad y a la politica de
+ * reembolsos. Y quien busca como le devuelven su dinero no deberia tener que
+ * recorrer un menu para encontrarlo.
+ */
+.pie__legales {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.6rem;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  font-size: 0.92rem;
+}
+
+.pie__legales li {
+  margin: 0;
+}
+
+.pie__legales a {
+  color: rgb(255 255 255 / 0.85);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pie__legales a:hover {
+  color: var(--blanco);
+}
+
 .pie__legal {
   padding-top: 2rem;
   margin-top: 2.5rem;
@@ -710,6 +743,32 @@ img {
 
   .plan--destacado {
     transform: none;
+  }
+}
+
+/*
+ * En un telefono estrecho, el menu, "Entrar" y "Ver planes" sumaban 411 px en
+ * una pantalla de 390 y la portada se podia desplazar de lado. Se aprieta el
+ * hueco y se recortan los botones: cabe sin quitar ninguno de los dos, que son
+ * las dos cosas que alguien busca al llegar.
+ */
+@media (max-width: 420px) {
+  .cabecera__fila {
+    gap: 0.4rem;
+  }
+
+  .cabecera__acciones {
+    gap: 0.4rem;
+  }
+
+  .cabecera__acciones .boton--pequeno {
+    padding-right: 0.7rem;
+    padding-left: 0.7rem;
+    font-size: 0.9rem;
+  }
+
+  .nav-abrir {
+    padding: 0.5rem 0.4rem;
   }
 }
 

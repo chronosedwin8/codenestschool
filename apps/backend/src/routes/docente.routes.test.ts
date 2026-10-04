@@ -716,19 +716,25 @@ describe('el permiso para consultar el colegio', () => {
     expect(respuesta.statusCode).toBe(403);
   });
 
-  it('cuando se lo dan, la pantalla lo sabe en el momento', async () => {
+  it('cuando se lo dan, vale en el momento y con el mismo token', async () => {
     await app.prisma.user.update({
       where: { id: docente.id },
       data: { phidiasHabilitado: true },
     });
 
-    // El mismo token de antes: el permiso no espera a que caduque la sesion.
+    // Con el MISMO token de antes: el permiso se lee de la base en cada
+    // llamada, no del token, asi que no espera a que caduque la sesion.
     const respuesta = await app.inject({
-      method: 'GET',
-      url: '/api/docente/phidias/cursos',
+      method: 'POST',
+      url: '/api/docente/phidias/buscar',
       headers: como(docente.token),
+      payload: { codigos: ['1234567'] },
     });
 
-    expect((respuesta.json() as { habilitado: boolean }).habilitado).toBe(true);
+    // Se comprueba que ya NO es 403, y no que sea 200: lo que haya detrás es el
+    // servidor del colegio, que en esta máquina puede estar configurado o no y
+    // puede no responder. Atar la prueba a él la haría fallar por algo que no
+    // es lo que se está probando.
+    expect(respuesta.statusCode).not.toBe(403);
   });
 });
